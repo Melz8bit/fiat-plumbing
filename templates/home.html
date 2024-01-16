@@ -1,0 +1,159 @@
+<html>
+
+<head>
+    <title>Fiat Plumbing</title>
+
+    {% include 'bootstrap.html' %}
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        .projectRow:hover {
+            cursor: pointer;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    {% include 'nav.html' %}
+
+    <div class="container p-3">
+        <div>
+            <!-- Search -->
+            <div class="input-group my-3">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">Search By</button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Contract Number</a></li>
+                    <li><a class="dropdown-item" href="#">Invoice Number</a></li>
+                    <li><a class="dropdown-item" href="#">Client Name</a></li>
+                </ul>
+                <input type="text" class="form-control" placeholder="Search criteria" aria-label="Search criteria"
+                    aria-describedby="button-addon2">
+                <button class="btn btn-outline-primary" type="button" id="button-addon2" data-bs-toggle="collapse"
+                    href="#searchResults" aria-expanded="false" aria-controls="collapseExample">Search</button>
+            </div>
+
+            <!-- Search Results -->
+            <div class="collapse" id="searchResults">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Company</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Address</th>
+                            <th scope="col">City</th>
+                            <th scope="col">State</th>
+                            <th scope="col">Contract Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>24-1849</td>
+                            <td>Mackle Builders</td>
+                            <td>Zombie R Us</td>
+                            <td>123 Main Street</td>
+                            <td>Miami</td>
+                            <td>FL</td>
+                            <td>01/01/2024</td>
+                        </tr>
+                        <tr>
+                            <td>23-1254</td>
+                            <td>Ventura Construction Corporation</td>
+                            <td>Dunkin Donuts</td>
+                            <td>500 Sample Road</td>
+                            <td>Palm Beach Gardens</td>
+                            <td>FL</td>
+                            <td>05/15/2023</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <hr class="mt-4">
+
+            <!-- Project Info -->
+            <h4 class="mt-4">Projects</h4>
+            <hr>
+            <div class="container text-center">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Client</th>
+                            <th scope="col">Project</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="projectRow" onclick="window.location='project.html';">
+                            <th scope="row">23-1234</th>
+                            <td>Ventura Construction Corporation</td>
+                            <td>Dunkin Donuts</td>
+                            <td>01/01/2024</td>
+                            <td>$2,000.00</td>
+                            <td>Pending</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">22-0493</th>
+                            <td>Authentic Construction</td>
+                            <td>Goldstein Residents</td>
+                            <td>01/01/2022</td>
+                            <td>$50,000.00</td>
+                            <td>Billed</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">24-2948</th>
+                            <td>Mackle Builders</td>
+                            <td>Cellini Residents</td>
+                            <td>12/14/2023</td>
+                            <td>$5,500.00</td>
+                            <td>Paid</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Employees -->
+            <h4 class="mt-5">Employees</h4>
+            <hr>
+            <div class="container text-center">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Next Scheduled Date</th>
+                            <th scope="col">Last Date Work</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ronald McDonald</td>
+                            <td>01/02/2024</td>
+                            <td>12/30/2023</td>
+                        </tr>
+                        <tr>
+                            <td>Lionel Messi</th>
+                            <td>01/02/2024</td>
+                            <td>12/30/2023</td>
+                        </tr>
+                        <tr>
+                            <td>Lucas DeMello</th>
+                            <td>02/01/2024</td>
+                            <td>01/02/2024</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
