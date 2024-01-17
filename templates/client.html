@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiat Plumbing - Clients</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        .contractRow:hover {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a href="index.html">
+                <img src="/logo.png" alt="Logo" width="80" class="d-inline-block align-text-top me-2">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link active" href="client_list.html">Clients</a>
+                    <a class="nav-link" href="#">Projects</a>
+                    <a class="nav-link" href="#">Employees</a>
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                My Account
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Account</a></li>
+                                <li><a class="dropdown-item" href="#">Sign Out</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pt-4">
+        <h1 class="mb-4 display-5">Ventura Construction Corporation</h1>
+
+        <!-- Address Information -->
+        <h4 class="my-3">Address Information</h4>
+        <hr>
+        <div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Address</span>
+                        <input type="text" class="form-control border-primary" value="123 Main Street"
+                            aria-label="address" aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">City</span>
+                        <input type="text" class="form-control border-primary" value="Miami" aria-label="city"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">State</span>
+                        <input type="text" class="form-control border-primary" value="FL" aria-label="state"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Zip Code</span>
+                        <input type="text" class="form-control border-primary" value="33133" aria-label="zipCode"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <h4 class="my-3">Contact Information</h4>
+        <hr>
+        <div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Name</span>
+                        <input type="text" class="form-control border-primary" value="Lucas DeMello"
+                            aria-label="contactName" aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Phone Number</span>
+                        <input type="tel" class="form-control border-primary" value="(305) 446-6366"
+                            aria-label="phoneNumber" aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Email</span>
+                        <input type="email" class="form-control border-primary" value="email@example.com"
+                            aria-label="email" aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project List -->
+        <div class="row my-3">
+            <div class="col">
+                <h4>Projects</h4>
+            </div>
+            <div class="col-2 text-end">
+                <a class="btn btn-primary btn-sm" href="proposal_create.html">New Project</a>
+            </div>
+        </div>
+        <hr>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th>Name</th>
+                    <th class="text-center">Adddress</th>
+                    <th class="text-center">City</th>
+                    <th class="text-center">State</th>
+                    <th class="text-center">Date Start</th>
+                    <th class="text-center">Date End</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="contractRow" onclick="window.location='project.html';">
+                    <td class="text-center">23-1234</td>
+                    <td>Dunkin' Donuts</td>
+                    <td class="text-center">123 Main Street</td>
+                    <td class="text-center">Plantation</td>
+                    <td class="text-center">FL</td>
+                    <td class="text-center">01/01/2023</td>
+                    <td class="text-center">03/31/2023</td>
+                </tr>
+                <tr>
+                    <td class="text-center">23-1234</td>
+                    <td>Dunkin' Donuts</td>
+                    <td class="text-center">123 Main Street</td>
+                    <td class="text-center">Plantation</td>
+                    <td class="text-center">FL</td>
+                    <td class="text-center">01/01/2023</td>
+                    <td class="text-center">03/31/2023</td>
+                </tr>
+                <tr>
+                    <td class="text-center">23-1234</td>
+                    <td>Dunkin' Donuts</td>
+                    <td class="text-center">123 Main Street</td>
+                    <td class="text-center">Plantation</td>
+                    <td class="text-center">FL</td>
+                    <td class="text-center">01/01/2023</td>
+                    <td class="text-center">03/31/2023</td>
+                </tr>
+                <tr>
+                    <td class="text-center">23-1234</td>
+                    <td>Dunkin' Donuts</td>
+                    <td class="text-center">123 Main Street</td>
+                    <td class="text-center">Plantation</td>
+                    <td class="text-center">FL</td>
+                    <td class="text-center">01/01/2023</td>
+                    <td class="text-center">03/31/2023</td>
+                </tr>
+                <tr>
+                    <td class="text-center">23-1234</td>
+                    <td>Dunkin' Donuts</td>
+                    <td class="text-center">123 Main Street</td>
+                    <td class="text-center">Plantation</td>
+                    <td class="text-center">FL</td>
+                    <td class="text-center">01/01/2023</td>
+                    <td class="text-center">03/31/2023</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    <div>
+
+    </div>
+
+</body>
+
+</html>

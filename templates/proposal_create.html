@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Fiat Plumbing - Create Proposal</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a href="index.html">
+                <img src="/logo.png" alt="Logo" width="80" class="d-inline-block align-text-top me-2">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link" href="client_list.html">Clients</a>
+                    <a class="nav-link" href="#">Projects</a>
+                    <a class="nav-link" href="#">Employees</a>
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                My Account
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Account</a></li>
+                                <li><a class="dropdown-item" href="#">Sign Out</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container p-3">
+        <div class="row gx-5">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Client Information</h5>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Name</span>
+                            <input type="text" class="form-control" value="Authentic Construction"
+                                aria-label="Authentic Construction" aria-describedby="basic-addon1" readonly>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Address</span>
+                            <input type="text" class="form-control" value="10261 SW 72nd St., #103, Miami, FL 33173"
+                                aria-label="Authentic Construction" aria-describedby="basic-addon1" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Project Information</h5>
+
+                        <div class="row">
+                            <div class="col">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="basic-addon1">Name</span>
+                                    <input type="text" class="form-control" value="Goldstein Residence"
+                                        aria-label="Authentic Construction" aria-describedby="basic-addon1" readonly>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text" id="basic-addon1">#</span>
+                                    <input type="text" class="form-control" value="22-1539"
+                                        aria-label="Authentic Construction" aria-describedby="basic-addon1" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Address</span>
+                            <input type="text" class="form-control"
+                                value="10241 East Broadview Dr., Miami Beach, FL 33154"
+                                aria-label="Authentic Construction" aria-describedby="basic-addon1" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <h3>Items</h3>
+        <form>
+            <!-- Items -->
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Type</span>
+                        <select class="form-select" aria-label="Default select example">
+                            <option selected disabled>Select item</option>
+                            <option>WC - Water Closet</option>
+                            <option>LV - Lavatory</option>
+                            <option>SK - Sink</option>
+                            <option>SH - Shower</option>
+                            <option>KS - Kitchen Sink</option>
+                            <option>WM - Washing Machine</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Quantity</span>
+                        <input type="text" class="form-control" placeholder="How many?" aria-label="Username"
+                            aria-describedby="basic-addon1">
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">$</span>
+                        <input type="text" class="form-control" placeholder="How much per unit?" aria-label="Username"
+                            aria-describedby="basic-addon1">
+                    </div>
+                </div>
+
+                <div class="col-2 text-end">
+                    <button class="btn btn-primary">Add Item</button>
+                </div>
+            </div>
+
+            <!-- Quantity, Amount, Add Button -->
+            <!-- <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Quantity</span>
+                        <input type="text" class="form-control" placeholder="How many?" aria-label="Username"
+                            aria-describedby="basic-addon1">
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">$</span>
+                        <input type="text" class="form-control" placeholder="How much per unit?" aria-label="Username"
+                            aria-describedby="basic-addon1">
+                    </div>
+                </div>
+
+                <div class="col-2 text-end">
+                    <button class="btn btn-sm btn-primary">Add Item</button>
+                </div>
+            </div> -->
+        </form>
+
+        <!-- Table with Items Added-->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Amount</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>WC - Water Closet</td>
+                    <td class="text-center">2</td>
+                    <td class="text-end">$1,500.00</td>
+                    <td class="text-end">$3,000.00</td>
+                </tr>
+                <tr>
+                    <td>LV - Lavatory</td>
+                    <td class="text-center">2</td>
+                    <td class="text-end">$1,500.00</td>
+                    <td class="text-end">$3,000.00</td>
+                </tr>
+                <tr>
+                    <td>SH - Shower</td>
+                    <td class="text-center">4</td>
+                    <td class="text-end">$2,000.00</td>
+                    <td class="text-end">$8,000.00</td>
+                </tr>
+                <tr>
+                    <td>SK - Sink</td>
+                    <td class="text-center">1</td>
+                    <td class="text-end">$1,500.00</td>
+                    <td class="text-end">$1,500.00</td>
+                </tr>
+                <tr>
+                    <td>WM - Washing Machine</td>
+                    <td class="text-center">1</td>
+                    <td class="text-end">$1,500.00</td>
+                    <td class="text-end">$1,500.00</td>
+                </tr>
+                <tr>
+                    <td>WH - Water Heater</td>
+                    <td class="text-center">1</td>
+                    <td class="text-end">$1,500.00</td>
+                    <td class="text-end">$1,500.00</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td class="fw-semibold text-end">Total</td>
+                    <td class="fw-semibold text-end">$18,500.00</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <hr>
+
+        <h3>Payment Plan</h3>
+        <form>
+            <!-- Payment Plan -->
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Type</span>
+                        <select class="form-select" aria-label="Default select example">
+                            <option selected disabled>Select category</option>
+                            <option>Drains</option>
+                            <option>Rough, Tub, Showers</option>
+                            <option>Final fixtures installation</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">$</span>
+                        <input type="text" class="form-control" placeholder="Installment amount" aria-label="Username"
+                            aria-describedby="basic-addon1">
+                    </div>
+                </div>
+
+                <div class="col-2 text-end">
+                    <button class="btn btn-primary">Add Payment</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Table with Payment Plan Installments -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Installment</th>
+                    <th>Category</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1st</td>
+                    <td>Drains</td>
+                    <td class="text-end">$7,400.00</td>
+                </tr>
+                <tr>
+                    <td>2nd</td>
+                    <td>Rough, Tub, Showers</td>
+                    <td class="text-end">$7,400.00</td>
+                </tr>
+                <tr>
+                    <td>3rd</td>
+                    <td>Final fixtures installation</td>
+                    <td class="text-end">$3,700.00</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td></td>
+                    <td class="fw-semibold text-end">Total</td>
+                    <td class="fw-semibold text-end">$18,500.00</td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="text-center mt-4">
+            <button class="btn btn-primary">Create Proposal</button>
+        </div>
+    </div>
+</body>
+
+</html>

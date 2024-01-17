@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    .clientRow:hover {
+        cursor: pointer;
+    }
+</style>
+
+<head>
+    <title>Fiat Plumbing - Clients</title>
+
+    {% include 'bootstrap.html' %}
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'nav.html' %}
+    <div class="container pt-4">
+        <div class="row">
+            <div class="col">
+                <h2>Client List</h2>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-primary" type="button">Add New</button>
+            </div>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col" class="text-center"># of Projects</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr class="" onclick="window.location='#';">
+                    <td>{{ client['name'] }}</td>
+                    <td class="text-center">{{ client['project_count'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+
+</body>
+
+</html>

@@ -55,41 +55,39 @@ def get_results(sqlQuery):
         cursor = connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute(sqlQuery)
         results = cursor.fetchall()
-        # cursor.close()
-        # connection.close()
-        return results
-        # rows = []
-        # for row in results:
-        #     rows.append(row)
 
-        # return rows
+        if len(results) == 1:
+            return results[0]
+
+        return results
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
 
 
+############## User Queries ##############
 def get_user(user_id):
-    return get_results(f"select * from users where users.user_id = '{user_id}' ")[0]
+    return get_results(f"SELECT * FROM users WHERE users.user_id = '{user_id}' ")
 
 
-# get_user("525bc4ea-b0f7-482d-a954-db517e6b5b89")
+############## Client Queries ##############
+def get_all_clients():
+    return get_results(
+        f"""
+            SELECT clients.*, projects.client_id, count(project_id) AS project_count
+            FROM projects
+            INNER JOIN clients ON projects.client_id = clients.client_id
+            GROUP BY projects.client_id
+        """
+    )
 
 
-# try:  # Create a cursor to interact with the database
-#     cursor = connection.cursor()  # Execute "SHOW TABLES" query
-#     cursor.execute("SHOW TABLES")  # Fetch all the rows
-#     tables = cursor.fetchall()  # Print out the tables
-
-#     # print("Tables in the database:")
-#     # for table in tables:
-#     #     print(table[0])
-
-#     # cursor.execute("SELECT * FROM users")
-#     # users = cursor.fetchall()
-#     # print("Users:")
-#     # for user in users:
-#     #     print(user)
-# except MySQLdb.Error as e:
-#     print("MySQL Error:", e)
-# finally:  # Close the cursor and connection
-#     cursor.close()
-#     connection.close()
+############## Project Queries ##############
+def get_all_projects():
+    return get_results(
+        f"""
+            SELECT projects.*, clients.name
+            FROM projects
+            INNER JOIN clients
+            ON projects.client_id = clients.client_id;
+        """
+    )

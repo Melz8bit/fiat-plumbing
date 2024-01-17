@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiat Plumbing - Dunkin' Donuts (23-1234)</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a href="index.html">
+                <img src="/logo.png" alt="Logo" width="80" class="d-inline-block align-text-top me-2">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-link" href="client_list.html">Clients</a>
+                    <a class="nav-link" href="#">Projects</a>
+                    <a class="nav-link" href="#">Employees</a>
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                My Account
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Account</a></li>
+                                <li><a class="dropdown-item" href="#">Sign Out</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pt-4">
+        <h1 class="mb-4 display-5">Dunkin' Donuts</h1>
+
+        <!-- Project Info -->
+        <div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Contract #</span>
+                        <input type="text" class="form-control" value="23-1234" aria-label="address"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Client</span>
+                        <input type="text" class="form-control" value="Ventura Construction Company"
+                            aria-label="address" aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Project Name</span>
+                        <input type="text" class="form-control" value="Dunkin' Donuts" aria-label="address"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Location Info -->
+        <h4 class="my-3">Location Information</h4>
+        <hr>
+        <div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Address</span>
+                        <input type="text" class="form-control" value="123 Main Street" aria-label="address"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">City</span>
+                        <input type="text" class="form-control" value="Miami" aria-label="city"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">State</span>
+                        <input type="text" class="form-control" value="FL" aria-label="state"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Zip Code</span>
+                        <input type="text" class="form-control" value="33133" aria-label="zipCode"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submenu Nav -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-tab-pane"
+                    type="button" role="tab" aria-controls="notes-tab-pane" aria-selected="true">Notes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices-tab-pane"
+                    type="button" role="tab" aria-controls="invoices-tab-pane" aria-selected="false">Invoices</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane"
+                    type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="false">Documents</button>
+            </li>
+        </ul>
+
+        <!-- Subsections -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Notes -->
+            <div class="tab-pane fade show active" id="notes-tab-pane" role="tabpanel" aria-labelledby="notes-tab"
+                tabindex="0">
+                <div class="ratio ratio-16x9">
+                    <iframe class="w-100 h-100" src="project_notes.html" frameborder="0"></iframe>
+                </div>
+            </div>
+
+            <!-- Invoices -->
+            <div class="tab-pane fade" id="invoices-tab-pane" role="tabpanel" aria-labelledby="invoices-tab"
+                tabindex="0">
+                <div class="ratio ratio-16x9">
+                    <iframe class="w-100" src="project_invoices.html" frameborder="0"></iframe>
+                </div>
+            </div>
+
+            <!-- Documents -->
+            <div class="tab-pane fade" id="documents-tab-pane" role="tabpanel" aria-labelledby="documents-tab"
+                tabindex="0">
+                <div class="ratio ratio-16x9">
+                    <iframe class="w-100" src="project_documents.html" frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

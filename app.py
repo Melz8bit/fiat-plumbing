@@ -101,9 +101,26 @@ USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
 @app.route("/")
 def main():
     user = database.get_user(USER_ID)
+    clients = database.get_all_clients()
+    projects = database.get_all_projects()
+
     return render_template(
         "home.html",
         user=user,
+        clients=clients,
+        projects=projects,
+    )
+
+
+@app.route("/client_list")
+def client_list():
+    user = database.get_user(USER_ID)
+    clients = database.get_all_clients()
+
+    return render_template(
+        "client_list.html",
+        user=user,
+        clients=clients,
     )
 
 
