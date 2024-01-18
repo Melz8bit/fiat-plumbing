@@ -1,3 +1,5 @@
+import os
+
 from flask import (
     Flask,
     flash,
@@ -8,6 +10,9 @@ from flask import (
     request,
     url_for,
 )
+
+import database
+from database import create_session, db_connect
 
 # from flask_login import (
 #     LoginManager,
@@ -20,10 +25,6 @@ from flask import (
 # from wtforms import StringField, SubmitField, PasswordField, EmailField
 # from wtforms.validators import DataRequired, EqualTo, Length
 
-import os
-
-import database
-from database import db_connect, create_session
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
@@ -121,6 +122,23 @@ def client_list():
         "client_list.html",
         user=user,
         clients=clients,
+    )
+
+
+@app.route("/search")
+def search():
+    user = database.get_user(USER_ID)
+
+    search_by = "project number"
+    search_criteria = "21-1502"
+
+    results = database.search(search_by, search_criteria)
+    print(results)
+
+    return render_template(
+        "search_results.html",
+        user=user,
+        results=results,
     )
 
 

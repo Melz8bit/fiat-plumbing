@@ -23,57 +23,45 @@
 
     <div class="container p-3">
         <div>
-            <!-- Search -->
-            <div class="input-group my-3">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">Search By</button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Contract Number</a></li>
-                    <li><a class="dropdown-item" href="#">Invoice Number</a></li>
-                    <li><a class="dropdown-item" href="#">Client Name</a></li>
-                </ul>
-                <input type="text" class="form-control" placeholder="Search criteria" aria-label="Search criteria"
-                    aria-describedby="button-addon2">
-                <button class="btn btn-outline-primary" type="button" id="button-addon2" data-bs-toggle="collapse"
-                    href="#searchResults" aria-expanded="false" aria-controls="collapseExample">Search</button>
-            </div>
+            <form method="GET" action="{{url_for('search')}}">
+                <!-- Search -->
+                <div class="input-group my-3">
+                    <button id="selectSearchBy" class="btn btn-outline-primary dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown" aria-expanded="false">Search By</button>
+                    <ul class="dropdown-menu">
+                        <li><a id="contractNumber" class="dropdown-item" href="#" onclick="changeSearchBy('contractNumber')">Contract Number</a></li>
+                        <li><a id="invoiceNumber" class="dropdown-item" href="#" onclick="changeSearchBy('invoiceNumber')">Invoice Number</a></li>
+                        <li><a id="clientName" class="dropdown-item" href="#" onclick="changeSearchBy('clientName')">Client
+                                Name</a></li>
+                    </ul>
+                    <script>
+                        function changeSearchBy(item) {
+                            document.getElementById("selectSearchBy").innerHTML = document.getElementById(item).innerHTML;
+                        }
+                    </script>
+                    <input type="text" class="form-control" placeholder="Search criteria" aria-label="Search criteria"
+                        aria-describedby="button-search">
+                    <button class="btn btn-outline-primary" type="button" id="button-search" data-bs-toggle="collapse" onclick="SomeFunc()"
+                        href="#searchResults" aria-expanded="false" aria-controls="collapseExample">Search</button>
+                        <script >
+                            function SomeFunc() {                                
+                                fetch(`/search`)
+                                    .then(function(response) {
+                                        return response.text();
+                                        
+                                    }).then(function(text) {
+                                        // document.getElementById(index).innerText = '👍 ' + text;
+                                });
+                            }
+                        </script>
 
-            <!-- Search Results -->
-            <div class="collapse" id="searchResults">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Company</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Address</th>
-                            <th scope="col">City</th>
-                            <th scope="col">State</th>
-                            <th scope="col">Contract Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>24-1849</td>
-                            <td>Mackle Builders</td>
-                            <td>Zombie R Us</td>
-                            <td>123 Main Street</td>
-                            <td>Miami</td>
-                            <td>FL</td>
-                            <td>01/01/2024</td>
-                        </tr>
-                        <tr>
-                            <td>23-1254</td>
-                            <td>Ventura Construction Corporation</td>
-                            <td>Dunkin Donuts</td>
-                            <td>500 Sample Road</td>
-                            <td>Palm Beach Gardens</td>
-                            <td>FL</td>
-                            <td>05/15/2023</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                </div>
+
+                <!-- Search Results -->
+                <div class="collapse" id="searchResults">
+                    {% include 'search_results.html' %}
+                </div>
+            </form>
 
             <hr class="mt-4">
 
@@ -126,12 +114,12 @@
                             <td>12/30/2023</td>
                         </tr>
                         <tr>
-                            <td>Lionel Messi</th>
+                            <td>Lionel Messi</td>
                             <td>01/02/2024</td>
                             <td>12/30/2023</td>
                         </tr>
                         <tr>
-                            <td>Lucas DeMello</th>
+                            <td>Lucas DeMello</td>
                             <td>02/01/2024</td>
                             <td>01/02/2024</td>
                         </tr>

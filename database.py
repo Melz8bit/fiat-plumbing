@@ -2,13 +2,12 @@ import os
 import uuid
 from datetime import datetime
 
+import MySQLdb
 from dotenv import load_dotenv
 
 # from flask_login import UserMixin
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, declarative_base
-
-import MySQLdb
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv()
 
@@ -56,8 +55,8 @@ def get_results(sqlQuery):
         cursor.execute(sqlQuery)
         results = cursor.fetchall()
 
-        if len(results) == 1:
-            return results[0]
+        # if len(results) == 1:
+        #     return results[0]
 
         return results
     except MySQLdb.Error as e:
@@ -66,7 +65,10 @@ def get_results(sqlQuery):
 
 ############## User Queries ##############
 def get_user(user_id):
-    return get_results(f"SELECT * FROM users WHERE users.user_id = '{user_id}' ")
+    return get_results(
+        f"""
+            SELECT * FROM users WHERE users.user_id = '{user_id}' """
+    )[0]
 
 
 ############## Client Queries ##############
@@ -89,5 +91,15 @@ def get_all_projects():
             FROM projects
             INNER JOIN clients
             ON projects.client_id = clients.client_id;
+        """
+    )
+
+
+############## Search Queries ##############
+def search(search_by, search_criteria):
+    return get_results(
+        f"""
+            SELECT * FROM projects
+            WHERE project_id = '{search_criteria}';
         """
     )
