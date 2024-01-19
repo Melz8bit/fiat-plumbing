@@ -1,0 +1,51 @@
+<html>
+
+<head>
+    <title>Fiat Plumbing</title>
+
+    {% include 'bootstrap.html' %}
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        .projectRow:hover {
+            cursor: pointer;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    {% include 'nav.html' %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Company</th>
+                <th scope="col">Name</th>
+                <th scope="col">Address</th>
+                <th scope="col">City</th>
+                <th scope="col">State</th>
+                <th scope="col">Contract Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result['project_id'] }}</td>
+                <td>Mackle Builders</td>
+                <td>Zombie R Us</td>
+                <td>123 Main Street</td>
+                <td>Miami</td>
+                <td>FL</td>
+                <td>01/01/2024</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
