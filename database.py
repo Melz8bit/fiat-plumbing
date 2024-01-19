@@ -99,7 +99,10 @@ def get_all_projects():
 def search(search_by, search_criteria):
     return get_results(
         f"""
-            SELECT * FROM projects
+            SELECT projects.*, clients.name 
+            FROM projects
+            INNER JOIN clients
+            ON projects.client_id = clients.client_id
             WHERE project_id = '{search_criteria}';
         """
     )

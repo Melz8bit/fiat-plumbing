@@ -26,12 +26,15 @@
             <form method="GET" action="{{url_for('search')}}">
                 <!-- Search -->
                 <div class="input-group my-3">
-                    <button id="selectSearchBy" class="btn btn-outline-primary dropdown-toggle" type="button" 
+                    <button id="selectSearchBy" class="btn btn-outline-primary dropdown-toggle" type="button"
                         data-bs-toggle="dropdown" aria-expanded="false">Search By</button>
                     <ul class="dropdown-menu">
-                        <li><a id="contractNumber" class="dropdown-item" href="#" onclick="changeSearchBy('contractNumber')">Contract Number</a></li>
-                        <li><a id="invoiceNumber" class="dropdown-item" href="#" onclick="changeSearchBy('invoiceNumber')">Invoice Number</a></li>
-                        <li><a id="clientName" class="dropdown-item" href="#" onclick="changeSearchBy('clientName')">Client
+                        <li><a id="contractNumber" class="dropdown-item" href="#"
+                                onclick="changeSearchBy('contractNumber')">Contract Number</a></li>
+                        <li><a id="invoiceNumber" class="dropdown-item" href="#"
+                                onclick="changeSearchBy('invoiceNumber')">Invoice Number</a></li>
+                        <li><a id="clientName" class="dropdown-item" href="#"
+                                onclick="changeSearchBy('clientName')">Client
                                 Name</a></li>
                     </ul>
                     <script>
@@ -41,26 +44,26 @@
                     </script>
                     <input type="text" class="form-control" placeholder="Search criteria" aria-label="Search criteria"
                         aria-describedby="button-search">
-                    <button class="btn btn-outline-primary" type="button" id="button-search" data-bs-toggle="collapse" onclick="SomeFunc()"
-                        href="#searchResults" aria-expanded="false" aria-controls="collapseExample">Search</button>
-                        <script >
-                            function SomeFunc() {                                
-                                fetch(`/search`)
-                                    .then(function(response) {
-                                        return response.text();
-                                        
-                                    }).then(function(text) {
-                                        // document.getElementById(index).innerText = '👍 ' + text;
+                    <a class="btn btn-outline-primary" type="button" id="button-search"
+                        href="{{url_for('search')}}">Search</a>
+                    <script>
+                        function SomeFunc() {
+                            fetch(`/search`)
+                                .then(function (response) {
+                                    return response.text();
+
+                                }).then(function (text) {
+                                    // document.getElementById(index).innerText = '👍 ' + text;
                                 });
-                            }
-                        </script>
+                        }
+                    </script>
 
                 </div>
 
                 <!-- Search Results -->
-                <div class="collapse" id="searchResults">
+                <!-- <div class="collapse" id="searchResults">
                     {% include 'search_results.html' %}
-                </div>
+                </div> -->
             </form>
 
             <hr class="mt-4">
@@ -96,7 +99,7 @@
             </div>
 
             <!-- Employees -->
-            <h4 class="mt-5">Employees</h4>
+            <!-- <h4 class="mt-5">Employees</h4>
             <hr>
             <div class="container text-center">
                 <table class="table">
@@ -125,7 +128,7 @@
                         </tr>
                     </tbody>
                 </table>
-            </div>
+            </div> -->
         </div>
     </div>
 </body>
