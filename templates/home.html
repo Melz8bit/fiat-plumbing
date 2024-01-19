@@ -23,44 +23,9 @@
 
     <div class="container p-3">
         <div>
-            <form method="GET" action="{{url_for('search')}}">
+            <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
                 <!-- Search -->
-                <div class="input-group my-3">
-                    <button id="selectSearchBy" class="btn btn-outline-primary dropdown-toggle" type="button" 
-                        data-bs-toggle="dropdown" aria-expanded="false">Search By</button>
-                    <ul class="dropdown-menu">
-                        <li><a id="contractNumber" class="dropdown-item" href="#" onclick="changeSearchBy('contractNumber')">Contract Number</a></li>
-                        <li><a id="invoiceNumber" class="dropdown-item" href="#" onclick="changeSearchBy('invoiceNumber')">Invoice Number</a></li>
-                        <li><a id="clientName" class="dropdown-item" href="#" onclick="changeSearchBy('clientName')">Client
-                                Name</a></li>
-                    </ul>
-                    <script>
-                        function changeSearchBy(item) {
-                            document.getElementById("selectSearchBy").innerHTML = document.getElementById(item).innerHTML;
-                        }
-                    </script>
-                    <input type="text" class="form-control" placeholder="Search criteria" aria-label="Search criteria"
-                        aria-describedby="button-search">
-                    <button class="btn btn-outline-primary" type="button" id="button-search" data-bs-toggle="collapse" onclick="SomeFunc()"
-                        href="#searchResults" aria-expanded="false" aria-controls="collapseExample">Search</button>
-                        <script >
-                            function SomeFunc() {                                
-                                fetch(`/search`)
-                                    .then(function(response) {
-                                        return response.text();
-                                        
-                                    }).then(function(text) {
-                                        // document.getElementById(index).innerText = '👍 ' + text;
-                                });
-                            }
-                        </script>
-
-                </div>
-
-                <!-- Search Results -->
-                <div class="collapse" id="searchResults">
-                    {% include 'search_results.html' %}
-                </div>
+                {% include 'search.html' %}
             </form>
 
             <hr class="mt-4">
@@ -91,38 +56,6 @@
                             <td>{{ project['status'] | capitalize }}</td>
                         </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Employees -->
-            <h4 class="mt-5">Employees</h4>
-            <hr>
-            <div class="container text-center">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Name</th>
-                            <th scope="col">Next Scheduled Date</th>
-                            <th scope="col">Last Date Work</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Ronald McDonald</td>
-                            <td>01/02/2024</td>
-                            <td>12/30/2023</td>
-                        </tr>
-                        <tr>
-                            <td>Lionel Messi</td>
-                            <td>01/02/2024</td>
-                            <td>12/30/2023</td>
-                        </tr>
-                        <tr>
-                            <td>Lucas DeMello</td>
-                            <td>02/01/2024</td>
-                            <td>01/02/2024</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>

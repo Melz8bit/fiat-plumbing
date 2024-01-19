@@ -97,9 +97,25 @@ def get_all_projects():
 
 ############## Search Queries ##############
 def search(search_by, search_criteria):
-    return get_results(
-        f"""
-            SELECT * FROM projects
-            WHERE project_id = '{search_criteria}';
+    # default search is project number
+    query = f"""
+        SELECT projects.*, clients.name
+        FROM projects
+        INNER JOIN clients
+        ON projects.client_id = clients.client_id
+        WHERE project_id = '{search_criteria}';
+    """
+
+    if search_by == "client name":
+        query = f"""
+            SELECT projects.*, clients.name
+            FROM projects
+            INNER JOIN clients
+            ON projects.client_id = clients.client_id
+            WHERE clients.name LIKE '%{search_criteria}%';
         """
-    )
+
+    if query:
+        return get_results(query)
+
+    return None

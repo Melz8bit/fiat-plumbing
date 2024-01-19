@@ -21,9 +21,9 @@ from database import create_session, db_connect
 #     login_user,
 #     logout_user,
 # )
-# from flask_wtf import FlaskForm
-# from wtforms import StringField, SubmitField, PasswordField, EmailField
-# from wtforms.validators import DataRequired, EqualTo, Length
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField, PasswordField, EmailField
+from wtforms.validators import DataRequired, EqualTo, Length
 
 
 app = Flask(__name__)
@@ -129,8 +129,11 @@ def client_list():
 def search():
     user = database.get_user(USER_ID)
 
-    search_by = "project number"
-    search_criteria = "21-1502"
+    search_criteria = request.args["search_criteria"]
+    search_by = request.args["search_by"].lower()
+
+    if not search_by:
+        search_by = "project number"
 
     results = database.search(search_by, search_criteria)
     print(results)
@@ -140,6 +143,11 @@ def search():
         user=user,
         results=results,
     )
+
+
+@app.route("/project/<project_id>")
+def project_view(project_id):
+    return render_template("project.html")
 
 
 if __name__ == "__main__":
