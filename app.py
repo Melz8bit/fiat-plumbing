@@ -147,7 +147,18 @@ def search():
 
 @app.route("/project/<project_id>")
 def project_view(project_id):
-    return render_template("project.html")
+    user = database.get_user(USER_ID)
+    project = database.get_project(project_id)
+    notes = database.get_notes(project_id)
+    invoices = database.get_invoices(project_id)
+
+    return render_template(
+        "project.html",
+        user=user,
+        project=project,
+        notes=notes,
+        invoices=invoices,
+    )
 
 
 if __name__ == "__main__":

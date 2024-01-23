@@ -20,7 +20,16 @@
 
 <body>
     {% include 'nav.html' %}
+
+
     <div class="mx-2">
+        <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
+            <!-- Search -->
+            {% include 'search.html' %}
+        </form>
+
+        <hr class="mt-4">
+
         <h4 class="mt-4">Search Results</h4>
         <table class="table table-hover">
             <thead>
@@ -38,8 +47,7 @@
                 {% for result in results %}
                 <tr id="projectRow" class="text-center"></tr>
                 <td>
-                    <a
-                        href="{{url_for('project_view', project_id=result['project_id'])}}"></a>{{result['project_id']}}</a>
+                    <a href="{{url_for('project_view', project_id=result['project_id'])}}">{{result['project_id']}}</a>
                 </td>
                 <td>{{ result['clients.name'] }}</a></td>
                 <td>{{ result['name'] }}</a></td>

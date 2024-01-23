@@ -95,6 +95,42 @@ def get_all_projects():
     )
 
 
+def get_project(project_id):
+    return get_results(
+        f"""
+            SELECT projects.*, clients.name
+            FROM projects
+            INNER JOIN clients
+            ON projects.client_id = clients.client_id
+            WHERE projects.project_id = '{project_id}';
+        """
+    )[0]
+
+
+############## Notes Queries ##############
+def get_notes(project_id):
+    return get_results(
+        f"""
+            SELECT project_notes.*, users.first_name, users.last_name
+            FROM project_notes
+            INNER JOIN users
+            ON project_notes.user_id = users.user_id
+            WHERE project_notes.project_id = '{project_id}';
+        """
+    )
+
+
+############## Notes Queries ##############
+def get_invoices(project_id):
+    return get_results(
+        f"""
+            SELECT * 
+            FROM project_invoices
+            WHERE project_id = '{project_id}';
+        """
+    )
+
+
 ############## Search Queries ##############
 def search(search_by, search_criteria):
     # default search is project number
