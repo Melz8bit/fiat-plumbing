@@ -10,85 +10,81 @@ from flask import (
     request,
     url_for,
 )
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
+from werkzeug.security import check_password_hash, generate_password_hash
 
 import database
 from database import create_session, db_connect
-
-# from flask_login import (
-#     LoginManager,
-#     login_required,
-#     current_user,
-#     login_user,
-#     logout_user,
-# )
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, EmailField
-from wtforms.validators import DataRequired, EqualTo, Length
-
+from forms import ClientForm, LoginForm
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 
-# engine, connection = db_connect()
-# session = create_session(engine)
+engine, connection = db_connect()
+session = create_session(engine)
 
-USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
+# USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
+USER_ID = ""
 
-# login_manager = LoginManager()
-# login_manager.init_app(app)
-# login_manager.login_view = "login"
-
-# class LoginForm(FlaskForm):
-#     username = StringField("Username:", validators=[DataRequired()])
-#     password = PasswordField("Password:", validators=[DataRequired()])
-#     submit = SubmitField("Login")
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 
 
-# @login_manager.user_loader
-# def load_user(user_id):
-#     user_id_query = (
-#         select(users.Users).select_from(users.Users).filter(users.Users.id == user_id)
-#     )
-#     return session.execute(user_id_query).first()[0]
+@login_manager.user_loader
+def load_user(user_id):
+    # user_id_query = (
+    #     select(users.Users).select_from(users.Users).filter(users.Users.id == user_id)
+    # )
+    # return session.execute(user_id_query).first()[0]
+    return database.get_user(user_id)
 
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#     form = LoginForm()
 
-#     if form.validate_on_submit():
-#         username = form.username.data
-#         password = form.password.data
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    form = LoginForm()
 
-#         form.username.data = ""
-#         form.password.data = ""
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
 
-#         password_query = (
-#             select(users.Users.userPassword)
-#             .select_from(users.Users)
-#             .filter(users.Users.username == username)
-#         )
-#         user_db_password = session.execute(password_query).first()
-#         if user_db_password:
-#             if check_password_hash(user_db_password[0], password):
-#                 user_id_query = (
-#                     select(users.Users)
-#                     .select_from(users.Users)
-#                     .filter(users.Users.username == username)
-#                 )
-#                 user = session.execute(user_id_query).first()[0]
+        form.email.data = ""
+        form.password.data = ""
 
-#                 login_user(user)
+        # password_query = (
+        #     select(users.Users.userPassword)
+        #     .select_from(users.Users)
+        #     .filter(users.Users.username == username)
+        # )
+        # user_db_password = session.execute(password_query).first()
+        user_db_password = database.get_user_password(email)
+        if user_db_password:
+            if check_password_hash(user_db_password, password):
+                # user_id_query = (
+                #     select(users.Users)
+                #     .select_from(users.Users)
+                #     .filter(users.Users.username == username)
+                # )
+                # user = session.execute(user_id_query).first()[0]
+                user = database.get_user_from_email(email)
+                login_user(user)
 
-#                 global USER_ID
-#                 USER_ID = session.execute(user_id_query).first()[0].id
+                global USER_ID
+                USER_ID = session.execute(user_id_query).first()[0].id
 
-#                 # flash("Login successful")
-#                 return redirect(url_for("home"))
-#             else:
-#                 flash("Incorrect username or password!")
-#         else:
-#             flash("User does not exist!")
-#     return render_template("login.html", form=form)
+                # flash("Login successful")
+                return redirect(url_for("home"))
+            else:
+                flash("Incorrect username or password!")
+        else:
+            flash("User does not exist!")
+    return render_template("login.html", form=form)
 
 
 # @app.route("/logout", methods=["GET", "POST"])
@@ -158,6 +154,77 @@ def project_view(project_id):
         project=project,
         notes=notes,
         invoices=invoices,
+    )
+
+
+@app.route("/client-add", methods=["GET", "POST"])
+def create_client():
+    user = database.get_user(USER_ID)
+
+    name = None
+    address = None
+    city = None
+    state = None
+    zip_code = None
+    website = None
+    phone_number = None
+    poc_name = None
+    poc_phone_number = None
+    poc_email = None
+
+    form = ClientForm()
+
+    if form.validate_on_submit():
+        name = form.name.data
+        form.name.data = ""
+        address = form.address.data
+        form.address.data = ""
+        city = form.city.data
+        form.city.data = ""
+        state = form.state.data
+        form.state.data = ""
+        zip_code = form.zip_code.data
+        form.zip_code.data = ""
+        website = form.website.data
+        form.website.data = ""
+        phone_number = form.phone_number.data
+        form.phone_number.data = ""
+        poc_name = form.poc_name.data
+        form.poc_name.data = ""
+        poc_phone_number = form.poc_phone_number.data
+        form.poc_phone_number.data = ""
+        poc_email = form.poc_email.data
+        form.poc_email.data = ""
+
+        client_info = {
+            "name": name,
+            "address": address,
+            "city": city,
+            "state": state,
+            "zip_code": zip_code,
+            "website": website,
+            "phone_number": phone_number,
+            "poc_name": poc_name,
+            "poc_phone_number": poc_phone_number,
+            "poc_email": poc_email,
+        }
+
+        database.create_client(client_info)
+
+    return render_template(
+        "client_add.html",
+        user=user,
+        form=form,
+        name=name,
+        address=address,
+        city=city,
+        state=state,
+        zip_code=zip_code,
+        website=website,
+        phone_number=phone_number,
+        poc_name=poc_name,
+        poc_phone_number=poc_phone_number,
+        poc_email=poc_email,
     )
 
 
