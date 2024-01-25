@@ -4,14 +4,11 @@ from datetime import datetime
 
 import MySQLdb
 from dotenv import load_dotenv
-
-# from flask_login import UserMixin
+from flask_login import UserMixin
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv()
-
-# DB_CONNECTION_STRING = f"mysql+pymysql://{os.getenv('DB_USERNAME')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}?charset=utf8mb4"
 
 DB_CONNECTION_STRING = f"mysql+pymysql://{os.getenv('DATABASE_USERNAME')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_NAME')}?charset=utf8mb4"
 connection = MySQLdb.connect(
@@ -40,8 +37,8 @@ Base = declarative_base()
 
 
 def db_connect():
-    connection = engine.connect()
-    return engine, connection
+    connection2 = engine.connect()
+    return engine, connection2
 
 
 def create_session(engine):

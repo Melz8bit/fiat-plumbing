@@ -17,17 +17,19 @@ from flask_login import (
     login_user,
     logout_user,
 )
+from sqlalchemy import null, select
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import database
 from database import create_session, db_connect
 from forms import ClientForm, LoginForm
+from models import users
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 
-engine, connection = db_connect()
-session = create_session(engine)
+# engine, connection = db_connect()
+# session = create_session(engine)
 
 # USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
 USER_ID = ""
@@ -58,28 +60,34 @@ def login():
         form.password.data = ""
 
         # password_query = (
-        #     select(users.Users.userPassword)
+        #     select(users.Users.password)
         #     .select_from(users.Users)
-        #     .filter(users.Users.username == username)
+        #     .filter(users.Users.email == email)
         # )
+        # print(f"{password_query=}")
         # user_db_password = session.execute(password_query).first()
         user_db_password = database.get_user_password(email)
         if user_db_password:
-            if check_password_hash(user_db_password, password):
+            if check_password_hash(user_db_password["password"], password):
                 # user_id_query = (
                 #     select(users.Users)
                 #     .select_from(users.Users)
                 #     .filter(users.Users.username == username)
                 # )
                 # user = session.execute(user_id_query).first()[0]
-                user = database.get_user_from_email(email)
-                login_user(user)
+                user_dict = database.get_user_from_email(email)
+                print(f"{user_dict=}")
+                user = users.Users(user_dict)
+                print(f"{user=}")
+                login_user(user, remember=form.data.remember)
 
                 global USER_ID
-                USER_ID = session.execute(user_id_query).first()[0].id
+                # USER_ID = session.execute(user_id_query).first()[0].id
+                USER_ID = user.user_id
+                print(f"{USER_ID=}")
 
                 # flash("Login successful")
-                return redirect(url_for("home"))
+                return redirect(url_for("main"))
             else:
                 flash("Incorrect username or password!")
         else:

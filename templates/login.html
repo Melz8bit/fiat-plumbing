@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Fiat Plumbing - Login</title>
+
+    {% include 'bootstrap.html' %}
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        .contractRow:hover {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="card text-center" style="width: 18rem;">
+                <img src="/static/logo.png" class="card-img-top" alt="Logo">
+                <div class="card-body">
+                    <h5 class="card-title">Fiat Plumbing</h5>
+                    <div class="input-group mb-3">
+                        {{ form.email.label(class="input-group-text") }}
+                        {{ form.email(class="form-control") }}            
+                    </div>
+            
+                    <div class="input-group mb-3">
+                        {{ form.password.label(class="input-group-text") }}
+                        {{ form.password(class="form-control") }}            
+                    </div>
+            
+                    <div class="text-center mt-3">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </div>
+            </div>
+
+            
+
+        </form>
+    </div>
+
+</body>
+</html>
