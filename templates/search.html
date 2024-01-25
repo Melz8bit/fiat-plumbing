@@ -1,0 +1,46 @@
+<div class="input-group my-3">
+    <button id="selectSearchBy" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+        aria-expanded="false">Search By</button>
+    <input id="searchBy" type="text" name="search_by" style="display:none;">
+    <ul class=" dropdown-menu">
+        <li><a id="projectNumber" class="dropdown-item" href="#" onclick="changeSearchBy('projectNumber')">Project
+                Number</a></li>
+        <!-- <li><a id="invoiceNumber" class="dropdown-item" href="#"
+                onclick="changeSearchBy('invoiceNumber')">Invoice Number</a></li> -->
+        <li><a id="clientName" class="dropdown-item" href="#" onclick="changeSearchBy('clientName')">Client Name</a>
+        </li>
+    </ul>
+    <script>
+        function changeSearchBy(item) {
+            document.getElementById("selectSearchBy").innerHTML = document.getElementById(item).innerHTML;
+            document.getElementById("searchBy").value = document.getElementById(item).innerHTML;
+        }
+    </script>
+    <input type="text" class="form-control" placeholder="Search criteria" aria-label="Search criteria"
+        aria-describedby="button-search" name="search_criteria" required>
+    <button class="btn btn-outline-primary" type="submit" id="button-search">Search</button>
+    <div class="invalid-feedback">
+        Please enter a search criteria.
+    </div>
+    <script type="text/javascript">
+        (function () {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
+</div>

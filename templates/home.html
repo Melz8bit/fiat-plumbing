@@ -15,7 +15,6 @@
         }
     </style>
 
-
 </head>
 
 <body>
@@ -23,7 +22,7 @@
 
     <div class="container p-3">
         <div>
-            <form method="GET" action="{{url_for('search')}}">
+            <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
                 <!-- Search -->
                 <div class="input-group my-3">
                     <button id="selectSearchBy" class="btn btn-outline-primary dropdown-toggle" type="button"
@@ -74,7 +73,7 @@
             <div class="container text-center">
                 <table class="table">
                     <thead>
-                        <tr>
+                        <tr class="text-center">
                             <th scope="col">#</th>
                             <th scope="col">Client</th>
                             <th scope="col">Project</th>
@@ -85,7 +84,8 @@
                     </thead>
                     <tbody>
                         {% for project in projects %}
-                        <tr class="projectRow" onclick="window.location='project.html';">
+                        <tr class="projectRow text-center"
+                            href="{{url_for('project_view', project_id=project['project_id'])}}">
                             <th scope="row">{{ project['project_id'] }}</th>
                             <td>{{ project['clients.name']}}</td>
                             <td>{{ project['name'] }}</td>

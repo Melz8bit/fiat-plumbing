@@ -11,7 +11,9 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv()
 
-DB_CONNECTION_STRING = f"mysql://{os.getenv('DATABASE_USERNAME')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_NAME')}?charset=utf8mb4"
+# DB_CONNECTION_STRING = f"mysql+pymysql://{os.getenv('DB_USERNAME')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}?charset=utf8mb4"
+
+DB_CONNECTION_STRING = f"mysql+pymysql://{os.getenv('DATABASE_USERNAME')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_NAME')}?charset=utf8mb4"
 connection = MySQLdb.connect(
     host=os.getenv("DATABASE_HOST"),
     user=os.getenv("DATABASE_USERNAME"),
@@ -71,16 +73,60 @@ def get_user(user_id):
     )[0]
 
 
+def get_user_password(email):
+    return get_results(
+        f"""
+            SELECT password
+            FROM users
+            WHERE users.email = '{email}'
+        """
+    )[0]
+
+
+def get_user_from_email(email):
+    return get_results(
+        f"""
+            SELECT *
+            FROM users
+            WHERE users.email = '{email}'
+        """
+    )[0]
+
+
 ############## Client Queries ##############
 def get_all_clients():
     return get_results(
         f"""
-            SELECT clients.*, projects.client_id, count(project_id) AS project_count
-            FROM projects
-            INNER JOIN clients ON projects.client_id = clients.client_id
-            GROUP BY projects.client_id
+            SELECT clients.*, count(project_id) AS project_count
+            FROM clients
+            LEFT JOIN projects ON clients.client_id = projects.client_id
+            GROUP BY clients.client_id
         """
     )
+
+
+def create_client(client_info):
+    try:
+        mycursor = connection.cursor()
+        query = f"""INSERT INTO clients (name, address, city, state, zip_code, website, phone_number)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+
+        query_params = (
+            client_info["name"],
+            client_info["address"],
+            client_info["city"],
+            client_info["state"],
+            client_info["zip_code"],
+            client_info["website"],
+            client_info["phone_number"],
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("Client created")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
 
 
 ############## Project Queries ##############

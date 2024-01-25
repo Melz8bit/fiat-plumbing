@@ -27,52 +27,27 @@
     <div>
         <table class="table table-striped mt-2">
             <thead>
-                <tr>
-                    <th class="text-center">#</th>
-                    <th class="text-center">Date</th>
-                    <th class="text-center">Amount</th>
-                    <th class="text-center">Status</th>
-                    <th class="text-center"></th>
+                <tr class="text-center">
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th></th>
                 </tr>
             </thead>
 
             <tbody>
-                <tr>
-                    <td class="text-center">1</td>
-                    <td class="text-center">12/01/2023</td>
-                    <td class="text-center">$12,000.00</td>
-                    <td class="text-center">Paid</td>
-                    <td class="text-center">
+                {% for invoice in invoices %}
+                <tr class="text-center">
+                    <td>{{invoice['installment_number'] }}</td>
+                    <td>{{invoice['created_date'].strftime('%m/%d/%Y') }}</td>
+                    <td>{{"${:,.2f}".format(invoice['installment_amount']) }}</td>
+                    <td>{{invoice['installment_status'] | capitalize }}</td>
+                    <td>
                         <button class="btn btn-primary btn-sm">Update</button>
                     </td>
                 </tr>
-                <tr>
-                    <td class="text-center">2</td>
-                    <td class="text-center">02/01/2023</td>
-                    <td class="text-center">$2,000.00</td>
-                    <td class="text-center">Billed</td>
-                    <td class="text-center">
-                        <button class="btn btn-primary btn-sm">Update</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center">3</td>
-                    <td class="text-center">03/01/2024</td>
-                    <td class="text-center">$5,500.00</td>
-                    <td class="text-center">Pending</td>
-                    <td class="text-center">
-                        <button class="btn btn-primary btn-sm">Update</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center">4</td>
-                    <td class="text-center">04/01/2024</td>
-                    <td class="text-center">$4,000.00</td>
-                    <td class="text-center">Pending</td>
-                    <td class="text-center">
-                        <button class="btn btn-primary btn-sm">Update</button>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
