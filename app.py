@@ -31,7 +31,6 @@ app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 # engine, connection = db_connect()
 # session = create_session(engine)
 
-# USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
 USER_ID = ""
 
 login_manager = LoginManager()
@@ -41,10 +40,6 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    # user_id_query = (
-    #     select(users.Users).select_from(users.Users).filter(users.Users.id == user_id)
-    # )
-    # return session.execute(user_id_query).first()[0]
     return database.get_user(user_id)
 
 
@@ -59,34 +54,17 @@ def login():
         form.email.data = ""
         form.password.data = ""
 
-        # password_query = (
-        #     select(users.Users.password)
-        #     .select_from(users.Users)
-        #     .filter(users.Users.email == email)
-        # )
-        # print(f"{password_query=}")
-        # user_db_password = session.execute(password_query).first()
         user_db_password = database.get_user_password(email)
         if user_db_password:
             if check_password_hash(user_db_password["password"], password):
-                # user_id_query = (
-                #     select(users.Users)
-                #     .select_from(users.Users)
-                #     .filter(users.Users.username == username)
-                # )
-                # user = session.execute(user_id_query).first()[0]
                 user_dict = database.get_user_from_email(email)
-                print(f"{user_dict=}")
                 user = users.Users(user_dict)
-                print(f"{user=}")
-                login_user(user, remember=form.data.remember)
+                login_user(user)
 
                 global USER_ID
-                # USER_ID = session.execute(user_id_query).first()[0].id
-                USER_ID = user.user_id
-                print(f"{USER_ID=}")
+                USER_ID = user_dict["user_id"]
 
-                # flash("Login successful")
+                flash("Login successful")
                 return redirect(url_for("main"))
             else:
                 flash("Incorrect username or password!")
@@ -95,12 +73,12 @@ def login():
     return render_template("login.html", form=form)
 
 
-# @app.route("/logout", methods=["GET", "POST"])
-# @login_required
-# def logout():
-#     logout_user()
-#     flash("You have been logged out.")
-#     return redirect(url_for("login"))
+@app.route("/logout", methods=["GET", "POST"])
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.")
+    return redirect(url_for("login"))
 
 
 @app.route("/")

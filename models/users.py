@@ -35,6 +35,6 @@ class Users(UserMixin):
     # def verify_password(self, password):
     #     return check_password_hash(self.password, password)
 
-    # Create A Text
-    def __repr__(self):
-        return "<Name %r>" % self.first_name
+    # # Create A Text
+    # def __repr__(self):
+    #     return "<Name %r>" % self.first_name
