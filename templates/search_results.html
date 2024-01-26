@@ -20,34 +20,47 @@
 
 <body>
     {% include 'nav.html' %}
-    <table class="table">
-        <thead>
-            <tr class="text-center">
-                <th scope="col">#</th>
-                <th scope="col">Company</th>
-                <th scope="col">Name</th>
-                <th scope="col">Address</th>
-                <th scope="col">City</th>
-                <th scope="col">State</th>
-                <th scope="col">Contract Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for result in results %}
-            <tr class="text-center">
-                <td>{{ result['project_id'] }}</td>
-                <td>{{ result['clients.name'] }}</td>
-                <td>{{ result['name'] }}</td>
-                <td>{{ result['address'] }}</td>
-                <td>{{ result['city'] }}</td>
-                <td>{{ result['state'] }}</td>
+
+
+    <div class="mx-2">
+        <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
+            <!-- Search -->
+            {% include 'search.html' %}
+        </form>
+
+        <hr class="mt-4">
+
+        <h4 class="mt-4">Search Results</h4>
+        <table class="table table-hover">
+            <thead>
+                <tr class="text-center">
+                    <th scope="col">#</th>
+                    <th scope="col">Company</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">City</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Contract Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr id="projectRow" class="text-center"></tr>
+                <td>
+                    <a href="{{url_for('project_view', project_id=result['project_id'])}}">{{result['project_id']}}</a>
+                </td>
+                <td>{{ result['clients.name'] }}</a></td>
+                <td>{{ result['name'] }}</a></td>
+                <td>{{ result['address'] }}</a></td>
+                <td>{{ result['city'] }}</a></td>
+                <td>{{ result['state'] }}</a></td>
                 <td>[Date]</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 </body>
-
 
 </html>

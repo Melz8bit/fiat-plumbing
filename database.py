@@ -90,6 +90,28 @@ def get_user_from_email(email):
     )[0]
 
 
+def create_user(user_info):
+    try:
+        mycursor = connection.cursor()
+        query = f"""INSERT INTO users (user_id, first_name, last_name, email, password)
+                VALUES (%s, %s, %s, %s, %s)"""
+
+        query_params = (
+            str(uuid.uuid4()),
+            user_info["first_name"],
+            user_info["last_name"],
+            user_info["email"],
+            user_info["password"],
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("User created")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
+
+
 ############## Client Queries ##############
 def get_all_clients():
     return get_results(
@@ -138,14 +160,63 @@ def get_all_projects():
     )
 
 
-############## Search Queries ##############
-def search(search_by, search_criteria):
+def get_project(project_id):
     return get_results(
         f"""
-            SELECT projects.*, clients.name 
+            SELECT projects.*, clients.name
             FROM projects
             INNER JOIN clients
             ON projects.client_id = clients.client_id
-            WHERE project_id = '{search_criteria}';
+            WHERE projects.project_id = '{project_id}';
+        """
+    )[0]
+
+
+############## Notes Queries ##############
+def get_notes(project_id):
+    return get_results(
+        f"""
+            SELECT project_notes.*, users.first_name, users.last_name
+            FROM project_notes
+            INNER JOIN users
+            ON project_notes.user_id = users.user_id
+            WHERE project_notes.project_id = '{project_id}';
         """
     )
+
+
+############## Notes Queries ##############
+def get_invoices(project_id):
+    return get_results(
+        f"""
+            SELECT * 
+            FROM project_invoices
+            WHERE project_id = '{project_id}';
+        """
+    )
+
+
+############## Search Queries ##############
+def search(search_by, search_criteria):
+    # default search is project number
+    query = f"""
+        SELECT projects.*, clients.name
+        FROM projects
+        INNER JOIN clients
+        ON projects.client_id = clients.client_id
+        WHERE project_id = '{search_criteria}';
+    """
+
+    if search_by == "client name":
+        query = f"""
+            SELECT projects.*, clients.name
+            FROM projects
+            INNER JOIN clients
+            ON projects.client_id = clients.client_id
+            WHERE clients.name LIKE '%{search_criteria}%';
+        """
+
+    if query:
+        return get_results(query)
+
+    return None

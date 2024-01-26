@@ -58,9 +58,24 @@ STATE_OPTIONS = [
 
 
 class LoginForm(FlaskForm):
-    email = StringField("Email:", validators=[DataRequired()])
-    password = PasswordField("Password:", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Login")
+
+
+class SignUpForm(FlaskForm):
+    first_name = StringField("First Name", validators=[DataRequired()])
+    last_name = StringField("Last Name", validators=[DataRequired()])
+    email = EmailField("Email", validators=[DataRequired()])
+    password = PasswordField(
+        "Password",
+        validators=[
+            DataRequired(),
+            EqualTo("password2", message="Passwords must match"),
+        ],
+    )
+    password2 = PasswordField("Confirm Password", validators=[DataRequired()])
+    sign_up = SubmitField("Sign Up")
 
 
 class ClientForm(FlaskForm):

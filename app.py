@@ -22,7 +22,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 import database
 from database import create_session, db_connect
-from forms import ClientForm, LoginForm
+from forms import ClientForm, LoginForm, SignUpForm
 from models import users
 
 app = Flask(__name__)
@@ -40,26 +40,28 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    return database.get_user(user_id)
+    user = users.Users(database.get_user(user_id))
+    return user
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    form = LoginForm()
+    login_form = LoginForm()
+    signup_form = SignUpForm()
 
-    if form.validate_on_submit():
-        email = form.email.data
-        password = form.password.data
+    if login_form.submit.data and login_form.validate():
+        email = login_form.email.data
+        password = login_form.password.data
 
-        form.email.data = ""
-        form.password.data = ""
+        login_form.email.data = ""
+        login_form.password.data = ""
 
         user_db_password = database.get_user_password(email)
         if user_db_password:
             if check_password_hash(user_db_password["password"], password):
                 user_dict = database.get_user_from_email(email)
                 user = users.Users(user_dict)
-                login_user(user)
+                login_user(user, remember=True)
 
                 global USER_ID
                 USER_ID = user_dict["user_id"]
@@ -70,7 +72,38 @@ def login():
                 flash("Incorrect username or password!")
         else:
             flash("User does not exist!")
-    return render_template("login.html", form=form)
+
+    if signup_form.sign_up.data and signup_form.validate():
+        first_name = signup_form.first_name.data
+        last_name = signup_form.last_name.data
+        email = signup_form.email.data
+        password = signup_form.password.data
+
+        try:
+            if len(database.get_user_from_email(email)) > 0:
+                print("Email exists")
+                # TODO: Display error message stating the email is already in the system
+        except:
+            print("Not found")
+            password_hash = generate_password_hash(password, "scrypt")
+            user_info = {
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "password": password_hash,
+            }
+            database.create_user(user_info)
+
+        # first_name = ""
+        # last_name = ""
+        # email = ""
+        # password = ""
+
+    return render_template(
+        "login.html",
+        login_form=login_form,
+        signup_form=signup_form,
+    )
 
 
 @app.route("/logout", methods=["GET", "POST"])
@@ -82,6 +115,7 @@ def logout():
 
 
 @app.route("/")
+@login_required
 def main():
     user = database.get_user(USER_ID)
     clients = database.get_all_clients()
