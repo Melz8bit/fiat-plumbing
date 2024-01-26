@@ -1,6 +1,13 @@
 from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, SelectField, StringField, SubmitField
-from wtforms.validators import DataRequired, EqualTo, Length
+from wtforms import (
+    EmailField,
+    PasswordField,
+    SelectField,
+    StringField,
+    SubmitField,
+    validators,
+)
+from wtforms.validators import DataRequired, InputRequired
 
 STATE_OPTIONS = [
     ("AL", "Alabama"),
@@ -71,10 +78,10 @@ class SignUpForm(FlaskForm):
         "Password",
         validators=[
             DataRequired(),
-            EqualTo("password2", message="Passwords must match"),
+            validators.Length(min=8),
         ],
     )
-    password2 = PasswordField("Confirm Password", validators=[DataRequired()])
+    confirm = PasswordField("Confirm Password")
     sign_up = SubmitField("Sign Up")
 
 

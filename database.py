@@ -54,9 +54,6 @@ def get_results(sqlQuery):
         cursor.execute(sqlQuery)
         results = cursor.fetchall()
 
-        # if len(results) == 1:
-        #     return results[0]
-
         return results
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
@@ -66,7 +63,8 @@ def get_results(sqlQuery):
 def get_user(user_id):
     return get_results(
         f"""
-            SELECT * FROM users WHERE users.user_id = '{user_id}' """
+            SELECT * FROM users WHERE users.user_id = '{user_id}' 
+        """
     )[0]
 
 

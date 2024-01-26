@@ -31,7 +31,7 @@ app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 # engine, connection = db_connect()
 # session = create_session(engine)
 
-USER_ID = ""
+USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -47,9 +47,8 @@ def load_user(user_id):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     login_form = LoginForm()
-    signup_form = SignUpForm()
 
-    if login_form.submit.data and login_form.validate():
+    if login_form.validate_on_submit():
         email = login_form.email.data
         password = login_form.password.data
 
@@ -69,22 +68,40 @@ def login():
                 flash("Login successful")
                 return redirect(url_for("main"))
             else:
-                flash("Incorrect username or password!")
+                flash("Incorrect username or password")
         else:
-            flash("User does not exist!")
+            flash("User does not exist")
 
-    if signup_form.sign_up.data and signup_form.validate():
+    return render_template(
+        "login.html",
+        login_form=login_form,
+    )
+
+
+@app.route("/sign-up", methods=["GET", "POST"])
+def sign_up():
+    signup_form = SignUpForm()
+
+    if signup_form.validate_on_submit():
+        print("something")
         first_name = signup_form.first_name.data
         last_name = signup_form.last_name.data
         email = signup_form.email.data
         password = signup_form.password.data
+        confirm = signup_form.confirm.data
+
+        print(f"{password=}")
+        print(f"{confirm=}")
+
+        if password != confirm:
+            print("wow")
+            flash("Passwords do not match")
 
         try:
             if len(database.get_user_from_email(email)) > 0:
                 print("Email exists")
                 # TODO: Display error message stating the email is already in the system
         except:
-            print("Not found")
             password_hash = generate_password_hash(password, "scrypt")
             user_info = {
                 "first_name": first_name,
@@ -92,16 +109,22 @@ def login():
                 "email": email,
                 "password": password_hash,
             }
-            database.create_user(user_info)
 
-        # first_name = ""
-        # last_name = ""
-        # email = ""
-        # password = ""
+            try:
+                database.create_user(user_info)
+                flash("Thanks for registering")
+                first_name = ""
+                last_name = ""
+                email = ""
+                password = ""
+                confirm = ""
+
+                return redirect(url_for("login"))
+            except Exception as e:
+                print(e)
 
     return render_template(
-        "login.html",
-        login_form=login_form,
+        "sign_up.html",
         signup_form=signup_form,
     )
 

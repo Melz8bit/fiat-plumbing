@@ -42,20 +42,6 @@
             transition: 1s ease-in-out;
         }
 
-        .wrapper.active .form-wrapper.sign-in {
-            transform: translateY(-550px);
-        }
-
-        .wrapper .form-wrapper.sign-up {
-            position: absolute;
-            top: 550px;
-            left: 0;
-        }
-
-        .wrapper.active .form-wrapper.sign-up {
-            transform: translateY(-550px);
-        }
-
         h2 {
             font-size: 30px;
             color: #000;
@@ -101,7 +87,6 @@
             width: 100%;
             height: 40px;
             background: #00f;
-            /* box-shadow: 0 0 10px #00f; */
             font-size: 16px;
             color: #fff;
             font-weight: 500;
@@ -137,30 +122,44 @@
 
 <body>
     <div>
-        <div class="wrapper sign-in">
-            <div class="form-wrapper sign-in">
+        <div id="form-login" class="wrapper sign-in">
+            <div id="form-sign-up" class="form-wrapper sign-up">
                 <form method="POST">
-                    {{ login_form.hidden_tag() }}
-                    <img src="/static/logo.png" class="card-img-top" alt="Logo">
+                    {{ signup_form.hidden_tag() }}
                     <div>
-                        <h2>Login</h2>
+                        <h2>Sign Up</h2>
                         <div class="input-grp">
-                            {{ login_form.email() }}
-                            {{ login_form.email.label() }}
+                            {{ signup_form.first_name }}
+                            {{ signup_form.first_name.label }}
                         </div>
 
                         <div class="input-grp">
-                            {{ login_form.password() }}
-                            {{ login_form.password.label() }}
+                            {{ signup_form.last_name }}
+                            {{ signup_form.last_name.label }}
+                        </div>
+
+                        <div class="input-grp">
+                            {{ signup_form.email }}
+                            {{ signup_form.email.label }}
+                        </div>
+
+                        <div class="input-grp">
+                            {{ signup_form.password }}
+                            {{ signup_form.password.label }}
+                        </div>
+
+                        <div class="input-grp">
+                            {{ signup_form.confirm }}
+                            {{ signup_form.confirm.label }}
                         </div>
 
                         <div class="signUp-link">
-                            <p>Don't have an account? <a href="{{ url_for('sign_up') }}" class="signUpBtn-link">Sign
-                                    Up</a></p>
+                            <p>Already have an account? <a href="{{ url_for('login') }}" class="signInBtn-link">Sign
+                                    In</a></p>
                         </div>
 
                         <div class="text-center">
-                            {{ login_form.submit(class="button") }}
+                            {{ signup_form.sign_up(class="button") }}
                         </div>
                     </div>
                 </form>
