@@ -57,6 +57,7 @@ def login():
 
         user_db_password = database.get_user_password(email)
         if user_db_password:
+            user_db_password = user_db_password[0]
             if check_password_hash(user_db_password["password"], password):
                 user_dict = database.get_user_from_email(email)
                 user = users.Users(user_dict)
@@ -70,7 +71,7 @@ def login():
             else:
                 flash("Incorrect username or password")
         else:
-            flash("User does not exist")
+            flash("Incorrect username or password")
 
     return render_template(
         "login.html",
@@ -83,25 +84,20 @@ def sign_up():
     signup_form = SignUpForm()
 
     if signup_form.validate_on_submit():
-        print("something")
         first_name = signup_form.first_name.data
         last_name = signup_form.last_name.data
         email = signup_form.email.data
         password = signup_form.password.data
         confirm = signup_form.confirm.data
 
-        print(f"{password=}")
-        print(f"{confirm=}")
-
         if password != confirm:
-            print("wow")
             flash("Passwords do not match")
 
         try:
             if len(database.get_user_from_email(email)) > 0:
-                print("Email exists")
-                # TODO: Display error message stating the email is already in the system
-        except:
+                flash("Email is already in use. Please choose another email.")
+
+        except Exception as e:
             password_hash = generate_password_hash(password, "scrypt")
             user_info = {
                 "first_name": first_name,
@@ -123,6 +119,8 @@ def sign_up():
             except Exception as e:
                 print(e)
 
+    for error in list(signup_form.errors.values()):
+        flash(error[0])
     return render_template(
         "sign_up.html",
         signup_form=signup_form,
@@ -253,6 +251,8 @@ def create_client():
         }
 
         database.create_client(client_info)
+
+        return redirect(url_for("client_list"))
 
     return render_template(
         "client_add.html",

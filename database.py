@@ -69,13 +69,23 @@ def get_user(user_id):
 
 
 def get_user_password(email):
+    print("==========================================")
+    print(
+        get_results(
+            f"""
+            SELECT password
+            FROM users
+            WHERE users.email = '{email}'
+        """
+        )
+    )
     return get_results(
         f"""
             SELECT password
             FROM users
             WHERE users.email = '{email}'
         """
-    )[0]
+    )
 
 
 def get_user_from_email(email):

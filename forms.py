@@ -1,3 +1,4 @@
+import re
 from flask_wtf import FlaskForm
 from wtforms import (
     EmailField,
@@ -7,7 +8,7 @@ from wtforms import (
     SubmitField,
     validators,
 )
-from wtforms.validators import DataRequired, InputRequired
+from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
 
 STATE_OPTIONS = [
     ("AL", "Alabama"),
@@ -65,23 +66,42 @@ STATE_OPTIONS = [
 
 
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
+    email = EmailField("Email", validators=[InputRequired()])
+    password = PasswordField("Password", validators=[InputRequired()])
     submit = SubmitField("Login")
 
 
 class SignUpForm(FlaskForm):
+    def password_check(form, field):
+        password = form.password.data
+        if len(password) < 4:
+            raise ValidationError("Password must be at lest 8 letters long")
+        elif re.search("[0-9]", password) is None:
+            raise ValidationError("Password must contain a number")
+        elif re.search("[A-Z]", password) is None:
+            raise ValidationError("Password must have one uppercase letter")
+        elif re.search("[-\#\$\.\%\&\*\!]", password) is None:
+            raise ValidationError(
+                "Password must have at least one special character '- # $ . % & * !' "
+            )
+
     first_name = StringField("First Name", validators=[DataRequired()])
     last_name = StringField("Last Name", validators=[DataRequired()])
     email = EmailField("Email", validators=[DataRequired()])
     password = PasswordField(
         "Password",
         validators=[
-            DataRequired(),
-            validators.Length(min=8),
+            InputRequired(),
+            password_check,
         ],
     )
-    confirm = PasswordField("Confirm Password")
+    confirm = PasswordField(
+        "Confirm Password",
+        validators=[
+            InputRequired(),
+            EqualTo("password", message="Passwords must match"),
+        ],
+    )
     sign_up = SubmitField("Sign Up")
 
 

@@ -128,28 +128,28 @@
                     {{ signup_form.hidden_tag() }}
                     <div>
                         <h2>Sign Up</h2>
-                        <div class="input-grp">
-                            {{ signup_form.first_name }}
+                        <div class="form-floating mb-3">
+                            {{ signup_form.first_name(class="form-control", placeholder="John") }}
                             {{ signup_form.first_name.label }}
                         </div>
 
-                        <div class="input-grp">
-                            {{ signup_form.last_name }}
+                        <div class="form-floating mb-3">
+                            {{ signup_form.last_name(class="form-control", placeholder="Smith") }}
                             {{ signup_form.last_name.label }}
                         </div>
 
-                        <div class="input-grp">
-                            {{ signup_form.email }}
+                        <div class="form-floating mb-3">
+                            {{ signup_form.email(class="form-control", placeholder="email@example.com") }}
                             {{ signup_form.email.label }}
                         </div>
 
-                        <div class="input-grp">
-                            {{ signup_form.password }}
+                        <div class="form-floating mb-3">
+                            {{ signup_form.password(class="form-control", placeholder="Password") }}
                             {{ signup_form.password.label }}
                         </div>
 
-                        <div class="input-grp">
-                            {{ signup_form.confirm }}
+                        <div class="form-floating mb-3">
+                            {{ signup_form.confirm(class="form-control", placeholder="Confirm Password") }}
                             {{ signup_form.confirm.label }}
                         </div>
 

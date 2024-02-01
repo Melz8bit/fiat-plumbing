@@ -144,13 +144,13 @@
                     <img src="/static/logo.png" class="card-img-top" alt="Logo">
                     <div>
                         <h2>Login</h2>
-                        <div class="input-grp">
-                            {{ login_form.email() }}
+                        <div class="form-floating mb-3">
+                            {{ login_form.email(class="form-control", placeholder="name@example.com") }}
                             {{ login_form.email.label() }}
                         </div>
 
-                        <div class="input-grp">
-                            {{ login_form.password() }}
+                        <div class="form-floating">
+                            {{ login_form.password(class="form-control", placeholder="Password") }}
                             {{ login_form.password.label() }}
                         </div>
 
