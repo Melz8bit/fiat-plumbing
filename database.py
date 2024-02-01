@@ -171,6 +171,30 @@ def get_project(project_id):
     )[0]
 
 
+def create_project(project_info):
+    try:
+        mycursor = connection.cursor()
+        query = f"""INSERT INTO projects (project_id, client_id, name, address, city, state, zip_code)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+
+        query_params = (
+            project_info["project_id"],
+            project_info["client"],
+            project_info["name"],
+            project_info["address"],
+            project_info["city"],
+            project_info["state"],
+            project_info["zip_code"],
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("Project created")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
+
+
 ############## Notes Queries ##############
 def get_notes(project_id):
     return get_results(

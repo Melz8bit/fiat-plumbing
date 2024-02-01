@@ -21,7 +21,7 @@
     {% include 'nav.html' %}
     <div class="container pt-4">
         <h2 class="mb-1">Add New Client</h2>
-        <hr/>
+        <hr />
         <form method="POST">
             {{ form.hidden_tag() }}
 
@@ -30,19 +30,19 @@
             <div>
                 <div class="input-group mb-3">
                     {{ form.name.label(class="input-group-text") }}
-                    {{ form.name(class="form-control") }}            
+                    {{ form.name(class="form-control") }}
                 </div>
-                
+
                 <div class="input-group mb-3">
                     {{ form.address.label(class="input-group-text") }}
-                    {{ form.address(class="form-control") }}            
+                    {{ form.address(class="form-control") }}
                 </div>
 
                 <div class="row">
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.city.label(class="input-group-text") }}
-                            {{ form.city(class="form-control") }}            
+                            {{ form.city(class="form-control") }}
                         </div>
                     </div>
                     <div class="col">
@@ -50,19 +50,19 @@
                             {{ form.state.label(class="input-group-text") }}
                             <!-- {{ form.state(class="form-select") }} -->
                             <select class="form-select" name="state" id="state">
-                            {% for option in form.state %}
+                                {% for option in form.state %}
                                 {% if loop.first %}
-                                    <option value="" disabled selected>Select State</option>
+                                <option value="" disabled selected>Select State</option>
                                 {% endif %}
                                 {{ option }}
-                            {% endfor %}
-                        </select>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.zip_code.label(class="input-group-text") }}
-                            {{ form.zip_code(class="form-control") }}            
+                            {{ form.zip_code(class="form-control") }}
                         </div>
                     </div>
                 </div>
@@ -71,13 +71,13 @@
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.phone_number.label(class="input-group-text") }}
-                            {{ form.phone_number(class="form-control") }}            
+                            {{ form.phone_number(class="form-control") }}
                         </div>
                     </div>
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.website.label(class="input-group-text") }}
-                            {{ form.website(class="form-control") }}            
+                            {{ form.website(class="form-control") }}
                         </div>
                     </div>
                 </div>
@@ -90,19 +90,19 @@
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.poc_name.label(class="input-group-text") }}
-                            {{ form.poc_name(class="form-control") }}            
+                            {{ form.poc_name(class="form-control") }}
                         </div>
                     </div>
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.poc_phone_number.label(class="input-group-text") }}
-                            {{ form.poc_phone_number(class="form-control") }}            
+                            {{ form.poc_phone_number(class="form-control") }}
                         </div>
                     </div>
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.poc_email.label(class="input-group-text") }}
-                            {{ form.poc_email(class="form-control") }}            
+                            {{ form.poc_email(class="form-control") }}
                         </div>
                     </div>
                 </div>
@@ -114,4 +114,5 @@
     </div>
 
 </body>
+
 </html>

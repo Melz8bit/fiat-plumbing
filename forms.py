@@ -10,6 +10,8 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
 
+from database import get_all_clients
+
 STATE_OPTIONS = [
     ("AL", "Alabama"),
     ("AK", "Alaska"),
@@ -122,3 +124,27 @@ class ClientForm(FlaskForm):
     poc_phone_number = StringField("Phone Number")
     poc_email = StringField("Email")
     submit = SubmitField("Create Client")
+
+
+class ProjectForm(FlaskForm):
+    client_options = []
+    for clients in get_all_clients():
+        client_info = (clients["client_id"], clients["name"])
+        client_options.append(client_info)
+
+    project_id = StringField("Poject ID", validators=[DataRequired()])
+    name = StringField("Project Name", validators=[DataRequired()])
+    client = SelectField(
+        "Client",
+        validators=[DataRequired()],
+        choices=client_options,
+    )
+    address = StringField("Address", validators=[DataRequired()])
+    city = StringField("City", validators=[DataRequired()])
+    state = SelectField(
+        "State",
+        validators=[DataRequired()],
+        choices=STATE_OPTIONS,
+    )
+    zip_code = StringField("Zip Code", validators=[DataRequired()])
+    submit = SubmitField("Add Project")

@@ -23,7 +23,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 import database
 from database import db_connect
-from forms import ClientForm, LoginForm, SignUpForm
+from forms import ClientForm, LoginForm, SignUpForm, ProjectForm
 from models import users
 
 app = Flask(__name__)
@@ -206,6 +206,64 @@ def project_view(project_id):
         project=project,
         notes=notes,
         invoices=invoices,
+    )
+
+
+@app.route("/project/add", methods=["GET", "POST"])
+def project_add():
+    user = database.get_user(session["user_id"])
+
+    project_id = None
+    name = None
+    client = None
+    address = None
+    city = None
+    state = None
+    zip_code = None
+
+    form = ProjectForm()
+
+    if form.validate_on_submit():
+        project_id = form.project_id.data
+        form.project_id.data = ""
+        name = form.name.data
+        form.name.data = ""
+        client = int(form.client.data)
+        form.client.data = ""
+        address = form.address.data
+        form.address.data = ""
+        city = form.city.data
+        form.city.data = ""
+        state = form.state.data
+        form.state.data = ""
+        zip_code = form.zip_code.data
+        form.zip_code.data = ""
+
+        project_info = {
+            "project_id": project_id,
+            "name": name,
+            "client": client,
+            "address": address,
+            "city": city,
+            "state": state,
+            "zip_code": zip_code,
+        }
+
+        database.create_project(project_info)
+
+        # return redirect(url_for("projects"))
+
+    return render_template(
+        "project_add.html",
+        user=user,
+        form=form,
+        project_id=project_id,
+        name=name,
+        client=client,
+        address=address,
+        city=city,
+        state=state,
+        zip_code=zip_code,
     )
 
 
