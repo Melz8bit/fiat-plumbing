@@ -6,7 +6,7 @@ import MySQLdb
 from dotenv import load_dotenv
 from flask_login import UserMixin
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 load_dotenv()
 
@@ -33,12 +33,13 @@ engine = create_engine(
     echo=False,
 )
 
+
 Base = declarative_base()
 
 
 def db_connect():
-    connection2 = engine.connect()
-    return engine, connection2
+    # connection2 = engine.connect()
+    return engine
 
 
 def create_session(engine):
@@ -69,16 +70,6 @@ def get_user(user_id):
 
 
 def get_user_password(email):
-    print("==========================================")
-    print(
-        get_results(
-            f"""
-            SELECT password
-            FROM users
-            WHERE users.email = '{email}'
-        """
-        )
-    )
     return get_results(
         f"""
             SELECT password

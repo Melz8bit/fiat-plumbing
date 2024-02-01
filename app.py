@@ -8,6 +8,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from flask_login import (
@@ -21,17 +22,21 @@ from sqlalchemy import null, select
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import database
-from database import create_session, db_connect
+from database import db_connect
 from forms import ClientForm, LoginForm, SignUpForm
 from models import users
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 
-# engine, connection = db_connect()
+engine = db_connect()
 # session = create_session(engine)
+# app.config["SESSION_TYPE"] = "sqlalchemy"
+# app.config.from_object(__name__)
+# Session(app)
 
-USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
+# USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
+# USER_ID = ""
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -63,8 +68,7 @@ def login():
                 user = users.Users(user_dict)
                 login_user(user, remember=True)
 
-                global USER_ID
-                USER_ID = user_dict["user_id"]
+                session["user_id"] = user_dict["user_id"]
 
                 flash("Login successful")
                 return redirect(url_for("main"))
@@ -117,7 +121,7 @@ def sign_up():
 
                 return redirect(url_for("login"))
             except Exception as e:
-                print(e)
+                print(f"{e=}")
 
     for error in list(signup_form.errors.values()):
         flash(error[0])
@@ -138,7 +142,7 @@ def logout():
 @app.route("/")
 @login_required
 def main():
-    user = database.get_user(USER_ID)
+    user = database.get_user(session["user_id"])
     clients = database.get_all_clients()
     projects = database.get_all_projects()
 
@@ -152,7 +156,7 @@ def main():
 
 @app.route("/client_list")
 def client_list():
-    user = database.get_user(USER_ID)
+    user = database.get_user(session["user_id"])
     clients = database.get_all_clients()
 
     return render_template(
@@ -164,16 +168,23 @@ def client_list():
 
 @app.route("/search")
 def search():
-    user = database.get_user(USER_ID)
+    user = database.get_user(session["user_id"])
+
+    if not request.args:
+        return render_template(
+            "search_results.html",
+            user=user,
+            results="",
+        )
 
     search_criteria = request.args["search_criteria"]
+
     search_by = request.args["search_by"].lower()
 
     if not search_by:
         search_by = "project number"
 
     results = database.search(search_by, search_criteria)
-    print(results)
 
     return render_template(
         "search_results.html",
@@ -184,7 +195,7 @@ def search():
 
 @app.route("/project/<project_id>")
 def project_view(project_id):
-    user = database.get_user(USER_ID)
+    user = database.get_user(session["user_id"])
     project = database.get_project(project_id)
     notes = database.get_notes(project_id)
     invoices = database.get_invoices(project_id)
@@ -200,7 +211,7 @@ def project_view(project_id):
 
 @app.route("/client-add", methods=["GET", "POST"])
 def create_client():
-    user = database.get_user(USER_ID)
+    user = database.get_user(session["user_id"])
 
     name = None
     address = None
