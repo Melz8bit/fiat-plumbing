@@ -73,7 +73,6 @@
                         <div class="input-group mb-3">
                             {{ form.zip_code.label(class="input-group-text")}}
                             {{ form.zip_code(class="form-control", id="txtZipCode") }}
-                            <!-- <input id="txtZipCode" type="text" /> -->
                             <button class="btn btn-outline-primary" type="button" id="btnAutoFill">Auto Fill</button>
                         </div>
                     </div>
@@ -82,7 +81,7 @@
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.city.label(class="input-group-text")}}
-                            {{ form.city(class="form-control") }}
+                            {{ form.city(class="form-control", id="txtCity") }}
                         </div>
                     </div>
                     <div class="col">
@@ -101,24 +100,22 @@
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.county.label(class="input-group-text")}}
-                            {{ form.county(class="form-control") }}
+                            {{ form.county(class="form-control", id="txtCounty") }}
                         </div>
                     </div>
                 </div>
-                <!-- <div class="col">
-                    <div class="input-group mb-3">
-                        {{ form.zip_code.label(class="input-group-text")}}
-                        {{ form.zip_code(class="form-control") }}
-                    </div>
-                </div> -->
                 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
                 <script type="text/javascript">
                     $(function () {
                         $('#btnAutoFill').on('click', function (e) {
+                            var zip_code = $('#txtZipCode').val();
                             e.preventDefault()
-                            $.getJSON('/test',
+                            $.getJSON('/populateCityStateCounty',
+                                { "zip_code": zip_code },
                                 function (data) {
-                                    $('#txtZipCode').val(data["picked"]);
+                                    $('#txtCity').val(data["primary_city"]);
+                                    $('#state').val(data["state"]);
+                                    $('#txtCounty').val(data["county"]);
                                 });
                             return false;
                         });

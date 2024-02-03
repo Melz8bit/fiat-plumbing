@@ -345,11 +345,10 @@ def create_client():
     )
 
 
-@app.route("/test", methods=["GET", "POST"])
-def test():
-    data = {"picked": "1"}
-    j = json.dumps(data)
-    return j
+@app.route("/populateCityStateCounty", methods=["GET", "POST"])
+def populate_city_state_county():
+    results = database.get_city_state_county(request.args["zip_code"])[0]
+    return results
 
 
 if __name__ == "__main__":

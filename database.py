@@ -244,3 +244,14 @@ def search(search_by, search_criteria):
         return get_results(query)
 
     return None
+
+
+############## Misc. Queries ##############
+def get_city_state_county(zip_code):
+    return get_results(
+        f"""
+            SELECT primary_city, state, county
+            FROM zip_code_county
+            WHERE zip = {zip_code};
+        """
+    )
