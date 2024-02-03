@@ -1,5 +1,5 @@
+import json
 import os
-
 from flask import (
     Flask,
     flash,
@@ -220,6 +220,7 @@ def project_add():
     city = None
     state = None
     zip_code = None
+    county = None
 
     form = ProjectForm()
 
@@ -238,6 +239,8 @@ def project_add():
         form.state.data = ""
         zip_code = form.zip_code.data
         form.zip_code.data = ""
+        county = form.county.data
+        form.county.data = ""
 
         project_info = {
             "project_id": project_id,
@@ -247,6 +250,7 @@ def project_add():
             "city": city,
             "state": state,
             "zip_code": zip_code,
+            "county": county,
         }
 
         database.create_project(project_info)
@@ -264,6 +268,7 @@ def project_add():
         city=city,
         state=state,
         zip_code=zip_code,
+        county=county,
     )
 
 
@@ -338,6 +343,13 @@ def create_client():
         poc_phone_number=poc_phone_number,
         poc_email=poc_email,
     )
+
+
+@app.route("/test", methods=["GET", "POST"])
+def test():
+    data = {"picked": "1"}
+    j = json.dumps(data)
+    return j
 
 
 if __name__ == "__main__":

@@ -147,4 +147,5 @@ class ProjectForm(FlaskForm):
         choices=STATE_OPTIONS,
     )
     zip_code = StringField("Zip Code", validators=[DataRequired()])
+    county = StringField("County", validators=[DataRequired()])
     submit = SubmitField("Add Project")

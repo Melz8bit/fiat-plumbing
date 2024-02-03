@@ -62,9 +62,21 @@
                 <!-- Location Information -->
                 <hr>
                 <h4 class="my-3">Location Information</h4>
-                <div class="input-group mb-3">
-                    {{ form.address.label(class="input-group-text")}}
-                    {{ form.address(class="form-control") }}
+                <div class="row">
+                    <div class="col">
+                        <div class="input-group mb-3">
+                            {{ form.address.label(class="input-group-text")}}
+                            {{ form.address(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="input-group mb-3">
+                            {{ form.zip_code.label(class="input-group-text")}}
+                            {{ form.zip_code(class="form-control", id="txtZipCode") }}
+                            <!-- <input id="txtZipCode" type="text" /> -->
+                            <button class="btn btn-outline-primary" type="button" id="btnAutoFill">Auto Fill</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col">
@@ -88,8 +100,8 @@
                     </div>
                     <div class="col">
                         <div class="input-group mb-3">
-                            {{ form.zip_code.label(class="input-group-text")}}
-                            {{ form.zip_code(class="form-control") }}
+                            {{ form.county.label(class="input-group-text")}}
+                            {{ form.county(class="form-control") }}
                         </div>
                     </div>
                 </div>
@@ -99,6 +111,19 @@
                         {{ form.zip_code(class="form-control") }}
                     </div>
                 </div> -->
+                <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+                <script type="text/javascript">
+                    $(function () {
+                        $('#btnAutoFill').on('click', function (e) {
+                            e.preventDefault()
+                            $.getJSON('/test',
+                                function (data) {
+                                    $('#txtZipCode').val(data["picked"]);
+                                });
+                            return false;
+                        });
+                    });
+                </script>
             </div>
 
             <div class="text-center mt-3">

@@ -174,8 +174,8 @@ def get_project(project_id):
 def create_project(project_info):
     try:
         mycursor = connection.cursor()
-        query = f"""INSERT INTO projects (project_id, client_id, name, address, city, state, zip_code)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+        query = f"""INSERT INTO projects (project_id, client_id, name, address, city, state, zip_code, county)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
 
         query_params = (
             project_info["project_id"],
@@ -185,6 +185,7 @@ def create_project(project_info):
             project_info["city"],
             project_info["state"],
             project_info["zip_code"],
+            project_info["county"],
         )
 
         mycursor.execute(query, query_params)
