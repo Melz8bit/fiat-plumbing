@@ -194,11 +194,15 @@ def search():
 
 
 @app.route("/project/<project_id>")
-def project_view(project_id):
+@app.route("/project/<project_id>/<new_project>")
+def project_view(project_id, new_project=False):
     user = database.get_user(session["user_id"])
     project = database.get_project(project_id)
     notes = database.get_notes(project_id)
     invoices = database.get_invoices(project_id)
+
+    if new_project:
+        flash("Project has been created")
 
     return render_template(
         "project.html",
@@ -254,8 +258,15 @@ def project_add():
         }
 
         database.create_project(project_info)
+        database.insert_note(project_id, f"Project Created", session["user_id"])
 
-        # return redirect(url_for("projects"))
+        return redirect(
+            url_for(
+                "project_view",
+                project_id=project_id,
+                new_project=True,
+            )
+        )
 
     return render_template(
         "project_add.html",

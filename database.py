@@ -209,7 +209,28 @@ def get_notes(project_id):
     )
 
 
-############## Notes Queries ##############
+def insert_note(project_id, note, user_id):
+    try:
+        mycursor = connection.cursor()
+        query = f"""INSERT INTO project_notes (project_id, comment, comment_date, user_id)
+                VALUES (%s, %s, %s, %s)"""
+
+        query_params = (
+            project_id,
+            note,
+            datetime.today(),
+            user_id,
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("Note addded")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
+
+
+############## Invoices Queries ##############
 def get_invoices(project_id):
     return get_results(
         f"""

@@ -40,7 +40,7 @@
             </div>
             <hr>
             <div class="container text-center">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                         <tr class="text-center">
                             <th scope="col">#</th>
@@ -53,42 +53,27 @@
                     </thead>
                     <tbody>
                         {% for project in projects %}
-                        <tr class="projectRow text-center"
-                            href="{{url_for('project_view', project_id=project['project_id'])}}">
-                            <th scope="row">{{ project['project_id'] }}</th>
+                        <tr id="{{project['project_id']}}" class="projectRow text-center" onclick=rowClick(id)>
+                            <td scope="row">{{ project['project_id'] }}</td>
                             <td>{{ project['clients.name']}}</td>
                             <td>{{ project['name'] }}</td>
                             <td>01/01/2024</td>
                             <td>$2,000.00</td>
                             <td>{{ project['status'] | capitalize }}</td>
                         </tr>
+                        <script>
+                            function rowClick(project_id) {
+                                window.location = "/project/" + project_id;
+                            }
+                        </script>
                         {% endfor %}
                     </tbody>
                 </table>
+
             </div>
         </div>
     </div>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    {% for message in messages %}
-    <div class="toast position-absolute bottom-0 end-0 p-3" role="status" aria-live="polite" aria-atomic="true">
-        <div class=" toast-header">
-            <!-- <img src="/static/clock.png" class="rounded me-2" alt="Paw in clock logo" height="24" width="24"> -->
-            <strong class="me-auto">Message</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body">
-            {{ message }}
-        </div>
-    </div>
-    <script>
-        const toastExample = document.querySelector('.toast')
-        const toast = new bootstrap.Toast(toastExample)
-        toast.show()
-    </script>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {% include 'flash_message.html' %}
 </body>
 
 </html>

@@ -10,7 +10,7 @@
             font-family: "Raleway", sans-serif;
         }
 
-        #projectRow:hover {
+        .resultRow:hover {
             cursor: pointer;
         }
     </style>
@@ -20,7 +20,6 @@
 
 <body>
     {% include 'nav.html' %}
-
 
     <div class="mx-2">
         <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
@@ -45,17 +44,20 @@
             </thead>
             <tbody>
                 {% for result in results %}
-                <tr id="projectRow" class="text-center"></tr>
-                <td>
-                    <a href="{{url_for('project_view', project_id=result['project_id'])}}">{{result['project_id']}}</a>
-                </td>
-                <td>{{ result['clients.name'] }}</a></td>
-                <td>{{ result['name'] }}</a></td>
-                <td>{{ result['address'] }}</a></td>
-                <td>{{ result['city'] }}</a></td>
-                <td>{{ result['state'] }}</a></td>
-                <td>[Date]</td>
+                <tr id="{{result['project_id']}}" class="resultRow text-center" onclick=rowClick(id)>
+                    <td>{{result['project_id']}}</td>
+                    <td>{{ result['clients.name'] }}</td>
+                    <td>{{ result['name'] }}</td>
+                    <td>{{ result['address'] }}</td>
+                    <td>{{ result['city'] }}</td>
+                    <td>{{ result['state'] }}</td>
+                    <td>[Date]</td>
                 </tr>
+                <script>
+                    function rowClick(project_id) {
+                        window.location = "/project/" + project_id;
+                    }
+                </script>
                 {% endfor %}
             </tbody>
         </table>

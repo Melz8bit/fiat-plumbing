@@ -24,6 +24,13 @@
             </thead>
 
             <tbody>
+                {% if notes|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="100%">
+                        No notes have been submitted
+                    </td>
+                </tr>
+                {% else %}
                 {% for note in notes %}
                 <tr>
                     <td>{{ note['comment'] }}</td>
@@ -31,6 +38,7 @@
                     <td class="text-center">{{ note['first_name'] }} {{ note['last_name'] }}</td>
                 </tr>
                 {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>

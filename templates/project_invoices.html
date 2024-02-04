@@ -37,6 +37,13 @@
             </thead>
 
             <tbody>
+                {% if invoices|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="100%">
+                        No invoices have been created
+                    </td>
+                </tr>
+                {% else %}
                 {% for invoice in invoices %}
                 <tr class="text-center">
                     <td>{{invoice['installment_number'] }}</td>
@@ -48,6 +55,7 @@
                     </td>
                 </tr>
                 {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>
