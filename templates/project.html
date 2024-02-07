@@ -38,6 +38,23 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Project Status</span>
+                        <input type="text" class="form-control" value="{{ project['status'] | capitalize }}"
+                            aria-label="address" aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Status Date</span>
+                        <input type="text" class="form-control"
+                            value="{{ project['status_date'].strftime('%m-%d-%Y') }}" aria-label="address"
+                            aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Location Info -->
@@ -92,6 +109,10 @@
                 <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane"
                     type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="false">Documents</button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="permits-tab" data-bs-toggle="tab" data-bs-target="#permits-tab-pane"
+                    type="button" role="tab" aria-controls="permits-tab-pane" aria-selected="false">Permits</button>
+            </li>
         </ul>
 
         <!-- Subsections -->
@@ -120,6 +141,13 @@
                 <div class="ratio ratio-16x9">
                     <!-- <iframe class="w-100" src="project_documents.html" frameborder="0"></iframe> -->
                     {% include 'project_documents.html' %}
+                </div>
+            </div>
+
+            <!-- Permits -->
+            <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
+                <div class="ratio ratio-16x9">
+                    <h3>Coming Soon</h3>
                 </div>
             </div>
         </div>
