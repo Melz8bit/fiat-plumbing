@@ -16,8 +16,13 @@
             document.getElementById("searchBy").value = document.getElementById(item).innerHTML;
         }
     </script>
+    {% if search_criteria %}
+    <input type="text" class="form-control" placeholder="Search criteria" aria-label="Search criteria"
+        value="{{ search_criteria }}" aria-describedby="button-search" name="search_criteria" required>
+    {% else %}
     <input type="text" class="form-control" placeholder="Search criteria" aria-label="Search criteria"
         aria-describedby="button-search" name="search_criteria" required>
+    {% endif %}
     <button class="btn btn-outline-primary" type="submit" id="button-search">Search</button>
     <div class="invalid-feedback">
         Please enter a search criteria.

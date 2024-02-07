@@ -189,6 +189,7 @@ def search():
     return render_template(
         "search_results.html",
         user=user,
+        search_criteria=search_criteria,
         results=results,
     )
 
