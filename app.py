@@ -148,6 +148,7 @@ def main():
 
 
 @app.route("/client/<client_id>")
+@login_required
 def client_view(client_id):
     user = database.get_user(session["user_id"])
     client = database.get_client(client_id)
@@ -164,6 +165,7 @@ def client_view(client_id):
 
 
 @app.route("/client_list")
+@login_required
 def client_list():
     user = database.get_user(session["user_id"])
     clients = database.get_all_clients()
@@ -176,6 +178,7 @@ def client_list():
 
 
 @app.route("/search")
+@login_required
 def search():
     user = database.get_user(session["user_id"])
 
@@ -204,6 +207,7 @@ def search():
 
 
 @app.route("/projects")
+@login_required
 def projects_list():
     user = database.get_user(session["user_id"])
     projects = database.get_all_projects()
@@ -217,6 +221,7 @@ def projects_list():
 
 @app.route("/project/<project_id>")
 @app.route("/project/<project_id>/<new_project>")
+@login_required
 def project_view(project_id, new_project=False):
     user = database.get_user(session["user_id"])
     project = database.get_project(project_id)
@@ -237,6 +242,7 @@ def project_view(project_id, new_project=False):
 
 @app.route("/project/add", methods=["GET", "POST"])
 @app.route("/project/add/<client_id>", methods=["GET", "POST"])
+@login_required
 def project_add(client_id=None):
     user = database.get_user(session["user_id"])
 
@@ -310,6 +316,7 @@ def project_add(client_id=None):
 
 
 @app.route("/client-add", methods=["GET", "POST"])
+@login_required
 def create_client():
     user = database.get_user(session["user_id"])
 
@@ -367,6 +374,84 @@ def create_client():
 
     return render_template(
         "client_add.html",
+        user=user,
+        form=form,
+        name=name,
+        address=address,
+        city=city,
+        state=state,
+        zip_code=zip_code,
+        website=website,
+        phone_number=phone_number,
+        poc_name=poc_name,
+        poc_phone_number=poc_phone_number,
+        poc_email=poc_email,
+    )
+
+
+@app.route("/client-edit/<client_id>", methods=["GET", "POST"])
+@login_required
+def edit_client(client_id):
+    user = database.get_user(session["user_id"])
+    client = database.get_client(client_id)
+    client_poc = database.get_client_poc(client_id)
+
+    name = client["name"]
+    address = client["address"]
+    city = client["city"]
+    state = client["state"]
+    zip_code = client["zip_code"]
+    website = client["website"]
+    phone_number = client["phone_number"]
+    poc_name = client_poc["name"] if client_poc else ""
+    poc_phone_number = client_poc["telephone"] if client_poc else ""
+    poc_email = client_poc["email"] if client_poc else ""
+
+    form = ClientForm(state=state)
+
+    if form.validate_on_submit():
+        name = form.name.data
+        form.name.data = ""
+        address = form.address.data
+        form.address.data = ""
+        city = form.city.data
+        form.city.data = ""
+        state = form.state.data
+        form.state.data = ""
+        zip_code = form.zip_code.data
+        form.zip_code.data = ""
+        website = form.website.data
+        form.website.data = ""
+        phone_number = form.phone_number.data
+        form.phone_number.data = ""
+        poc_name = form.poc_name.data
+        form.poc_name.data = ""
+        poc_phone_number = form.poc_phone_number.data
+        form.poc_phone_number.data = ""
+        poc_email = form.poc_email.data
+        form.poc_email.data = ""
+
+        client_info = {
+            "client_id": client_id,
+            "name": name,
+            "address": address,
+            "city": city,
+            "state": state,
+            "zip_code": zip_code,
+            "website": website,
+            "phone_number": phone_number,
+            "poc_name": poc_name,
+            "poc_phone_number": poc_phone_number,
+            "poc_email": poc_email,
+            "poc_exists": True if client_poc else False,
+        }
+
+        database.update_client(client_info)
+
+        return redirect(url_for("client_view", client_id=client_id))
+
+    return render_template(
+        "client_edit.html",
         user=user,
         form=form,
         name=name,

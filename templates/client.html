@@ -26,14 +26,14 @@
                 <h1 class="display-5">{{ client['name'] }}</h1>
             </div>
             <div class="col-2 text-end">
-                <a class="btn btn-sm btn-primary" href="{{ url_for('project_add')}}">Edit Information</a>
+                <a class="btn btn-sm btn-primary"
+                    href="{{ url_for('edit_client', client_id=client['client_id']) }}">Edit
+                    Information</a>
             </div>
         </div>
 
         <!-- Address Information -->
-
         <h4 class="my-3">Address Information</h4>
-
         <hr>
         <div>
             <div class="row">
@@ -87,16 +87,14 @@
         </div>
 
         <!-- Contact Information -->
-        {% if client_poc | length > 0 %}
         <h4 class="my-3">Contact Information</h4>
         <div>
-            {% for poc in client_poc %}
             <hr>
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">Name</span>
-                        <input type="text" class="form-control border-primary" value="{{ poc['name'] }}"
+                        <input type="text" class="form-control border-primary" value="{{ client_poc['name'] }}"
                             aria-label="contactName" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
@@ -105,21 +103,20 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">Phone Number</span>
-                        <input type="tel" class="form-control border-primary" value="{{ poc['telephone'] }}"
-                            aria-label="phoneNumber" aria-describedby="basic-addon1" readonly>
+                        <input type="tel" class="form-control border-primary" value="{{ client_poc['telephone'] }}"
+                            pattern="\([0-9]{3}) [0-9]{3}-[0-9]{4}" aria-label="phoneNumber"
+                            aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">Email</span>
-                        <input type="email" class="form-control border-primary" value="{{ poc['email'] }}"
+                        <input type="email" class="form-control border-primary" value="{{ client_poc['email'] }}"
                             aria-label="email" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% endif %}
 
         <!-- Project List -->
         <div class="row my-3">
