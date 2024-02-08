@@ -123,13 +123,18 @@ def get_client(client_id):
 
 
 def get_client_poc(client_id):
-    return get_results(
-        f"""
-            SELECT *
-            FROM client_poc
-            WHERE client_id = {client_id};
-        """
-    )[0]
+    try:
+        poc = get_results(
+            f"""
+                SELECT *
+                FROM client_poc
+                WHERE client_id = {client_id};
+            """
+        )[0]
+    except:
+        poc = ""
+
+    return poc
 
 
 def get_all_clients():
