@@ -122,8 +122,9 @@ class ClientForm(FlaskForm):
     phone_number = StringField("Phone Number")
     poc_name = StringField("Name")
     poc_phone_number = StringField("Phone Number")
-    poc_email = StringField("Email")
+    poc_email = EmailField("Email")
     submit = SubmitField("Create Client")
+    edit = SubmitField("Update Client")
 
 
 class ProjectForm(FlaskForm):

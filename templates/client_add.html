@@ -71,7 +71,8 @@
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.phone_number.label(class="input-group-text") }}
-                            {{ form.phone_number(class="form-control") }}
+                            {{ form.phone_number(class="form-control", placeholder="123-456-7890",
+                            pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}") }}
                         </div>
                     </div>
                     <div class="col">
@@ -96,7 +97,8 @@
                     <div class="col">
                         <div class="input-group mb-3">
                             {{ form.poc_phone_number.label(class="input-group-text") }}
-                            {{ form.poc_phone_number(class="form-control") }}
+                            {{ form.poc_phone_number(class="form-control", placeholder="123-456-7890",
+                            pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}") }}
                         </div>
                     </div>
                     <div class="col">

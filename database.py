@@ -129,7 +129,7 @@ def get_client_poc(client_id):
             FROM client_poc
             WHERE client_id = {client_id};
         """
-    )
+    )[0]
 
 
 def get_all_clients():
@@ -162,6 +162,74 @@ def create_client(client_info):
         mycursor.execute(query, query_params)
         connection.commit()
         print("Client created")
+
+        create_client_poc(client_info)
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
+
+
+def create_client_poc(client_info):
+    try:
+        mycursor = connection.cursor()
+        query = f"""
+                    INSERT INTO client_poc (client_id, name, telephone, email)
+                    VALUES (%s, %s, %s, %s)
+                """
+
+        query_params = (
+            int(client_info["client_id"]),
+            client_info["poc_name"],
+            client_info["poc_phone_number"],
+            client_info["poc_email"],
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("Client POC created")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
+
+
+def update_client(client_info):
+    try:
+        # Client Update
+        mycursor = connection.cursor()
+        query = f"""UPDATE clients
+                    SET name = %s, address = %s, city = %s, state = %s, zip_code = %s, website = %s, phone_number = %s
+                    WHERE client_id = %s;
+                """
+        query_params = (
+            client_info["name"],
+            client_info["address"],
+            client_info["city"],
+            client_info["state"],
+            client_info["zip_code"],
+            client_info["website"],
+            client_info["phone_number"],
+            client_info["client_id"],
+        )
+        mycursor.execute(query, query_params)
+        connection.commit()
+
+        # POC Update
+        if client_info["poc_exists"]:
+            query = f"""UPDATE client_poc
+                        SET name = %s, telephone = %s, email = %s
+                        WHERE client_id = %s;
+                    """
+            query_params = (
+                client_info["poc_name"],
+                client_info["poc_phone_number"],
+                client_info["poc_email"],
+                client_info["client_id"],
+            )
+            mycursor.execute(query, query_params)
+            connection.commit()
+            print("Client POC updated")
+        else:
+            create_client_poc(client_info)
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
