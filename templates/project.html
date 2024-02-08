@@ -95,6 +95,37 @@
             </div>
         </div>
 
+        <!-- Permits -->
+        <h4 class="my-3">Permit Information</h4>
+        <hr>
+        <div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Master Permit</span>
+                        <input type="text" class="form-control" value="{{ master_permit['permit_number'] }}"
+                            aria-label="address" aria-describedby="basic-addon1" readonly>
+                        {% if not master_permit %}
+                        <button class="btn btn-outline-primary" type="button" id="button-addon2">Add</button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">Plumbing Permit</span>
+                        <input type="text" class="form-control" value="{{ plumbing_permit['permit_number'] }}"
+                            aria-label="city" aria-describedby="basic-addon1" readonly>
+                        <button class="btn btn-outline-primary" type="button" id="button-addon2">Request</button>
+                    </div>
+                </div>
+                <!-- <div class="col-1 text-end">
+                    <button class="btn btn-primary">Request</button>
+                </div> -->
+            </div>
+        </div>
+
+        <hr>
+
         <!-- Submenu Nav -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
@@ -106,12 +137,13 @@
                     type="button" role="tab" aria-controls="invoices-tab-pane" aria-selected="false">Invoices</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane"
-                    type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="false">Documents</button>
+                <button class="nav-link" id="inspections-tab" data-bs-toggle="tab"
+                    data-bs-target="#inspections-tab-pane" type="button" role="tab" aria-controls="inspections-tab-pane"
+                    aria-selected="false">Inspections</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="permits-tab" data-bs-toggle="tab" data-bs-target="#permits-tab-pane"
-                    type="button" role="tab" aria-controls="permits-tab-pane" aria-selected="false">Permits</button>
+                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane"
+                    type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="false">Documents</button>
             </li>
         </ul>
 

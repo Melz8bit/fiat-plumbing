@@ -150,3 +150,8 @@ class ProjectForm(FlaskForm):
     zip_code = StringField("Zip Code", validators=[DataRequired()])
     county = StringField("County", validators=[DataRequired()])
     submit = SubmitField("Add Project")
+
+
+class MasterPermitForm(FlaskForm):
+    permit_number = StringField("Master Permit")
+    add = SubmitField("Add")

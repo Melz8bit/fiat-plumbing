@@ -35,6 +35,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+############## Login/Logout ##############
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -132,6 +134,7 @@ def logout():
     return redirect(url_for("login"))
 
 
+############## Home ##############
 @app.route("/")
 @login_required
 def main():
@@ -147,6 +150,7 @@ def main():
     )
 
 
+############## Client ##############
 @app.route("/client/<client_id>")
 @login_required
 def client_view(client_id):
@@ -174,144 +178,6 @@ def client_list():
         "client_list.html",
         user=user,
         clients=clients,
-    )
-
-
-@app.route("/search")
-@login_required
-def search():
-    user = database.get_user(session["user_id"])
-
-    if not request.args:
-        return render_template(
-            "search_results.html",
-            user=user,
-            results="",
-        )
-
-    search_criteria = request.args["search_criteria"]
-
-    search_by = request.args["search_by"].lower()
-
-    if not search_by:
-        search_by = "project number"
-
-    results = database.search(search_by, search_criteria)
-
-    return render_template(
-        "search_results.html",
-        user=user,
-        search_criteria=search_criteria,
-        results=results,
-    )
-
-
-@app.route("/projects")
-@login_required
-def projects_list():
-    user = database.get_user(session["user_id"])
-    projects = database.get_all_projects()
-
-    return render_template(
-        "projects.html",
-        user=user,
-        projects=projects,
-    )
-
-
-@app.route("/project/<project_id>")
-@app.route("/project/<project_id>/<new_project>")
-@login_required
-def project_view(project_id, new_project=False):
-    user = database.get_user(session["user_id"])
-    project = database.get_project(project_id)
-    notes = database.get_notes(project_id)
-    invoices = database.get_invoices(project_id)
-
-    if new_project:
-        flash("Project has been created")
-
-    return render_template(
-        "project.html",
-        user=user,
-        project=project,
-        notes=notes,
-        invoices=invoices,
-    )
-
-
-@app.route("/project/add", methods=["GET", "POST"])
-@app.route("/project/add/<client_id>", methods=["GET", "POST"])
-@login_required
-def project_add(client_id=None):
-    user = database.get_user(session["user_id"])
-
-    project_id = None
-    name = None
-    client = None
-    address = None
-    city = None
-    state = None
-    zip_code = None
-    county = None
-
-    form = ProjectForm()
-
-    if form.validate_on_submit():
-        project_id = form.project_id.data
-        form.project_id.data = ""
-        name = form.name.data
-        form.name.data = ""
-        client = int(form.client.data)
-        form.client.data = ""
-        address = form.address.data
-        form.address.data = ""
-        city = form.city.data
-        form.city.data = ""
-        state = form.state.data
-        form.state.data = ""
-        zip_code = form.zip_code.data
-        form.zip_code.data = ""
-        county = form.county.data
-        form.county.data = ""
-
-        project_info = {
-            "project_id": project_id,
-            "name": name,
-            "client": client,
-            "address": address,
-            "city": city,
-            "state": state,
-            "zip_code": zip_code,
-            "county": county,
-        }
-
-        database.create_project(project_info)
-        database.insert_note(project_id, f"Project Created", session["user_id"])
-
-        return redirect(
-            url_for(
-                "project_view",
-                project_id=project_id,
-                new_project=True,
-            )
-        )
-
-    if client_id:
-        client = database.get_client(client_id)
-
-    return render_template(
-        "project_add.html",
-        user=user,
-        form=form,
-        project_id=project_id,
-        name=name,
-        client=client,
-        address=address,
-        city=city,
-        state=state,
-        zip_code=zip_code,
-        county=county,
     )
 
 
@@ -467,6 +333,151 @@ def edit_client(client_id):
     )
 
 
+############## Search ##############
+@app.route("/search")
+@login_required
+def search():
+    user = database.get_user(session["user_id"])
+
+    if not request.args:
+        return render_template(
+            "search_results.html",
+            user=user,
+            results="",
+        )
+
+    search_criteria = request.args["search_criteria"]
+
+    search_by = request.args["search_by"].lower()
+
+    if not search_by:
+        search_by = "project number"
+
+    results = database.search(search_by, search_criteria)
+
+    return render_template(
+        "search_results.html",
+        user=user,
+        search_criteria=search_criteria,
+        results=results,
+    )
+
+
+############## Projects ##############
+@app.route("/projects")
+@login_required
+def projects_list():
+    user = database.get_user(session["user_id"])
+    projects = database.get_all_projects()
+
+    return render_template(
+        "projects.html",
+        user=user,
+        projects=projects,
+    )
+
+
+@app.route("/project/<project_id>")
+@app.route("/project/<project_id>/<new_project>")
+@login_required
+def project_view(project_id, new_project=False):
+    user = database.get_user(session["user_id"])
+    project = database.get_project(project_id)
+    notes = database.get_notes(project_id)
+    invoices = database.get_invoices(project_id)
+    master_permit = database.get_master_permit(project_id)
+    plumbing_permit = database.get_plumbing_permit(project_id)
+
+    if new_project:
+        flash("Project has been created")
+
+    return render_template(
+        "project.html",
+        user=user,
+        project=project,
+        notes=notes,
+        invoices=invoices,
+        master_permit=master_permit,
+        plumbing_permit=plumbing_permit,
+    )
+
+
+@app.route("/project/add", methods=["GET", "POST"])
+@app.route("/project/add/<client_id>", methods=["GET", "POST"])
+@login_required
+def project_add(client_id=None):
+    user = database.get_user(session["user_id"])
+
+    project_id = None
+    name = None
+    client = None
+    address = None
+    city = None
+    state = None
+    zip_code = None
+    county = None
+
+    form = ProjectForm()
+
+    if form.validate_on_submit():
+        project_id = form.project_id.data
+        form.project_id.data = ""
+        name = form.name.data
+        form.name.data = ""
+        client = int(form.client.data)
+        form.client.data = ""
+        address = form.address.data
+        form.address.data = ""
+        city = form.city.data
+        form.city.data = ""
+        state = form.state.data
+        form.state.data = ""
+        zip_code = form.zip_code.data
+        form.zip_code.data = ""
+        county = form.county.data
+        form.county.data = ""
+
+        project_info = {
+            "project_id": project_id,
+            "name": name,
+            "client": client,
+            "address": address,
+            "city": city,
+            "state": state,
+            "zip_code": zip_code,
+            "county": county,
+        }
+
+        database.create_project(project_info)
+        database.insert_note(project_id, f"Project Created", session["user_id"])
+
+        return redirect(
+            url_for(
+                "project_view",
+                project_id=project_id,
+                new_project=True,
+            )
+        )
+
+    if client_id:
+        client = database.get_client(client_id)
+
+    return render_template(
+        "project_add.html",
+        user=user,
+        form=form,
+        project_id=project_id,
+        name=name,
+        client=client,
+        address=address,
+        city=city,
+        state=state,
+        zip_code=zip_code,
+        county=county,
+    )
+
+
+############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
 def populate_city_state_county():
     results = database.get_city_state_county(request.args["zip_code"])[0]

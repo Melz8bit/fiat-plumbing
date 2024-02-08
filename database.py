@@ -62,31 +62,40 @@ def get_results(sqlQuery):
 
 ############## User Queries ##############
 def get_user(user_id):
-    return get_results(
-        f"""
-            SELECT * FROM users WHERE users.user_id = '{user_id}' 
-        """
-    )[0]
+    try:
+        return get_results(
+            f"""
+                SELECT * FROM users WHERE users.user_id = '{user_id}' 
+            """
+        )[0]
+    except:
+        return ""
 
 
 def get_user_password(email):
-    return get_results(
-        f"""
-            SELECT password
-            FROM users
-            WHERE users.email = '{email}'
-        """
-    )
+    try:
+        return get_results(
+            f"""
+                SELECT password
+                FROM users
+                WHERE users.email = '{email}'
+            """
+        )
+    except:
+        return ""
 
 
 def get_user_from_email(email):
-    return get_results(
-        f"""
-            SELECT *
-            FROM users
-            WHERE users.email = '{email}'
-        """
-    )[0]
+    try:
+        return get_results(
+            f"""
+                SELECT *
+                FROM users
+                WHERE users.email = '{email}'
+            """
+        )[0]
+    except:
+        return ""
 
 
 def create_user(user_info):
@@ -113,13 +122,16 @@ def create_user(user_info):
 
 ############## Client Queries ##############
 def get_client(client_id):
-    return get_results(
-        f"""
-            SELECT *
-            FROM clients
-            WHERE client_id = {client_id};
-        """
-    )[0]
+    try:
+        return get_results(
+            f"""
+                SELECT *
+                FROM clients
+                WHERE client_id = {client_id};
+            """
+        )[0]
+    except:
+        return ""
 
 
 def get_client_poc(client_id):
@@ -138,14 +150,17 @@ def get_client_poc(client_id):
 
 
 def get_all_clients():
-    return get_results(
-        f"""
-            SELECT clients.*, count(project_id) AS project_count
-            FROM clients
-            LEFT JOIN projects ON clients.client_id = projects.client_id
-            GROUP BY clients.client_id
-        """
-    )
+    try:
+        return get_results(
+            f"""
+                SELECT clients.*, count(project_id) AS project_count
+                FROM clients
+                LEFT JOIN projects ON clients.client_id = projects.client_id
+                GROUP BY clients.client_id
+            """
+        )
+    except:
+        return ""
 
 
 def create_client(client_info):
@@ -242,26 +257,32 @@ def update_client(client_info):
 
 ############## Project Queries ##############
 def get_all_projects():
-    return get_results(
-        f"""
-            SELECT projects.*, clients.name
-            FROM projects
-            INNER JOIN clients
-            ON projects.client_id = clients.client_id;
-        """
-    )
+    try:
+        return get_results(
+            f"""
+                SELECT projects.*, clients.name
+                FROM projects
+                INNER JOIN clients
+                ON projects.client_id = clients.client_id;
+            """
+        )
+    except:
+        return ""
 
 
 def get_project(project_id):
-    return get_results(
-        f"""
-            SELECT projects.*, clients.name
-            FROM projects
-            INNER JOIN clients
-            ON projects.client_id = clients.client_id
-            WHERE projects.project_id = '{project_id}';
-        """
-    )[0]
+    try:
+        return get_results(
+            f"""
+                SELECT projects.*, clients.name
+                FROM projects
+                INNER JOIN clients
+                ON projects.client_id = clients.client_id
+                WHERE projects.project_id = '{project_id}';
+            """
+        )[0]
+    except:
+        return ""
 
 
 def create_project(project_info):
@@ -290,26 +311,68 @@ def create_project(project_info):
 
 
 def get_client_projects(client_id):
-    return get_results(
-        f"""
-            SELECT *
-            FROM projects
-            WHERE client_id = {client_id};
-        """
-    )
+    try:
+        return get_results(
+            f"""
+                SELECT *
+                FROM projects
+                WHERE client_id = {client_id};
+            """
+        )
+    except:
+        return ""
+
+
+############## Permits Queries ##############
+def get_master_permit(project_id):
+    try:
+        master_permit = get_results(
+            f"""
+                SELECT *
+                FROM permits
+                WHERE project_id = '{project_id}' AND permit_type = 'MASTER';
+            """
+        )[0]
+
+        return master_permit
+
+    except:
+        return ""
+
+
+def get_plumbing_permit(project_id):
+    try:
+        plumbing_permit = get_results(
+            f"""
+                SELECT *
+                FROM permits
+                WHERE project_id = '{project_id}' AND permit_type != 'MASTER';
+            """
+        )[0]
+
+        return plumbing_permit
+    except:
+        return ""
+
+
+def insert_master_permit(project_id, permit_number):
+    pass
 
 
 ############## Notes Queries ##############
 def get_notes(project_id):
-    return get_results(
-        f"""
-            SELECT project_notes.*, users.first_name, users.last_name
-            FROM project_notes
-            INNER JOIN users
-            ON project_notes.user_id = users.user_id
-            WHERE project_notes.project_id = '{project_id}';
-        """
-    )
+    try:
+        return get_results(
+            f"""
+                SELECT project_notes.*, users.first_name, users.last_name
+                FROM project_notes
+                INNER JOIN users
+                ON project_notes.user_id = users.user_id
+                WHERE project_notes.project_id = '{project_id}';
+            """
+        )
+    except:
+        return ""
 
 
 def insert_note(project_id, note, user_id):
@@ -335,47 +398,54 @@ def insert_note(project_id, note, user_id):
 
 ############## Invoices Queries ##############
 def get_invoices(project_id):
-    return get_results(
-        f"""
-            SELECT * 
-            FROM project_invoices
-            WHERE project_id = '{project_id}';
-        """
-    )
+    try:
+        return get_results(
+            f"""
+                SELECT * 
+                FROM project_invoices
+                WHERE project_id = '{project_id}';
+            """
+        )
+    except:
+        return ""
 
 
 ############## Search Queries ##############
 def search(search_by, search_criteria):
-    # default search is project number
-    query = f"""
-        SELECT projects.*, clients.name
-        FROM projects
-        INNER JOIN clients
-        ON projects.client_id = clients.client_id
-        WHERE project_id = '{search_criteria}';
-    """
-
-    if search_by == "client name":
+    try:
+        # default search is project number
         query = f"""
             SELECT projects.*, clients.name
             FROM projects
             INNER JOIN clients
             ON projects.client_id = clients.client_id
-            WHERE clients.name LIKE '%{search_criteria}%';
+            WHERE project_id = '{search_criteria}';
         """
 
-    if query:
-        return get_results(query)
+        if search_by == "client name":
+            query = f"""
+                SELECT projects.*, clients.name
+                FROM projects
+                INNER JOIN clients
+                ON projects.client_id = clients.client_id
+                WHERE clients.name LIKE '%{search_criteria}%';
+            """
 
-    return None
+        if query:
+            return get_results(query)
+    except:
+        return None
 
 
 ############## Misc. Queries ##############
 def get_city_state_county(zip_code):
-    return get_results(
-        f"""
-            SELECT primary_city, state, county
-            FROM zip_code_county
-            WHERE zip = {zip_code};
-        """
-    )
+    try:
+        return get_results(
+            f"""
+                SELECT primary_city, state, county
+                FROM zip_code_county
+                WHERE zip = {zip_code};
+            """
+        )
+    except:
+        return ""
