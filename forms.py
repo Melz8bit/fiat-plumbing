@@ -132,7 +132,7 @@ class ProjectForm(FlaskForm):
         client_info = (clients["client_id"], clients["name"])
         client_options.append(client_info)
 
-    project_id = StringField("Poject ID", validators=[DataRequired()])
+    project_id = StringField("Project ID", validators=[DataRequired()])
     name = StringField("Project Name", validators=[DataRequired()])
     client = SelectField(
         "Client",

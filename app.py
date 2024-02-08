@@ -30,13 +30,6 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 
 engine = db_connect()
-# session = create_session(engine)
-# app.config["SESSION_TYPE"] = "sqlalchemy"
-# app.config.from_object(__name__)
-# Session(app)
-
-# USER_ID = "525bc4ea-b0f7-482d-a954-db517e6b5b89"
-# USER_ID = ""
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -210,6 +203,18 @@ def search():
     )
 
 
+@app.route("/projects")
+def projects_list():
+    user = database.get_user(session["user_id"])
+    projects = database.get_all_projects()
+
+    return render_template(
+        "projects.html",
+        user=user,
+        projects=projects,
+    )
+
+
 @app.route("/project/<project_id>")
 @app.route("/project/<project_id>/<new_project>")
 def project_view(project_id, new_project=False):
@@ -247,7 +252,6 @@ def project_add(client_id=None):
     form = ProjectForm()
 
     if form.validate_on_submit():
-        print("ji")
         project_id = form.project_id.data
         form.project_id.data = ""
         name = form.name.data
@@ -289,7 +293,6 @@ def project_add(client_id=None):
 
     if client_id:
         client = database.get_client(client_id)
-        print(client)
 
     return render_template(
         "project_add.html",
