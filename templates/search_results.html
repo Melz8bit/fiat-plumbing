@@ -21,46 +21,48 @@
 <body>
     {% include 'nav.html' %}
 
-    <div class="mx-2">
-        <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
-            <!-- Search -->
-            {% include 'search.html' %}
-        </form>
+    <div class="container">
+        <div class=" mx-2">
+            <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
+                <!-- Search -->
+                {% include 'search.html' %}
+            </form>
 
-        <hr class="mt-4">
+            <hr class="mt-4">
 
-        <h4 class="mt-4">Search Results</h4>
-        <table class="table table-hover">
-            <thead>
-                <tr class="text-center">
-                    <th scope="col">#</th>
-                    <th scope="col">Company</th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Address</th>
-                    <th scope="col">City</th>
-                    <th scope="col">State</th>
-                    <th scope="col">Contract Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for result in results %}
-                <tr id="{{result['project_id']}}" class="resultRow text-center" onclick=rowClick(id)>
-                    <td>{{result['project_id']}}</td>
-                    <td>{{ result['clients.name'] }}</td>
-                    <td>{{ result['name'] }}</td>
-                    <td>{{ result['address'] }}</td>
-                    <td>{{ result['city'] }}</td>
-                    <td>{{ result['state'] }}</td>
-                    <td>[Date]</td>
-                </tr>
-                <script>
-                    function rowClick(project_id) {
-                        window.location = "/project/" + project_id;
-                    }
-                </script>
-                {% endfor %}
-            </tbody>
-        </table>
+            <h4 class="mt-4">Search Results</h4>
+            <table class="table table-hover">
+                <thead>
+                    <tr class="text-center">
+                        <th scope="col">#</th>
+                        <th scope="col">Company</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">City</th>
+                        <th scope="col">State</th>
+                        <th scope="col">Contract Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr id="{{result['project_id']}}" class="resultRow text-center" onclick=rowClick(id)>
+                        <td>{{result['project_id']}}</td>
+                        <td>{{ result['clients.name'] }}</td>
+                        <td>{{ result['name'] }}</td>
+                        <td>{{ result['address'] }}</td>
+                        <td>{{ result['city'] }}</td>
+                        <td>{{ result['state'] }}</td>
+                        <td>[Date]</td>
+                    </tr>
+                    <script>
+                        function rowClick(project_id) {
+                            window.location = "/project/" + project_id;
+                        }
+                    </script>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </body>

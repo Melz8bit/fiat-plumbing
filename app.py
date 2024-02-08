@@ -154,6 +154,22 @@ def main():
     )
 
 
+@app.route("/client/<client_id>")
+def client_view(client_id):
+    user = database.get_user(session["user_id"])
+    client = database.get_client(client_id)
+    client_poc = database.get_client_poc(client_id)
+    client_projects = database.get_client_projects(client_id)
+
+    return render_template(
+        "client.html",
+        user=user,
+        client=client,
+        client_poc=client_poc,
+        client_projects=client_projects,
+    )
+
+
 @app.route("/client_list")
 def client_list():
     user = database.get_user(session["user_id"])
@@ -215,7 +231,8 @@ def project_view(project_id, new_project=False):
 
 
 @app.route("/project/add", methods=["GET", "POST"])
-def project_add():
+@app.route("/project/add/<client_id>", methods=["GET", "POST"])
+def project_add(client_id=None):
     user = database.get_user(session["user_id"])
 
     project_id = None
@@ -230,6 +247,7 @@ def project_add():
     form = ProjectForm()
 
     if form.validate_on_submit():
+        print("ji")
         project_id = form.project_id.data
         form.project_id.data = ""
         name = form.name.data
@@ -268,6 +286,10 @@ def project_add():
                 new_project=True,
             )
         )
+
+    if client_id:
+        client = database.get_client(client_id)
+        print(client)
 
     return render_template(
         "project_add.html",

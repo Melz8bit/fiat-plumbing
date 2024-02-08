@@ -44,10 +44,10 @@
                     <thead>
                         <tr class="text-center">
                             <th scope="col">#</th>
-                            <th scope="col">Client</th>
                             <th scope="col">Project</th>
+                            <th scope="col">Client</th>
                             <th scope="col">Date</th>
-                            <th scope="col">Amount</th>
+                            <!-- <th scope="col">Amount</th> -->
                             <th scope="col">Status</th>
                         </tr>
                     </thead>
@@ -55,10 +55,10 @@
                         {% for project in projects %}
                         <tr id="{{project['project_id']}}" class="projectRow text-center" onclick=rowClick(id)>
                             <td scope="row">{{ project['project_id'] }}</td>
-                            <td>{{ project['clients.name']}}</td>
                             <td>{{ project['name'] }}</td>
-                            <td>01/01/2024</td>
-                            <td>$2,000.00</td>
+                            <td>{{ project['clients.name']}}</td>
+                            <td>{{ project['status_date'].strftime('%m/%d/%Y') }}</td>
+                            <!-- <td>$2,000.00</td> -->
                             <td>{{ project['status'] | capitalize }}</td>
                         </tr>
                         <script>

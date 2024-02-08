@@ -11,56 +11,36 @@
             font-family: "Raleway", sans-serif;
         }
 
-        .contractRow:hover {
+        .projectRow:hover {
             cursor: pointer;
         }
     </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
-        <div class="container-fluid">
-            <a href="index.html">
-                <img src="/logo.png" alt="Logo" width="80" class="d-inline-block align-text-top me-2">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
-                    <a class="nav-link active" href="client_list.html">Clients</a>
-                    <a class="nav-link" href="#">Projects</a>
-                    <a class="nav-link" href="#">Employees</a>
-                    <ul class="navbar-nav">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                My Account
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Account</a></li>
-                                <li><a class="dropdown-item" href="#">Sign Out</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </nav>
+    {% include 'nav.html' %}
 
     <div class="container pt-4">
-        <h1 class="mb-4 display-5">Ventura Construction Corporation</h1>
+        <div class="row align-items-center mb-4">
+            <div class="col">
+                <h1 class="display-5">{{ client['name'] }}</h1>
+            </div>
+            <div class="col-2 text-end">
+                <a class="btn btn-sm btn-primary" href="{{ url_for('project_add')}}">Edit Information</a>
+            </div>
+        </div>
 
         <!-- Address Information -->
+
         <h4 class="my-3">Address Information</h4>
+
         <hr>
         <div>
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">Address</span>
-                        <input type="text" class="form-control border-primary" value="123 Main Street"
+                        <input type="text" class="form-control border-primary" value="{{ client['address'] }}"
                             aria-label="address" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
@@ -69,36 +49,54 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">City</span>
-                        <input type="text" class="form-control border-primary" value="Miami" aria-label="city"
-                            aria-describedby="basic-addon1" readonly>
+                        <input type="text" class="form-control border-primary" value="{{ client['city'] }}"
+                            aria-label="city" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">State</span>
-                        <input type="text" class="form-control border-primary" value="FL" aria-label="state"
-                            aria-describedby="basic-addon1" readonly>
+                        <input type="text" class="form-control border-primary" value="{{ client['state'] }}"
+                            aria-label="state" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">Zip Code</span>
-                        <input type="text" class="form-control border-primary" value="33133" aria-label="zipCode"
-                            aria-describedby="basic-addon1" readonly>
+                        <input type="text" class="form-control border-primary" value="{{ client['zip_code'] }}"
+                            aria-label="zipCode" aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Telephone</span>
+                        <input type="text" class="form-control border-primary" value="{{ client['phone_number'] }}"
+                            aria-label="telephone" aria-describedby="basic-addon1" readonly>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Website</span>
+                        <input type="text" class="form-control border-primary" value="{{ client['website'] }}"
+                            aria-label="website" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Contact Information -->
+        {% if client_poc | length > 0 %}
         <h4 class="my-3">Contact Information</h4>
-        <hr>
         <div>
+            {% for poc in client_poc %}
+            <hr>
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">Name</span>
-                        <input type="text" class="form-control border-primary" value="Lucas DeMello"
+                        <input type="text" class="form-control border-primary" value="{{ poc['name'] }}"
                             aria-label="contactName" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
@@ -107,19 +105,21 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">Phone Number</span>
-                        <input type="tel" class="form-control border-primary" value="(305) 446-6366"
+                        <input type="tel" class="form-control border-primary" value="{{ poc['telephone'] }}"
                             aria-label="phoneNumber" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text border-primary text-primary" id="basic-addon1">Email</span>
-                        <input type="email" class="form-control border-primary" value="email@example.com"
+                        <input type="email" class="form-control border-primary" value="{{ poc['email'] }}"
                             aria-label="email" aria-describedby="basic-addon1" readonly>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
+        {% endif %}
 
         <!-- Project List -->
         <div class="row my-3">
@@ -127,7 +127,8 @@
                 <h4>Projects</h4>
             </div>
             <div class="col-2 text-end">
-                <a class="btn btn-primary btn-sm" href="proposal_create.html">New Project</a>
+                <a class="btn btn-primary btn-sm" href="{{ url_for('project_add', client_id=client['client_id']) }}">New
+                    Project</a>
             </div>
         </div>
         <hr>
@@ -140,62 +141,29 @@
                     <th class="text-center">Adddress</th>
                     <th class="text-center">City</th>
                     <th class="text-center">State</th>
-                    <th class="text-center">Date Start</th>
-                    <th class="text-center">Date End</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Status Date</th>
                 </tr>
             </thead>
             <tbody>
-                <tr class="contractRow" onclick="window.location='project.html';">
-                    <td class="text-center">23-1234</td>
-                    <td>Dunkin' Donuts</td>
-                    <td class="text-center">123 Main Street</td>
-                    <td class="text-center">Plantation</td>
-                    <td class="text-center">FL</td>
-                    <td class="text-center">01/01/2023</td>
-                    <td class="text-center">03/31/2023</td>
+                {% for project in client_projects %}
+                <tr id="{{ project['project_id'] }}" class="projectRow" onclick=rowClick(id)>
+                    <td class="text-center">{{ project['project_id'] }}</td>
+                    <td>{{ project['name'] }}</td>
+                    <td class="text-center">{{ project['address'] }}</td>
+                    <td class="text-center">{{ project['city'] }}</td>
+                    <td class="text-center">{{ project['state'] }}</td>
+                    <td class="text-center">{{ project['status'] | capitalize }}</td>
+                    <td class="text-center">{{ project['status_date'] }}</td>
                 </tr>
-                <tr>
-                    <td class="text-center">23-1234</td>
-                    <td>Dunkin' Donuts</td>
-                    <td class="text-center">123 Main Street</td>
-                    <td class="text-center">Plantation</td>
-                    <td class="text-center">FL</td>
-                    <td class="text-center">01/01/2023</td>
-                    <td class="text-center">03/31/2023</td>
-                </tr>
-                <tr>
-                    <td class="text-center">23-1234</td>
-                    <td>Dunkin' Donuts</td>
-                    <td class="text-center">123 Main Street</td>
-                    <td class="text-center">Plantation</td>
-                    <td class="text-center">FL</td>
-                    <td class="text-center">01/01/2023</td>
-                    <td class="text-center">03/31/2023</td>
-                </tr>
-                <tr>
-                    <td class="text-center">23-1234</td>
-                    <td>Dunkin' Donuts</td>
-                    <td class="text-center">123 Main Street</td>
-                    <td class="text-center">Plantation</td>
-                    <td class="text-center">FL</td>
-                    <td class="text-center">01/01/2023</td>
-                    <td class="text-center">03/31/2023</td>
-                </tr>
-                <tr>
-                    <td class="text-center">23-1234</td>
-                    <td>Dunkin' Donuts</td>
-                    <td class="text-center">123 Main Street</td>
-                    <td class="text-center">Plantation</td>
-                    <td class="text-center">FL</td>
-                    <td class="text-center">01/01/2023</td>
-                    <td class="text-center">03/31/2023</td>
-                </tr>
+                <script>
+                    function rowClick(project_id) {
+                        window.location = "/project/" + project_id;
+                    }
+                </script>
+                {% endfor %}
             </tbody>
         </table>
-
-    </div>
-
-    <div>
 
     </div>
 

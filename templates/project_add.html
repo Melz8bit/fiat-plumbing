@@ -50,12 +50,16 @@
                 <div class="input-group mb-2">
                     {{ form.client.label(class="input-group-text") }}
                     <select class="form-select" name="client" id="client">
+                        {% if client %}
+                        <option value="{{ client['client_id'] }}" disabled selected>{{ client['name'] }}</option>
+                        {% else %}
                         {% for option in form.client %}
                         {% if loop.first %}
                         <option value="" disabled selected>Select Client</option>
                         {% endif %}
                         {{ option }}
                         {% endfor %}
+                        {% endif %}
                     </select>
                 </div>
 

@@ -112,6 +112,26 @@ def create_user(user_info):
 
 
 ############## Client Queries ##############
+def get_client(client_id):
+    return get_results(
+        f"""
+            SELECT *
+            FROM clients
+            WHERE client_id = {client_id};
+        """
+    )[0]
+
+
+def get_client_poc(client_id):
+    return get_results(
+        f"""
+            SELECT *
+            FROM client_poc
+            WHERE client_id = {client_id};
+        """
+    )
+
+
 def get_all_clients():
     return get_results(
         f"""
@@ -194,6 +214,16 @@ def create_project(project_info):
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
+
+
+def get_client_projects(client_id):
+    return get_results(
+        f"""
+            SELECT *
+            FROM projects
+            WHERE client_id = {client_id};
+        """
+    )
 
 
 ############## Notes Queries ##############

@@ -40,10 +40,15 @@
             </thead>
             <tbody>
                 {% for client in clients %}
-                <tr class="" onclick="window.location='#';">
+                <tr id="{{ client['client_id'] }}" class="clientRow" onclick=rowClick(id)>
                     <td>{{ client['name'] }}</td>
                     <td class="text-center">{{ client['project_count'] }}</td>
                 </tr>
+                <script>
+                    function rowClick(client_id) {
+                        window.location = "/client/" + client_id;
+                    }
+                </script>
                 {% endfor %}
             </tbody>
         </table>
