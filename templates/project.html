@@ -125,7 +125,9 @@
                         <span class="input-group-text" id="basic-addon1">Plumbing Permit</span>
                         <input type="text" class="form-control" value="{{ plumbing_permit['permit_number'] }}"
                             aria-label="city" aria-describedby="basic-addon1" readonly>
+                        {% if not plumbing_permit %}
                         <button class="btn btn-outline-primary" type="button" id="button-addon2">Request</button>
+                        {% endif %}
                     </div>
                 </div>
                 <!-- <div class="col-1 text-end">

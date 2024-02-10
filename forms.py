@@ -158,5 +158,5 @@ class MasterPermitForm(FlaskForm):
 
 
 class PlumbingPermitForm(FlaskForm):
-    permit_number = StringField("Plumbing Permit")
+    plumbing_permit = StringField("Plumbing Permit")
     add = SubmitField("Add")
