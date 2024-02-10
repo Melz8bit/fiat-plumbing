@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from flask_login import UserMixin
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 
@@ -434,13 +435,25 @@ def get_invoices(project_id):
 ############## Document Queries ##############
 def get_project_docs(project_id):
     try:
+        print(project_id)
+        print(
+            get_results(
+                f"""
+                SELECT project_documents.*, users.first_name, users.last_name
+                FROM project_documents
+                INNER JOIN users
+                ON project_documents.user_id = users.user_id
+                WHERE project_documents.project_id = '{project_id}'
+            """
+            )
+        )
         return get_results(
             f"""
                 SELECT project_documents.*, users.first_name, users.last_name
                 FROM project_documents
                 INNER JOIN users
                 ON project_documents.user_id = users.user_id
-                WHERE project_documents.project_id = {project_id}
+                WHERE project_documents.project_id = '{project_id}'
             """
         )
     except:
@@ -458,7 +471,7 @@ def upload_document(project_id, document_type, comment, user_id, filename):
             document_type,
             comment,
             user_id,
-            filename,
+            secure_filename(filename.filename),
         )
 
         mycursor.execute(query, query_params)

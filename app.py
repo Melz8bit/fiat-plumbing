@@ -414,10 +414,10 @@ def project_view(project_id, new_project=False):
         filename = document_form.upload_file.data
         document_form.upload_file.data = ""
 
-        # f = form.photo.data
-        # filename = secure_filename(f.filename)
+        database.upload_document(
+            project_id, document_type, comment, session["user_id"], filename
+        )
 
-        print(f"{filename=}")
         # return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{document_form.errors=}")

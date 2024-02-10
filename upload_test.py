@@ -8,6 +8,7 @@ load_dotenv()
 access_key = os.getenv("S3_ACCESS_KEY")
 secret_access_key = os.getenv("S3_SECRET_ACCESS_KEY")
 s3_region = os.getenv("S3_REGION")
+bucket_name = os.getenv("S3_BUCKET_NAME")
 
 
 session = boto3.session.Session()
@@ -21,7 +22,7 @@ s3_client = session.client(
 
 def upload_file():
 
-    response = s3_client.upload_file("TEST_FILE.pdf", "fiat-plumbing", "test_file.pdf")
+    response = s3_client.upload_file("TEST_FILE.pdf", bucket_name, "test_file.pdf")
     print(f"{response=}")
 
     # try:
@@ -40,7 +41,7 @@ def upload_file():
 
 def download_file():
     s3_client.download_file(
-        "fiat-plumbing",
+        bucket_name,
         "test_file.pdf",
         "downloaded.pdf",
     )

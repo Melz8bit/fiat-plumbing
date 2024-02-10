@@ -9,7 +9,6 @@ from wtforms import (
     validators,
 )
 from flask_wtf.file import FileField, FileRequired
-from werkzeug.utils import secure_filename
 from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
 
 from database import get_all_clients

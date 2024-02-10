@@ -64,7 +64,6 @@
         <table class="table table-striped mt-2">
             <thead>
                 <tr>
-                    <th>Name</th>
                     <th class="text-center">Type</th>
                     <th class="text-center">Date</th>
                     <th class="text-center">Comment</th>
@@ -79,7 +78,7 @@
                     <td>{{ document["type"] }}</td>
                     <td class="text-center">{{ document["upload_date"] }}</td>
                     <td>{{ document["comment"] }}</td>
-                    <td class="text-center">{{ document["upload_by"] }}</td>
+                    <td class="text-center">{{ document["first_name"] }} {{ document["last_name"] }}</td>
                     <td class="text-center">
                         <a class="btn btn-sm btn-primary" href="Proposal - Goldstein Res.pdf" target="_blank">View</a>
                     </td>
