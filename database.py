@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 
 import MySQLdb
 from dotenv import load_dotenv
@@ -9,6 +9,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 load_dotenv()
+
+TODAY = datetime.today().strftime("%Y-%m-%d")
 
 DB_CONNECTION_STRING = f"mysql+pymysql://{os.getenv('DATABASE_USERNAME')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_NAME')}?charset=utf8mb4"
 connection = MySQLdb.connect(
@@ -356,7 +358,26 @@ def get_plumbing_permit(project_id):
 
 
 def insert_master_permit(project_id, permit_number):
-    pass
+    try:
+        mycursor = connection.cursor()
+        query = f"""INSERT INTO permits (project_id, permit_number, permit_type, assigned_date, status, status_date)
+                VALUES (%s, %s, %s, %s, %s, %s)"""
+
+        query_params = (
+            project_id,
+            permit_number,
+            "MASTER",
+            TODAY,
+            "ASSIGNED",
+            TODAY,
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("Permit inserted")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
 
 
 ############## Notes Queries ##############

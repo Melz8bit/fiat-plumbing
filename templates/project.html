@@ -101,14 +101,24 @@
         <div>
             <div class="row">
                 <div class="col">
+                    {% if master_permit %}
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Master Permit</span>
                         <input type="text" class="form-control" value="{{ master_permit['permit_number'] }}"
                             aria-label="address" aria-describedby="basic-addon1" readonly>
-                        {% if not master_permit %}
-                        <button class="btn btn-outline-primary" type="button" id="button-addon2">Add</button>
-                        {% endif %}
+                        <!-- <button class="btn btn-outline-primary" type="button" id="button-addon2">Add</button> -->
                     </div>
+                    {% else %}
+                    <form method="POST">
+                        <div class="input-group mb-3">
+                            {{ master_form.hidden_tag() }}
+                            {{ master_form.master_permit.label(class="input-group-text") }}
+                            {{ master_form.master_permit(class="form-control") }}
+                            {{ master_form.add(class="btn btn-outline-primary")}}
+
+                        </div>
+                    </form>
+                    {% endif %}
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">

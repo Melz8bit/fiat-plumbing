@@ -23,7 +23,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 import database
 from database import db_connect
-from forms import ClientForm, LoginForm, SignUpForm, ProjectForm
+from forms import ClientForm, LoginForm, SignUpForm, ProjectForm, MasterPermitForm
 from models import users
 
 app = Flask(__name__)
@@ -377,8 +377,8 @@ def projects_list():
     )
 
 
-@app.route("/project/<project_id>")
-@app.route("/project/<project_id>/<new_project>")
+@app.route("/project/<project_id>", methods=["GET", "POST"])
+@app.route("/project/<project_id>/<new_project>", methods=["GET", "POST"])
 @login_required
 def project_view(project_id, new_project=False):
     user = database.get_user(session["user_id"])
@@ -391,6 +391,15 @@ def project_view(project_id, new_project=False):
     if new_project:
         flash("Project has been created")
 
+    master_form = MasterPermitForm()
+
+    if master_form.validate_on_submit():
+        master_permit = master_form.master_permit.data
+        master_form.master_permit.data = ""
+
+        database.insert_master_permit(project["project_id"], master_permit)
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+
     return render_template(
         "project.html",
         user=user,
@@ -399,6 +408,7 @@ def project_view(project_id, new_project=False):
         invoices=invoices,
         master_permit=master_permit,
         plumbing_permit=plumbing_permit,
+        master_form=master_form,
     )
 
 

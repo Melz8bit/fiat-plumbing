@@ -153,5 +153,10 @@ class ProjectForm(FlaskForm):
 
 
 class MasterPermitForm(FlaskForm):
-    permit_number = StringField("Master Permit")
+    master_permit = StringField("Master Permit", validators=[DataRequired()])
+    add = SubmitField("Add")
+
+
+class PlumbingPermitForm(FlaskForm):
+    permit_number = StringField("Plumbing Permit")
     add = SubmitField("Add")
