@@ -161,3 +161,5 @@ cython_debug/
 
 # Misc. File Type
 *.pdf
+upload_test.py
+
