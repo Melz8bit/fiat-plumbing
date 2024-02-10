@@ -8,6 +8,8 @@ from wtforms import (
     SubmitField,
     validators,
 )
+from flask_wtf.file import FileField, FileRequired
+from werkzeug.utils import secure_filename
 from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
 
 from database import get_all_clients
@@ -160,3 +162,14 @@ class MasterPermitForm(FlaskForm):
 class PlumbingPermitForm(FlaskForm):
     plumbing_permit = StringField("Plumbing Permit")
     add = SubmitField("Add")
+
+
+class DocumentUploadForm(FlaskForm):
+    document_type = SelectField(
+        "Type",
+        validators=[DataRequired()],
+        choices=["Plans", "Invoice", "Permit", "Inspection", "Contract", "Proposal"],
+    )
+    upload_file = FileField(validators=[FileRequired()])
+    comment = StringField("Comment")
+    upload = SubmitField("Upload")

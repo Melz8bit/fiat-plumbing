@@ -2,16 +2,7 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-        crossorigin="anonymous"></script>
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    {% include 'bootstrap.html' %}
 
     <style>
         * {
@@ -20,54 +11,80 @@
     </style>
 </head>
 
-
-
 <body>
     <!-- Documents -->
     <div>
+        <div class="text-end mt-2">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDocModal">
+                Upload File
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="uploadDocModal" tabindex="-1" aria-labelledby="uploadDocModalHeader"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="uploadDocModalHeader">Document Upload</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="documentForm" method="POST" enctype="multipart/form-data">
+                                {{ document_form.hidden_tag() }}
+
+                                <div class="input-group mb-3">
+                                    {{ document_form.document_type.label(class="input-group-text")}}
+                                    <select class="form-select" name="document_type" id="document_type">
+                                        {% for option in document_form.document_type %}
+                                        {% if loop.first %}
+                                        <option selected disabeld value="">Select Type</option>
+                                        {% endif %}
+                                        {{ option }}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="input-group mb-3">
+                                    {{ document_form.comment.label(class="input-group-text")}}
+                                    {{ document_form.comment(class="form-control")}}
+                                </div>
+                                <div class="mb-3">
+                                    {{ document_form.upload_file(class="form-control", type="file")}}
+                                </div>
+                                <div class="modal-footer">
+                                    {{ document_form.upload(class="btn btn-primary")}}
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <table class="table table-striped mt-2">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th class="text-center">Type</th>
                     <th class="text-center">Date</th>
+                    <th class="text-center">Comment</th>
+                    <th class="text-center">Uploaded By</th>
                     <th class="text-center"></th>
                 </tr>
             </thead>
 
             <tbody>
+                {% for document in documents %}
                 <tr>
-                    <td>Proposal/Contract</td>
-                    <td class="text-center">Document</td>
-                    <td class="text-center">01/01/2024</td>
+                    <td>{{ document["type"] }}</td>
+                    <td class="text-center">{{ document["upload_date"] }}</td>
+                    <td>{{ document["comment"] }}</td>
+                    <td class="text-center">{{ document["upload_by"] }}</td>
                     <td class="text-center">
                         <a class="btn btn-sm btn-primary" href="Proposal - Goldstein Res.pdf" target="_blank">View</a>
                     </td>
                 </tr>
-                <tr>
-                    <td>Floor Plan</td>
-                    <td class="text-center">Document</td>
-                    <td class="text-center">01/01/2024</td>
-                    <td class="text-center">
-                        <a class="btn btn-sm btn-primary" href="Plan - Plumbing.pdf" target="_blank">View</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Bathroom</td>
-                    <td class="text-center">Picture</td>
-                    <td class="text-center">01/01/2024</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-primary">View</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Change of Order</td>
-                    <td class="text-center">Document</td>
-                    <td class="text-center">01/01/2024</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-primary">View</button>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

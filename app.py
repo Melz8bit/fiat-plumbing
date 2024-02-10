@@ -23,7 +23,14 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 import database
 from database import db_connect
-from forms import ClientForm, LoginForm, SignUpForm, ProjectForm, MasterPermitForm
+from forms import (
+    ClientForm,
+    LoginForm,
+    SignUpForm,
+    ProjectForm,
+    MasterPermitForm,
+    DocumentUploadForm,
+)
 from models import users
 
 app = Flask(__name__)
@@ -385,6 +392,7 @@ def project_view(project_id, new_project=False):
     project = database.get_project(project_id)
     notes = database.get_notes(project_id)
     invoices = database.get_invoices(project_id)
+    documents = database.get_project_docs(project_id)
     master_permit = database.get_master_permit(project_id)
     plumbing_permit = database.get_plumbing_permit(project_id)
 
@@ -392,6 +400,27 @@ def project_view(project_id, new_project=False):
         flash("Project has been created")
 
     master_form = MasterPermitForm()
+    document_form = DocumentUploadForm()
+
+    document_type = None
+    comment = None
+    filename = None
+
+    if document_form.validate_on_submit():
+        document_type = document_form.document_type.data
+        document_form.document_type.data = ""
+        comment = document_form.comment.data
+        document_form.comment.data = ""
+        filename = document_form.upload_file.data
+        document_form.upload_file.data = ""
+
+        # f = form.photo.data
+        # filename = secure_filename(f.filename)
+
+        print(f"{filename=}")
+        # return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{document_form.errors=}")
 
     if master_form.validate_on_submit():
         master_permit = master_form.master_permit.data
@@ -406,9 +435,11 @@ def project_view(project_id, new_project=False):
         project=project,
         notes=notes,
         invoices=invoices,
+        documents=documents,
         master_permit=master_permit,
         plumbing_permit=plumbing_permit,
         master_form=master_form,
+        document_form=document_form,
     )
 
 

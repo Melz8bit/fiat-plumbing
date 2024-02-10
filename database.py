@@ -431,6 +431,44 @@ def get_invoices(project_id):
         return ""
 
 
+############## Document Queries ##############
+def get_project_docs(project_id):
+    try:
+        return get_results(
+            f"""
+                SELECT project_documents.*, users.first_name, users.last_name
+                FROM project_documents
+                INNER JOIN users
+                ON project_documents.user_id = users.user_id
+                WHERE project_documents.project_id = {project_id}
+            """
+        )
+    except:
+        return ""
+
+
+def upload_document(project_id, document_type, comment, user_id, filename):
+    try:
+        mycursor = connection.cursor()
+        query = f"""INSERT INTO project_documents (project_id, type, comment, user_id, filename)
+                VALUES (%s, %s, %s, %s, %s)"""
+
+        query_params = (
+            project_id,
+            document_type,
+            comment,
+            user_id,
+            filename,
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("Document addded")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
+
+
 ############## Search Queries ##############
 def search(search_by, search_criteria):
     try:
