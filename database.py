@@ -442,6 +442,7 @@ def get_project_docs(project_id):
                 INNER JOIN users
                 ON project_documents.user_id = users.user_id
                 WHERE project_documents.project_id = '{project_id}'
+                ORDER BY project_documents.upload_date DESC;
             """
         )
     except:
