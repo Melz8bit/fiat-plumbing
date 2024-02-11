@@ -1,5 +1,7 @@
+import mimetypes
 import json
 import os
+from datetime import datetime
 from flask import (
     Flask,
     flash,
@@ -20,9 +22,11 @@ from flask_login import (
 )
 from sqlalchemy import null, select
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 import database
 from database import db_connect
+from documents import upload_file, download_file
 from forms import (
     ClientForm,
     LoginForm,
@@ -414,11 +418,26 @@ def project_view(project_id, new_project=False):
         filename = document_form.upload_file.data
         document_form.upload_file.data = ""
 
-        database.upload_document(
-            project_id, document_type, comment, session["user_id"], filename
+        upload_file_type = filename.mimetype.split("/")[-1]
+        upload_file_name = f"{project_id}-{document_type}-{datetime.now().strftime('%Y%m%d%H%M%S')}.{upload_file_type}"
+
+        upload_file(
+            filename,
+            upload_file_name,
+            filename.mimetype,
         )
 
-        # return redirect(url_for("project_view", project_id=project["project_id"]))
+        database.upload_document(
+            project_id,
+            document_type,
+            comment,
+            session["user_id"],
+            upload_file_name,
+        )
+
+        # flash(success_upload_msg)
+
+        return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{document_form.errors=}")
 

@@ -435,18 +435,6 @@ def get_invoices(project_id):
 ############## Document Queries ##############
 def get_project_docs(project_id):
     try:
-        print(project_id)
-        print(
-            get_results(
-                f"""
-                SELECT project_documents.*, users.first_name, users.last_name
-                FROM project_documents
-                INNER JOIN users
-                ON project_documents.user_id = users.user_id
-                WHERE project_documents.project_id = '{project_id}'
-            """
-            )
-        )
         return get_results(
             f"""
                 SELECT project_documents.*, users.first_name, users.last_name
@@ -471,7 +459,7 @@ def upload_document(project_id, document_type, comment, user_id, filename):
             document_type,
             comment,
             user_id,
-            secure_filename(filename.filename),
+            secure_filename(filename),
         )
 
         mycursor.execute(query, query_params)
