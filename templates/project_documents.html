@@ -38,7 +38,7 @@
                                     <select class="form-select" name="document_type" id="document_type">
                                         {% for option in document_form.document_type %}
                                         {% if loop.first %}
-                                        <option selected disabeld value="">Select Type</option>
+                                        <option selected disabled value="">Select Type</option>
                                         {% endif %}
                                         {{ option }}
                                         {% endfor %}
@@ -80,7 +80,9 @@
                     <td>{{ document["comment"] }}</td>
                     <td class="text-center">{{ document["first_name"] }} {{ document["last_name"] }}</td>
                     <td class="text-center">
-                        <a class="btn btn-sm btn-primary" href="Proposal - Goldstein Res.pdf" target="_blank">View</a>
+                        <a class="btn btn-sm btn-primary"
+                            href="{{ url_for('download_document', project_id=document['project_id'], doc_filename=document['filename']) }}"
+                            target="_blank">View</a>
                     </td>
                 </tr>
                 {% endfor %}

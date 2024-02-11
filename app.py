@@ -10,6 +10,8 @@ from flask import (
     redirect,
     render_template,
     request,
+    Response,
+    send_file,
     session,
     url_for,
 )
@@ -419,6 +421,8 @@ def project_view(project_id, new_project=False):
         document_form.upload_file.data = ""
 
         upload_file_type = filename.mimetype.split("/")[-1]
+        if upload_file_type == "plain":
+            upload_file_type = "txt"
         upload_file_name = f"{project_id}-{document_type}-{datetime.now().strftime('%Y%m%d%H%M%S')}.{upload_file_type}"
 
         upload_file(
@@ -534,6 +538,18 @@ def project_add(client_id=None):
         state=state,
         zip_code=zip_code,
         county=county,
+    )
+
+
+@app.route("/project/<project_id>/download/<doc_filename>")
+@login_required
+def download_document(project_id, doc_filename):
+    my_file = download_file(doc_filename)
+    print(my_file["ContentType"])
+    return Response(
+        my_file["Body"].read(),
+        mimetype=my_file["ContentType"],
+        headers={"Content-Disposition": f"attachment;filename={doc_filename}"},
     )
 
 

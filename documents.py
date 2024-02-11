@@ -34,18 +34,10 @@ def upload_file(file_to_upload, upload_file_name, filetype):
     except:
         return "Something went wrong"
 
-    # with open(file_to_upload.read(), "rb") as f:
-    #     s3_client.upload_fileobj(f, BUCKET_NAME, "something")
-    # response = s3_client.upload_file(file_to_upload, BUCKET_NAME, upload_file_name)
 
-
-def download_file():
-    s3_client.download_file(
-        BUCKET_NAME,
-        "test_file.pdf",
-        "downloaded.pdf",
+def download_file(doc_filename):
+    file = s3_client.get_object(
+        Bucket=BUCKET_NAME,
+        Key=doc_filename,
     )
-
-
-# upload_file()
-# download_file()
+    return file

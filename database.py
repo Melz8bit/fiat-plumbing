@@ -471,6 +471,10 @@ def upload_document(project_id, document_type, comment, user_id, filename):
         print("MySQL Error:", e)
 
 
+def get_document(doc_id):
+    pass
+
+
 ############## Search Queries ##############
 def search(search_by, search_criteria):
     try:
