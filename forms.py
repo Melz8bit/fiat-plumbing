@@ -167,7 +167,15 @@ class DocumentUploadForm(FlaskForm):
     document_type = SelectField(
         "Type",
         validators=[DataRequired()],
-        choices=["Plans", "Invoice", "Permit", "Inspection", "Contract", "Proposal"],
+        choices=[
+            "Plans",
+            "Invoice",
+            "Permit",
+            "Inspection",
+            "Contract",
+            "Proposal",
+            "Options",
+        ],
     )
     upload_file = FileField(validators=[FileRequired()])
     comment = StringField("Comment")
