@@ -174,7 +174,7 @@ class DocumentUploadForm(FlaskForm):
             "Inspection",
             "Contract",
             "Proposal",
-            "Options",
+            "Other",
         ],
     )
     upload_file = FileField(validators=[FileRequired()])
