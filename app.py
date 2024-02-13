@@ -420,9 +420,13 @@ def project_view(project_id, new_project=False):
         filename = document_form.upload_file.data
         document_form.upload_file.data = ""
 
-        upload_file_type = filename.mimetype.split("/")[-1]
-        if upload_file_type == "plain":
-            upload_file_type = "txt"
+        # upload_file_type = filename.mimetype.split("/")[-1]
+        upload_file_type = filename.filename.split(".")[-1]
+        # if upload_file_type == "plain":
+        #     upload_file_type = "txt"
+
+        # if upload_file_type == "document":
+        #     upload_file_type = "docx"
         upload_file_name = f"{project_id}-{document_type}-{datetime.now().strftime('%Y%m%d%H%M%S')}.{upload_file_type}"
 
         upload_file(

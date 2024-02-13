@@ -466,9 +466,9 @@ def upload_document(project_id, document_type, comment, user_id, filename):
         mycursor.execute(query, query_params)
         connection.commit()
 
-        insert_note(
-            project_id, f"{document_type} has been uploaded (Auto Note)", user_id
-        )
+        # insert_note(
+        #     project_id, f"{document_type} has been uploaded (Auto Note)", user_id
+        # )
 
         print("Document addded")
 
