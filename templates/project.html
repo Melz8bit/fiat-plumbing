@@ -40,11 +40,29 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Project Status</span>
-                        <input type="text" class="form-control" value="{{ project['status'] | capitalize }}"
-                            aria-label="address" aria-describedby="basic-addon1" readonly>
-                    </div>
+                    <form id="projectStatusForm" method="POST">
+                        {{ project_status_form.hidden_tag() }}
+                        <div class="input-group mb-3">
+                            {{ project_status_form.project_status.label(class="input-group-text")}}
+                            <select class="form-select" name="project_status" id="project_status">
+                                <option selected disabled value="{{ project['status'] }}">
+                                    {{ project['status'] }}
+                                </option>
+                                <option disabled>
+                                    ─────────────────────────
+                                </option>
+                                {% for status in project_status_form.project_status %}
+                                {% if status == project['status'] %}
+                                <option disabled value="">
+                                    {{ project['status'] }}
+                                </option>
+                                {% else %}
+                                {{ status }}
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            {{ project_status_form.update(class="btn btn-outline-primary")}}
+                        </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">

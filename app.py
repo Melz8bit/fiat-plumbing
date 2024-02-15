@@ -36,6 +36,7 @@ from forms import (
     ProjectForm,
     MasterPermitForm,
     DocumentUploadForm,
+    ProjectStatusForm,
 )
 from models import users
 
@@ -407,6 +408,7 @@ def project_view(project_id, new_project=False):
 
     master_form = MasterPermitForm()
     document_form = DocumentUploadForm()
+    project_status_form = ProjectStatusForm()
 
     document_type = None
     comment = None
@@ -467,6 +469,7 @@ def project_view(project_id, new_project=False):
         plumbing_permit=plumbing_permit,
         master_form=master_form,
         document_form=document_form,
+        project_status_form=project_status_form,
     )
 
 

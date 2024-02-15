@@ -476,19 +476,17 @@ def upload_document(project_id, document_type, comment, user_id, filename):
         print("MySQL Error:", e)
 
 
-def get_document(doc_id):
-    pass
-
-
 def get_document_types():
     try:
-        return get_results(
+        get_types = get_results(
             f"""
                 SELECT document_type
                 FROM matrix_document_types
                 ORDER BY document_type;
             """
         )
+        doc_types = [doc_type["document_type"] for doc_type in get_types]
+        return doc_types
     except:
         return ""
 
@@ -530,5 +528,21 @@ def get_city_state_county(zip_code):
                 WHERE zip = {zip_code};
             """
         )
+    except:
+        return ""
+
+
+def get_project_statuses():
+    try:
+        get_statuses = get_results(
+            f"""
+                SELECT project_status, order_number
+                FROM matrix_project_statuses
+                ORDER BY order_number;
+            """
+        )
+        statuses = [status["project_status"] for status in get_statuses]
+        print(statuses)
+        return statuses
     except:
         return ""
