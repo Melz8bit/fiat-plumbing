@@ -480,6 +480,19 @@ def get_document(doc_id):
     pass
 
 
+def get_document_types():
+    try:
+        return get_results(
+            f"""
+                SELECT document_type
+                FROM matrix_document_types
+                ORDER BY document_type;
+            """
+        )
+    except:
+        return ""
+
+
 ############## Search Queries ##############
 def search(search_by, search_criteria):
     try:

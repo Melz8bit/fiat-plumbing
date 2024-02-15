@@ -11,7 +11,7 @@ from wtforms import (
 from flask_wtf.file import FileField, FileRequired
 from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
 
-from database import get_all_clients
+from database import get_all_clients, get_document_types
 
 STATE_OPTIONS = [
     ("AL", "Alabama"),
@@ -164,18 +164,11 @@ class PlumbingPermitForm(FlaskForm):
 
 
 class DocumentUploadForm(FlaskForm):
+    doc_types = [doc_type["document_type"] for doc_type in get_document_types()]
     document_type = SelectField(
         "Type",
         validators=[DataRequired()],
-        choices=[
-            "Plans",
-            "Invoice",
-            "Permit",
-            "Inspection",
-            "Contract",
-            "Proposal",
-            "Other",
-        ],
+        choices=doc_types,
     )
     upload_file = FileField(validators=[FileRequired()])
     comment = StringField("Comment")
