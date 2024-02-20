@@ -326,6 +326,29 @@ def get_client_projects(client_id):
         return ""
 
 
+############## Project Status Queries ##############
+def update_project_status(project_id, project_status, user_id):
+    try:
+        # Client Update
+        mycursor = connection.cursor()
+        query = f"""UPDATE projects
+                    SET status = %s, status_date = %s
+                    WHERE project_id = %s;
+                """
+        query_params = (
+            project_status,
+            datetime.now().strftime("%Y-%m-%d"),
+            project_id,
+        )
+        mycursor.execute(query, query_params)
+        connection.commit()
+
+        insert_note(project_id, f"Project status updated: {project_status}", user_id)
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
+
+
 ############## Permits Queries ##############
 def get_master_permit(project_id):
     try:
@@ -425,7 +448,60 @@ def get_invoices(project_id):
             f"""
                 SELECT * 
                 FROM project_invoices
-                WHERE project_id = '{project_id}';
+                WHERE project_id = '{project_id}'
+                ORDER BY installment_number;
+            """
+        )
+    except:
+        return ""
+
+
+def get_open_invoices(project_id, installment_number):
+    try:
+        return get_results(
+            f"""
+                SELECT * 
+                FROM project_invoices
+                WHERE project_id = '{project_id}' AND installment_number <= {installment_number} AND installment_status != "PAID";
+            """
+        )
+    except:
+        return ""
+
+
+def get_invoice(project_id, installment_number):
+    try:
+        return get_results(
+            f"""
+                SELECT * 
+                FROM project_invoices
+                WHERE project_id = '{project_id}' and installment_number = {installment_number};
+            """
+        )
+    except:
+        return ""
+
+
+def get_invoice_items(project_id, installment_number):
+    try:
+        return get_results(
+            f"""
+                SELECT * 
+                FROM project_invoice_items
+                WHERE project_id = '{project_id}' and installment_number = {installment_number};
+            """
+        )
+    except:
+        return ""
+
+
+def get_open_invoice_items(project_id, installment_number):
+    try:
+        return get_results(
+            f"""
+                SELECT * 
+                FROM project_invoice_items
+                WHERE project_id = '{project_id}' AND installment_number <= {installment_number};
             """
         )
     except:
@@ -538,11 +614,11 @@ def get_project_statuses():
             f"""
                 SELECT project_status, order_number
                 FROM matrix_project_statuses
+                WHERE project_status != 'Project Created'
                 ORDER BY order_number;
             """
         )
         statuses = [status["project_status"] for status in get_statuses]
-        print(statuses)
         return statuses
     except:
         return ""

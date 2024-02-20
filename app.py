@@ -40,6 +40,16 @@ from forms import (
 )
 from models import users
 
+FIAT_PLUMBING = {
+    "company_name": "Fiat Plumbing and General Contractors, Inc.",
+    "address": "2727 SW 36th Ave",
+    "city": "Miami",
+    "state": "FL",
+    "zip_code": "33133",
+    "phone_number": "(305) 446-6366",
+    "email": "afiat@aol.com",
+}
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 
@@ -422,13 +432,7 @@ def project_view(project_id, new_project=False):
         filename = document_form.upload_file.data
         document_form.upload_file.data = ""
 
-        # upload_file_type = filename.mimetype.split("/")[-1]
         upload_file_type = filename.filename.split(".")[-1]
-        # if upload_file_type == "plain":
-        #     upload_file_type = "txt"
-
-        # if upload_file_type == "document":
-        #     upload_file_type = "docx"
         upload_file_name = f"{project_id}-{document_type}-{datetime.now().strftime('%Y%m%d%H%M%S')}.{upload_file_type}"
 
         upload_file(
@@ -456,6 +460,14 @@ def project_view(project_id, new_project=False):
         master_form.master_permit.data = ""
 
         database.insert_master_permit(project["project_id"], master_permit)
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+
+    if project_status_form.validate_on_submit():
+        project_status = project_status_form.project_status.data
+        if project_status != project["status"]:
+            database.update_project_status(
+                project["project_id"], project_status, session["user_id"]
+            )
         return redirect(url_for("project_view", project_id=project["project_id"]))
 
     return render_template(
@@ -560,11 +572,52 @@ def download_document(project_id, doc_filename):
     )
 
 
+@app.route("/project/<project_id>/invoice/view/<installment_number>")
+@login_required
+def view_invoice(project_id, installment_number):
+    user = database.get_user(session["user_id"])
+    project_info = database.get_project(project_id)
+    invoice_info = database.get_open_invoices(project_id, installment_number)
+    invoice_items = database.get_invoice_items(project_id, installment_number)
+    client_info = database.get_client(project_info["client_id"])
+
+    invoice_total = sum(item["item_amount"] for item in invoice_items)
+
+    today_date = datetime.now().strftime("%m/%d/%Y")
+
+    # print(database.get_open_invoice_items(project_id, installment_number))
+
+    return render_template(
+        "invoice_print.html",
+        user=user,
+        project_info=project_info,
+        invoice_info=invoice_info,
+        client_info=client_info,
+        today_date=today_date,
+        fiat_plumbing=FIAT_PLUMBING,
+        invoice_total=invoice_total,
+        invoice_items=invoice_items,
+    )
+
+
 ############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
 def populate_city_state_county():
     results = database.get_city_state_county(request.args["zip_code"])[0]
     return results
+
+
+@app.template_filter()
+def format_currency(value):
+    # locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+    value = format(value, ",.2f")
+
+    if not value:
+        return "$0.00"
+        # return locale.currency(0, symbol=True, grouping=True)
+
+    return "$" + str(value)
+    # return locale.currency(value, symbol=True, grouping=True)
 
 
 if __name__ == "__main__":

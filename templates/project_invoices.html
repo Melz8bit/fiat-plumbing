@@ -20,8 +20,6 @@
     </style>
 </head>
 
-
-
 <body>
     <!-- Invoices -->
     <div>
@@ -30,6 +28,7 @@
                 <tr class="text-center">
                     <th>#</th>
                     <th>Date</th>
+                    <th>Description</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th></th>
@@ -46,12 +45,18 @@
                 {% else %}
                 {% for invoice in invoices %}
                 <tr class="text-center">
-                    <td>{{invoice['installment_number'] }}</td>
-                    <td>{{invoice['created_date'].strftime('%m/%d/%Y') }}</td>
-                    <td>{{"${:,.2f}".format(invoice['installment_amount']) }}</td>
-                    <td>{{invoice['installment_status'] | capitalize }}</td>
-                    <td>
-                        <button class="btn btn-primary btn-sm">Update</button>
+                    <td>{{ invoice['installment_number'] }}</td>
+                    <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
+                    <td>{{ invoice['installment_description'] }}</td>
+                    <td>{{ "${:,.2f}".format(invoice['installment_amount']) }}</td>
+                    <td>{{ invoice['installment_status'] | capitalize }}</td>
+                    <td class="text-end w-25">
+                        <div class="btn-group gap-2 justify-content-end">
+                            <a href="#" class="btn btn-primary ">Update</a>
+                            <a href="#" class="btn btn-primary">View</a>
+                            <a href="{{ url_for('view_invoice', project_id=project['project_id'], installment_number=invoice['installment_number'] )}}"
+                                class="btn btn-primary">Print</a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
