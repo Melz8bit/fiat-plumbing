@@ -436,7 +436,6 @@ def project_view(project_id, new_project=False):
     elif invoice_status_form.validate_on_submit():
         invoice_status = invoice_status_form.invoice_status.data
         installment_number = invoice_status_form.installment_number.data
-        print(f"{installment_number=}")
         update_invoice_status(
             project["project_id"],
             installment_number,
