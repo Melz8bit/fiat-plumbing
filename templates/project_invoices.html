@@ -53,17 +53,17 @@
                     {% if invoice['installment_status'] | capitalize != 'Pending' %}
                     <td class="w-25">
                         <div class="btn-group gap-1 justify-content-end">
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#invoiceStatusUpdateModal{{ invoice['installment_number'] }}" {% if
                                 invoice['installment_status']=='Paid' %} disabled {% endif %}>
                                 Update
                             </button>
-                            <button class="btn btn-primary" {% if invoice['installment_status']!='Paid' and
+                            <button class="btn btn-primary btn-sm" {% if invoice['installment_status']!='Paid' and
                                 invoice['installment_status']!='Partial Payment' %} disabled {% endif %}>
-                                Payment History
+                                Payments
                             </button>
                             <a href="{{ url_for('view_invoice', project_id=project['project_id'], installment_number=invoice['installment_number'] )}}"
-                                class="btn btn-primary" target=”_blank”>Print</a>
+                                class="btn btn-primary btn-sm d-flex align-items-center" target=”_blank”>Print</a>
                         </div>
                     </td>
                     {% else %}
@@ -106,6 +106,14 @@
                                             {% endif %}
                                             {% endfor %}
                                         </select>
+
+                                        <div class="collapse mt-2" id="collapseExample">
+                                            <div class="card card-body">
+                                                Some placeholder content for the collapse component. This panel is
+                                                hidden by default but revealed when the user activates the relevant
+                                                trigger.
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -123,6 +131,21 @@
                 {% endif %}
             </tbody>
         </table>
+        <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+        <script>
+            $('#invoice_status').on('change', function (e) {
+                var optionSelected = $("option:selected", this);
+                const collapseElementList = document.querySelectorAll('.collapse');
+                const collapseList = [...collapseElementList].map(collapseEl => new bootstrap.Collapse(collapseEl));
+
+                if (optionSelected.text() == 'Paid') {
+                    collapseList.show;
+                }
+                else {
+                    collapseList.hide;
+                }
+            });
+        </script>
     </div>
 </body>
 
