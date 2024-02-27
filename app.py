@@ -37,6 +37,7 @@ from forms import (
     MasterPermitForm,
     DocumentUploadForm,
     ProjectStatusForm,
+    InvoiceStatusUpdateForm,
 )
 from models import users
 
@@ -419,12 +420,39 @@ def project_view(project_id, new_project=False):
     master_form = MasterPermitForm()
     document_form = DocumentUploadForm()
     project_status_form = ProjectStatusForm()
+    invoice_status_form = InvoiceStatusUpdateForm()
 
     document_type = None
     comment = None
     filename = None
 
-    if document_form.validate_on_submit():
+    if master_form.validate_on_submit():
+        master_permit = master_form.master_permit.data
+        master_form.master_permit.data = ""
+
+        database.insert_master_permit(project["project_id"], master_permit)
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+
+    elif invoice_status_form.validate_on_submit():
+        invoice_status = invoice_status_form.invoice_status.data
+        installment_number = invoice_status_form.installment_number.data
+        print(f"{installment_number=}")
+        update_invoice_status(
+            project["project_id"],
+            installment_number,
+            invoice_status,
+        )
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+
+    elif project_status_form.validate_on_submit():
+        project_status = project_status_form.project_status.data
+        if project_status != project["status"]:
+            database.update_project_status(
+                project["project_id"], project_status, session["user_id"]
+            )
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+
+    elif document_form.validate_on_submit():
         document_type = document_form.document_type.data
         document_form.document_type.data = ""
         comment = document_form.comment.data
@@ -455,21 +483,6 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{document_form.errors=}")
 
-    if master_form.validate_on_submit():
-        master_permit = master_form.master_permit.data
-        master_form.master_permit.data = ""
-
-        database.insert_master_permit(project["project_id"], master_permit)
-        return redirect(url_for("project_view", project_id=project["project_id"]))
-
-    if project_status_form.validate_on_submit():
-        project_status = project_status_form.project_status.data
-        if project_status != project["status"]:
-            database.update_project_status(
-                project["project_id"], project_status, session["user_id"]
-            )
-        return redirect(url_for("project_view", project_id=project["project_id"]))
-
     return render_template(
         "project.html",
         user=user,
@@ -482,6 +495,7 @@ def project_view(project_id, new_project=False):
         master_form=master_form,
         document_form=document_form,
         project_status_form=project_status_form,
+        invoice_status_form=invoice_status_form,
     )
 
 
@@ -578,10 +592,11 @@ def view_invoice(project_id, installment_number):
     user = database.get_user(session["user_id"])
     project_info = database.get_project(project_id)
     invoice_info = database.get_open_invoices(project_id, installment_number)
-    invoice_items = database.get_invoice_items(project_id, installment_number)
+    # invoice_items = database.get_invoice_items(project_id, installment_number)
     client_info = database.get_client(project_info["client_id"])
 
-    invoice_total = sum(item["item_amount"] for item in invoice_items)
+    # invoice_total = sum(item["item_amount"] for item in invoice_items)
+    invoice_total = sum(invoice["installment_amount"] for invoice in invoice_info)
 
     today_date = datetime.now().strftime("%m/%d/%Y")
 
@@ -596,7 +611,15 @@ def view_invoice(project_id, installment_number):
         today_date=today_date,
         fiat_plumbing=FIAT_PLUMBING,
         invoice_total=invoice_total,
-        invoice_items=invoice_items,
+        # invoice_items=invoice_items,
+    )
+
+
+# @app.route("/project/<project_id>/invoice/update/<installment_number>", method=["POST"])
+# @login_required
+def update_invoice_status(project_id, installment_number, installment_status):
+    database.update_installment_status(
+        project_id, installment_number, installment_status, session["user_id"]
     )
 
 

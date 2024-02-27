@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>View Invoice #{{invoice_info[0]['installment_number']}} - {{project_info['project_id'] }}</title>
+    <title>{{project_info['project_id'] }} - Invoice #{{invoice_info[0]['installment_number']}} </title>
     <!-- <link rel="icon" type="image/x-icon" href="/static/clock.png"> -->
     <!-- <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> -->
 
@@ -17,6 +17,7 @@
         html,
         body {
             height: 99%;
+            font-size: 10pt;
         }
 
         body {
@@ -43,6 +44,10 @@
         #navBar {
             display: none;
         }
+
+        #print-icon {
+            display: none;
+        }
     </style>
 
     <style>
@@ -62,15 +67,15 @@
     </div>
 
     <div id="formBody" class="container mx-20 printArea border-black">
-        <!-- Header -->
-        <div id="logo" class="text-start">
+        <div class="text-start">
+            <!-- Header -->
             <div class="row align-items-center">
                 <div class="col">
                     <img src="/static/logo.png" alt="Logo" class="d-inline-block align-text-top me-2">
                 </div>
-                <div class="col text-end">
+                <div id="print-icon" class="col text-end">
                     <button class="btn btn-primary btn-lg" onclick="window.print()">
-                        <i class="fa-solid fa-print"></i></button>
+                        <i class="fa-solid fa-file-pdf"></i></i></button>
                 </div>
             </div>
             <div class=" row mt-3">
@@ -119,7 +124,7 @@
             </div>
 
             <!-- Project Info -->
-            <div class="mt-3">
+            <div class="mt-5">
                 <table class="table table-sm text-center table-bordered">
                     <thead>
                         <th>Project ID</th>
@@ -152,19 +157,14 @@
                     <tbody class="table-group-divider">
                         {% for invoice in invoice_info %}
                         <tr>
-                            <td class="text-center" colspan="1000">Installment #{{ invoice['installment_number'] }}</td>
-                        </tr>
-                        {% for item in invoice_items %}
-                        <tr>
-                            <td class="text-center">{{item['installment_number']}}</td>
-                            <td>{{item['item_description']}}</td>
+                            <td class="text-center">{{invoice['installment_number']}}</td>
+                            <td>{{invoice['installment_description']}}</td>
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td class="text-center">{{item['item_amount'] | format_currency | string}}
+                            <td class="text-center">{{invoice['installment_amount'] | format_currency | string}}
                             </td>
                         </tr>
-                        {% endfor %}
                         {% endfor %}
                     </tbody>
                     <tfoot class="table-group-divider">

@@ -2,6 +2,7 @@ import re
 from flask_wtf import FlaskForm
 from wtforms import (
     EmailField,
+    HiddenField,
     PasswordField,
     SelectField,
     StringField,
@@ -181,3 +182,13 @@ class ProjectStatusForm(FlaskForm):
         choices=get_project_statuses(),
     )
     update = SubmitField("Update")
+
+
+class InvoiceStatusUpdateForm(FlaskForm):
+    invoice_status = SelectField(
+        "Invoice Status",
+        validators=[DataRequired()],
+        choices=["Billed", "Paid"],
+    )
+    installment_number = HiddenField("something", default=0)
+    update = SubmitField("Apply")

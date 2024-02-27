@@ -345,6 +345,14 @@ def update_project_status(project_id, project_status, user_id):
 
         insert_note(project_id, f"Project status updated: {project_status}", user_id)
 
+        if "Phase" in project_status:
+            installment_number = int(project_status[-1]) - 1
+
+            if installment_number == 0:
+                return
+
+            update_installment_status(project_id, installment_number, "Ready", user_id)
+
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
 
@@ -458,13 +466,22 @@ def get_invoices(project_id):
 
 def get_open_invoices(project_id, installment_number):
     try:
-        return get_results(
+        open_invoices = get_results(
             f"""
                 SELECT * 
                 FROM project_invoices
                 WHERE project_id = '{project_id}' AND installment_number <= {installment_number} AND installment_status != "PAID";
             """
         )
+
+        print(f"{installment_number=}")
+        for invoice in open_invoices:
+            if int(invoice["installment_number"]) < int(installment_number):
+                invoice["installment_description"] += " (Past Due)"
+
+        print(open_invoices)
+
+        return open_invoices
     except:
         return ""
 
@@ -506,6 +523,35 @@ def get_open_invoice_items(project_id, installment_number):
         )
     except:
         return ""
+
+
+def update_installment_status(
+    project_id, installment_number, installment_status, user_id
+):
+    try:
+        # Client Update
+        mycursor = connection.cursor()
+        query = f"""UPDATE project_invoices
+                    SET installment_status = %s, installment_status_date = %s
+                    WHERE project_id = %s AND installment_number = %s;
+                """
+        query_params = (
+            installment_status,
+            datetime.now().strftime("%Y-%m-%d"),
+            project_id,
+            installment_number,
+        )
+        mycursor.execute(query, query_params)
+        connection.commit()
+
+        # insert_note(
+        #     project_id,
+        #     f"Installment #{installment_number} status updated: {installment_status}",
+        #     user_id,
+        # )
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
 
 
 ############## Document Queries ##############
