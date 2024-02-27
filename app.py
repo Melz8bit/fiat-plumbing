@@ -599,7 +599,11 @@ def view_invoice(project_id, installment_number):
 
     today_date = datetime.now().strftime("%m/%d/%Y")
 
-    # print(database.get_open_invoice_items(project_id, installment_number))
+    print(f'{invoice_info["installment_status"]=}')
+
+    if invoice_info["installment_status"] == "Paid":
+        invoice_info = database.get_invoice(project_id, installment_number)
+        print(f"{invoice_info=}")
 
     return render_template(
         "invoice_print.html",

@@ -470,7 +470,7 @@ def get_open_invoices(project_id, installment_number):
             f"""
                 SELECT * 
                 FROM project_invoices
-                WHERE project_id = '{project_id}' AND installment_number <= {installment_number} AND installment_status != "PAID";
+                WHERE project_id = '{project_id}' AND installment_number <= {installment_number} AND installment_status != "Paid";
             """
         )
 
@@ -494,7 +494,7 @@ def get_invoice(project_id, installment_number):
                 FROM project_invoices
                 WHERE project_id = '{project_id}' and installment_number = {installment_number};
             """
-        )
+        )[0]
     except:
         return ""
 
