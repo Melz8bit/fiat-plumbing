@@ -426,32 +426,62 @@ def project_view(project_id, new_project=False):
     comment = None
     filename = None
 
+    if invoice_status_form.validate_on_submit():
+        invoice_status = invoice_status_form.invoice_status.data
+        invoice_status_form.invoice_status.data = ""
+        invoice_id = invoice_status_form.invoice_id.data
+        invoice_status_form.invoice_id.data = ""
+        installment_number = invoice_status_form.installment_number.data
+        invoice_status_form.installment_number.data = ""
+        installment_amount = invoice_status_form.installment_amount.data
+        invoice_status_form.installment_amount.data = ""
+        payment_method = invoice_status_form.payment_method.data
+        invoice_status_form.payment_method.data = ""
+        check_number = invoice_status_form.check_number.data
+        invoice_status_form.check_number.data = ""
+        date_received = invoice_status_form.date_received.data
+        invoice_status_form.date_received.data = ""
+        payment_amount = invoice_status_form.payment_amount.data
+        invoice_status_form.payment_amount.data = ""
+        note = invoice_status_form.note.data
+        invoice_status_form.note.data = ""
+
+        print("here")
+
+        if installment_amount != payment_amount:
+            total_payments_received = database.get_invoice_payments_total(invoice_id)
+            print(f"{total_payments_received=}")
+            invoice_status = "Partial Payment"
+
+        # update_invoice_status(
+        #     project["project_id"],
+        #     installment_number,
+        #     invoice_status,
+        # )
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{invoice_status_form.errors=}")
+
     if master_form.validate_on_submit():
         master_permit = master_form.master_permit.data
         master_form.master_permit.data = ""
 
         database.insert_master_permit(project["project_id"], master_permit)
         return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{master_form.errors=}")
 
-    elif invoice_status_form.validate_on_submit():
-        invoice_status = invoice_status_form.invoice_status.data
-        installment_number = invoice_status_form.installment_number.data
-        update_invoice_status(
-            project["project_id"],
-            installment_number,
-            invoice_status,
-        )
-        return redirect(url_for("project_view", project_id=project["project_id"]))
-
-    elif project_status_form.validate_on_submit():
+    if project_status_form.validate_on_submit():
         project_status = project_status_form.project_status.data
         if project_status != project["status"]:
             database.update_project_status(
                 project["project_id"], project_status, session["user_id"]
             )
         return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{project_status_form.errors=}")
 
-    elif document_form.validate_on_submit():
+    if document_form.validate_on_submit():
         document_type = document_form.document_type.data
         document_form.document_type.data = ""
         comment = document_form.comment.data

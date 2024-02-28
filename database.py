@@ -554,6 +554,19 @@ def update_installment_status(
         print("MySQL Error:", e)
 
 
+def get_invoice_payments_total(invoice_id):
+    try:
+        return get_results(
+            f"""
+                SELECT SUM(payment_amount)
+                FROM invoice_payments
+                WHERE invoice_id = {invoice_id};
+            """
+        )
+    except:
+        return ""
+
+
 ############## Document Queries ##############
 def get_project_docs(project_id):
     try:

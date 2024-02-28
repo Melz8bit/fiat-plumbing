@@ -78,9 +78,9 @@
                             {{ invoice_status_form.csrf_token() }}
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="invoiceStatusUpdateModalLabel">Update
-                                        Invoice
-                                        Status</h1>
+                                    <h1 class="modal-title fs-5" id="invoiceStatusUpdateModalLabel">
+                                        Update Invoice Status
+                                    </h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
@@ -107,20 +107,57 @@
                                             {% endfor %}
                                         </select>
 
-                                        <div class="collapse mt-2" id="collapseExample">
+                                        <div class="collapse mt-2 w-100" id="collapseExample">
                                             <div class="card card-body">
-                                                Some placeholder content for the collapse component. This panel is
-                                                hidden by default but revealed when the user activates the relevant
-                                                trigger.
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.payment_method.label(class="input-group-text")
+                                                    }}
+                                                    <select class="form-select" name="paymentMethod" id="paymentMethod">
+                                                        {% for option in invoice_status_form.payment_method %}
+                                                        {% if loop.first %}
+                                                        <option selected disabled value="">Select Payment Method
+                                                        </option>
+                                                        {% endif %}
+                                                        {{ option }}
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.check_number.label(class="input-group-text")
+                                                    }}
+                                                    {{ invoice_status_form.check_number(class="form-control") }}
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.payment_amount.label(class="input-group-text")
+                                                    }}
+                                                    {{
+                                                    invoice_status_form.payment_amount(class="form-control
+                                                    text-end") }}
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.date_received.label(class="input-group-text")
+                                                    }}
+                                                    {{
+                                                    invoice_status_form.date_received(class="form-control text-end")
+                                                    }}
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    {{ invoice_status_form.note.label(class="input-group-text") }}
+                                                    {{ invoice_status_form.note(class="form-control",
+                                                    style="resize:none") }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    {{
-                                    invoice_status_form.installment_number(id=invoice['installment_number'],
-                                    value=invoice['installment_number'])
-                                    }}
+                                    {{ invoice_status_form.installment_number(value=invoice['installment_number']) }}
+                                    {{ invoice_status_form.invoice_id(value=invoice['invoice_id']) }}
+                                    {{ invoice_status_form.installment_amount(value=invoice['installment_amount']) }}
                                     {{ invoice_status_form.update(class="btn btn-outline-primary") }}
                                 </div>
                             </div>
@@ -135,14 +172,11 @@
         <script>
             $('#invoice_status').on('change', function (e) {
                 var optionSelected = $("option:selected", this);
-                const collapseElementList = document.querySelectorAll('.collapse');
-                const collapseList = [...collapseElementList].map(collapseEl => new bootstrap.Collapse(collapseEl));
-
                 if (optionSelected.text() == 'Paid') {
-                    collapseList.show;
+                    $('.collapse').collapse('show');
                 }
                 else {
-                    collapseList.hide;
+                    $('.collapse').collapse('hide');
                 }
             });
         </script>

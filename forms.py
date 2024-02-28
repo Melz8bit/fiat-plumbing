@@ -1,12 +1,15 @@
 import re
 from flask_wtf import FlaskForm
 from wtforms import (
+    DateField,
+    DecimalField,
     EmailField,
     HiddenField,
     PasswordField,
     SelectField,
     StringField,
     SubmitField,
+    TextAreaField,
     validators,
 )
 from flask_wtf.file import FileField, FileRequired
@@ -185,10 +188,30 @@ class ProjectStatusForm(FlaskForm):
 
 
 class InvoiceStatusUpdateForm(FlaskForm):
+    # Payment Information
     invoice_status = SelectField(
         "Invoice Status",
         validators=[DataRequired()],
         choices=["Billed", "Paid"],
     )
-    installment_number = HiddenField("something", default=0)
+    installment_number = HiddenField()
+    installment_amount = HiddenField()
+    invoice_id = HiddenField()
+
+    # Payment Information
+    payment_method = SelectField(
+        "Payment Method",
+        validators=[DataRequired()],
+        choices=["Check", "Direct Deposit"],
+    )
+    check_number = StringField("Check #")
+    payment_amount = DecimalField(
+        "Amount",
+        validators=[DataRequired()],
+        places=2,
+        rounding=None,
+    )
+    date_received = DateField("Date Received")
+    note = TextAreaField("Note")
+
     update = SubmitField("Apply")
