@@ -1,7 +1,7 @@
 import mimetypes
 import json
 import os
-from datetime import datetime
+from datetime import datetime, date
 from flask import (
     Flask,
     flash,
@@ -38,6 +38,7 @@ from forms import (
     DocumentUploadForm,
     ProjectStatusForm,
     InvoiceStatusUpdateForm,
+    InvoicePaymentForm,
 )
 from models import users
 
@@ -421,10 +422,25 @@ def project_view(project_id, new_project=False):
     document_form = DocumentUploadForm()
     project_status_form = ProjectStatusForm()
     invoice_status_form = InvoiceStatusUpdateForm()
+    payment_detail_form = InvoicePaymentForm()
 
     document_type = None
     comment = None
     filename = None
+
+    # print(f"{request.form.get('invoice_status')=}")
+
+    # # if request.form["invoice_status"] == "Billed":
+    # #     print("hi there")
+
+    # if request.form.get("invoice_status") == "Billed":
+    #     print(date.today())
+    #     invoice_status_form.payment_details.payment_method.data = "Check"
+    #     invoice_status_form.payment_details.check_number.data = "0"
+    #     invoice_status_form.payment_details.date_received.data = date.today()
+    #     invoice_status_form.payment_details.payment_amount.data = 0.00
+    #     invoice_status_form.payment_details.note.data = ""
+    #     print(f"{type(invoice_status_form.payment_details.payment_amount.data)=}")
 
     if invoice_status_form.validate_on_submit():
         invoice_status = invoice_status_form.invoice_status.data
@@ -433,31 +449,35 @@ def project_view(project_id, new_project=False):
         invoice_status_form.invoice_id.data = ""
         installment_number = invoice_status_form.installment_number.data
         invoice_status_form.installment_number.data = ""
-        installment_amount = invoice_status_form.installment_amount.data
+        installment_amount = float(invoice_status_form.installment_amount.data)
         invoice_status_form.installment_amount.data = ""
-        payment_method = invoice_status_form.payment_method.data
-        invoice_status_form.payment_method.data = ""
-        check_number = invoice_status_form.check_number.data
-        invoice_status_form.check_number.data = ""
-        date_received = invoice_status_form.date_received.data
-        invoice_status_form.date_received.data = ""
-        payment_amount = invoice_status_form.payment_amount.data
-        invoice_status_form.payment_amount.data = ""
-        note = invoice_status_form.note.data
-        invoice_status_form.note.data = ""
 
-        print("here")
+        payment_method = invoice_status_form.payment_details.payment_method.data
+        invoice_status_form.payment_details.payment_method.data = ""
+        check_number = invoice_status_form.payment_details.check_number.data
+        invoice_status_form.payment_details.check_number.data = ""
+        date_received = invoice_status_form.payment_details.date_received.data
+        invoice_status_form.payment_details.date_received.data = ""
+        payment_amount = float(invoice_status_form.payment_details.payment_amount.data)
+        invoice_status_form.payment_details.payment_amount.data = ""
+        note = invoice_status_form.payment_details.note.data
+        invoice_status_form.payment_details.note.data = ""
 
-        if installment_amount != payment_amount:
+        if installment_amount != payment_amount and invoice_status == "Paid":
             total_payments_received = database.get_invoice_payments_total(invoice_id)
-            print(f"{total_payments_received=}")
             invoice_status = "Partial Payment"
 
-        # update_invoice_status(
-        #     project["project_id"],
-        #     installment_number,
-        #     invoice_status,
-        # )
+            if total_payments_received == installment_amount:
+                invoice_status = "Paid"
+
+        update_invoice_status(
+            project["project_id"],
+            installment_number,
+            invoice_status,
+        )
+
+        # TODO: create query to insert payment information into the database
+
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{invoice_status_form.errors=}")
@@ -525,6 +545,7 @@ def project_view(project_id, new_project=False):
         document_form=document_form,
         project_status_form=project_status_form,
         invoice_status_form=invoice_status_form,
+        payment_detail_form=payment_detail_form,
     )
 
 
@@ -620,20 +641,16 @@ def download_document(project_id, doc_filename):
 def view_invoice(project_id, installment_number):
     user = database.get_user(session["user_id"])
     project_info = database.get_project(project_id)
-    invoice_info = database.get_open_invoices(project_id, installment_number)
-    # invoice_items = database.get_invoice_items(project_id, installment_number)
+    invoice_info = [database.get_invoice(project_id, installment_number)]
     client_info = database.get_client(project_info["client_id"])
 
-    # invoice_total = sum(item["item_amount"] for item in invoice_items)
-    invoice_total = sum(invoice["installment_amount"] for invoice in invoice_info)
-
     today_date = datetime.now().strftime("%m/%d/%Y")
+    print(len(invoice_info))
+    if len(invoice_info) == 1:
+        if invoice_info[0]["installment_status"] != "Paid":
+            invoice_info = database.get_open_invoices(project_id, installment_number)
 
-    print(f'{invoice_info["installment_status"]=}')
-
-    if invoice_info["installment_status"] == "Paid":
-        invoice_info = database.get_invoice(project_id, installment_number)
-        print(f"{invoice_info=}")
+    invoice_total = sum(invoice["installment_amount"] for invoice in invoice_info)
 
     return render_template(
         "invoice_print.html",
@@ -644,7 +661,7 @@ def view_invoice(project_id, installment_number):
         today_date=today_date,
         fiat_plumbing=FIAT_PLUMBING,
         invoice_total=invoice_total,
-        # invoice_items=invoice_items,
+        installment_number=installment_number,
     )
 
 

@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>{{project_info['project_id'] }} - Invoice #{{invoice_info[0]['installment_number']}} </title>
+    <title>{{project_info['project_id'] }} - Invoice #{{ installment_number }} </title>
     <!-- <link rel="icon" type="image/x-icon" href="/static/clock.png"> -->
     <!-- <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> -->
 
@@ -87,7 +87,7 @@
                     </div>
                     <div class="row justify-content-end">
                         <div class="col-5 fw-bold">Invoice #:</div>
-                        <div class="col-4 text-center">{{ invoice_info[0]['installment_number'] }}</div>
+                        <div class="col-4 text-center">{{ installment_number }}</div>
                     </div>
                 </div>
             </div>

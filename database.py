@@ -473,13 +473,9 @@ def get_open_invoices(project_id, installment_number):
                 WHERE project_id = '{project_id}' AND installment_number <= {installment_number} AND installment_status != "Paid";
             """
         )
-
-        print(f"{installment_number=}")
         for invoice in open_invoices:
             if int(invoice["installment_number"]) < int(installment_number):
                 invoice["installment_description"] += " (Past Due)"
-
-        print(open_invoices)
 
         return open_invoices
     except:
@@ -556,13 +552,14 @@ def update_installment_status(
 
 def get_invoice_payments_total(invoice_id):
     try:
-        return get_results(
+        x = get_results(
             f"""
                 SELECT SUM(payment_amount)
                 FROM invoice_payments
                 WHERE invoice_id = {invoice_id};
             """
         )
+        return float(x[0]["sum(payment_amount)"])
     except:
         return ""
 

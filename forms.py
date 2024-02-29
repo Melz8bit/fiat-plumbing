@@ -1,9 +1,11 @@
+import datetime
 import re
 from flask_wtf import FlaskForm
 from wtforms import (
     DateField,
     DecimalField,
     EmailField,
+    FormField,
     HiddenField,
     PasswordField,
     SelectField,
@@ -187,8 +189,27 @@ class ProjectStatusForm(FlaskForm):
     update = SubmitField("Update")
 
 
+class InvoicePaymentForm(FlaskForm):
+    payment_method = SelectField(
+        "Payment Method",
+        choices=["Check", "Direct Deposit"],
+        default="Check",
+    )
+    check_number = StringField("Check #")
+    payment_amount = DecimalField(
+        "Amount",
+        places=2,
+        rounding=None,
+        default=0.0,
+    )
+    date_received = DateField(
+        "Date Received",
+        default=datetime.date.today(),
+    )
+    note = TextAreaField("Note")
+
+
 class InvoiceStatusUpdateForm(FlaskForm):
-    # Payment Information
     invoice_status = SelectField(
         "Invoice Status",
         validators=[DataRequired()],
@@ -197,21 +218,5 @@ class InvoiceStatusUpdateForm(FlaskForm):
     installment_number = HiddenField()
     installment_amount = HiddenField()
     invoice_id = HiddenField()
-
-    # Payment Information
-    payment_method = SelectField(
-        "Payment Method",
-        validators=[DataRequired()],
-        choices=["Check", "Direct Deposit"],
-    )
-    check_number = StringField("Check #")
-    payment_amount = DecimalField(
-        "Amount",
-        validators=[DataRequired()],
-        places=2,
-        rounding=None,
-    )
-    date_received = DateField("Date Received")
-    note = TextAreaField("Note")
-
+    payment_details = FormField(InvoicePaymentForm)
     update = SubmitField("Apply")

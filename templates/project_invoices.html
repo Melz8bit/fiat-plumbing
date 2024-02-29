@@ -76,6 +76,7 @@
                     <div class="modal-dialog">
                         <form id='{{ invoice["installment_number"] }}' method="POST">
                             {{ invoice_status_form.csrf_token() }}
+                            {{ invoice_status_form.payment_details.csrf_token() }}
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="invoiceStatusUpdateModalLabel">
@@ -89,7 +90,8 @@
                                         {{
                                         invoice_status_form.invoice_status.label(class="input-group-text")
                                         }}
-                                        <select class="form-select" name="invoice_status" id="invoice_status">
+                                        <select class="form-select" name="invoice_status"
+                                            id="invoice_status-{{ invoice['installment_number'] }}">
                                             <option selected disabled value="{{ invoice['installment_status'] }}">
                                                 {{ invoice['installment_status'] }}
                                             </option>
@@ -106,15 +108,16 @@
                                             {% endif %}
                                             {% endfor %}
                                         </select>
-
                                         <div class="collapse mt-2 w-100" id="collapseExample">
                                             <div class="card card-body">
                                                 <div class="input-group mb-3">
                                                     {{
-                                                    invoice_status_form.payment_method.label(class="input-group-text")
+                                                    invoice_status_form.payment_details.payment_method.label(class="input-group-text")
                                                     }}
-                                                    <select class="form-select" name="paymentMethod" id="paymentMethod">
-                                                        {% for option in invoice_status_form.payment_method %}
+                                                    <select class="form-select" name="paymentMethod"
+                                                        id="paymentMethod-{{ invoice['installment_number'] }}">
+                                                        {% for option in
+                                                        invoice_status_form.payment_details.payment_method %}
                                                         {% if loop.first %}
                                                         <option selected disabled value="">Select Payment Method
                                                         </option>
@@ -125,29 +128,34 @@
                                                 </div>
                                                 <div class="input-group mb-3">
                                                     {{
-                                                    invoice_status_form.check_number.label(class="input-group-text")
+                                                    invoice_status_form.payment_details.check_number.label(class="input-group-text")
                                                     }}
-                                                    {{ invoice_status_form.check_number(class="form-control") }}
+                                                    {{
+                                                    invoice_status_form.payment_details.check_number(class="form-control")
+                                                    }}
                                                 </div>
                                                 <div class="input-group mb-3">
                                                     {{
-                                                    invoice_status_form.payment_amount.label(class="input-group-text")
+                                                    invoice_status_form.payment_details.payment_amount.label(class="input-group-text")
                                                     }}
                                                     {{
-                                                    invoice_status_form.payment_amount(class="form-control
+                                                    invoice_status_form.payment_details.payment_amount(class="form-control
                                                     text-end") }}
                                                 </div>
                                                 <div class="input-group mb-3">
                                                     {{
-                                                    invoice_status_form.date_received.label(class="input-group-text")
+                                                    invoice_status_form.payment_details.date_received.label(class="input-group-text")
                                                     }}
                                                     {{
-                                                    invoice_status_form.date_received(class="form-control text-end")
+                                                    invoice_status_form.payment_details.date_received(class="form-control
+                                                    text-end")
                                                     }}
                                                 </div>
                                                 <div class="input-group mb-3">
-                                                    {{ invoice_status_form.note.label(class="input-group-text") }}
-                                                    {{ invoice_status_form.note(class="form-control",
+                                                    {{
+                                                    invoice_status_form.payment_details.note.label(class="input-group-text")
+                                                    }}
+                                                    {{ invoice_status_form.payment_details.note(class="form-control",
                                                     style="resize:none") }}
                                                 </div>
                                             </div>
@@ -164,22 +172,24 @@
                         </form>
                     </div>
                 </div>
+                <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+                <script>
+                    $('#invoice_status-{{ invoice["installment_number"] }}').on('change', function (e) {
+                        var optionSelected = $("option:selected", this);
+                        if (optionSelected.text() == 'Paid') {
+                            $('#payment_details-payment_amount').val(null);
+                            $('#payment_details-date_received').val(null);
+                            $('.collapse').collapse('show');
+                        }
+                        else {
+                            $('.collapse').collapse('hide');
+                        }
+                    });
+                </script>
                 {% endfor %}
                 {% endif %}
             </tbody>
         </table>
-        <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-        <script>
-            $('#invoice_status').on('change', function (e) {
-                var optionSelected = $("option:selected", this);
-                if (optionSelected.text() == 'Paid') {
-                    $('.collapse').collapse('show');
-                }
-                else {
-                    $('.collapse').collapse('hide');
-                }
-            });
-        </script>
     </div>
 </body>
 
