@@ -587,6 +587,19 @@ def insert_payment(payment_info):
         print("MySQL Error:", e)
 
 
+def get_invoice_payments(invoice_id):
+    try:
+        return get_results(
+            f"""
+                SELECT *
+                FROM invoice_payments
+                WHERE invoice_id = {invoice_id};
+            """
+        )
+    except:
+        return ""
+
+
 ############## Document Queries ##############
 def get_project_docs(project_id):
     try:

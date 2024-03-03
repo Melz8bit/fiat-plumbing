@@ -428,6 +428,17 @@ def project_view(project_id, new_project=False):
     comment = None
     filename = None
 
+    payment_info = {}
+    for invoice in invoices:
+        payment = database.get_invoice_payments(invoice["invoice_id"])
+        if payment:
+            payment_info[invoice["invoice_id"]] = payment
+
+    print(f"{payment_info=}")
+    for payments in payment_info:
+        for payment in payment_info[payments]:
+            print(payment["payment_method"])
+
     if invoice_status_form.validate_on_submit():
         invoice_status = invoice_status_form.invoice_status.data
         invoice_status_form.invoice_status.data = ""
@@ -541,6 +552,7 @@ def project_view(project_id, new_project=False):
         project_status_form=project_status_form,
         invoice_status_form=invoice_status_form,
         payment_detail_form=payment_detail_form,
+        payment_info=payment_info,
     )
 
 
@@ -660,6 +672,7 @@ def view_invoice(project_id, installment_number):
     )
 
 
+############## Helper Methods ##############
 def update_invoice_status(project_id, installment_number, installment_status):
     database.update_installment_status(
         project_id, installment_number, installment_status, session["user_id"]
