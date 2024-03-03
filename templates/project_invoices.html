@@ -110,6 +110,19 @@
                                         {% endfor %}
                                         {% endif %}
                                     </tbody>
+                                    {% if invoice['invoice_id'] in payments_received_total %}
+                                    <tfoot class="text-center">
+                                        <td></td>
+                                        <th>Total</th>
+                                        <td>{{ payments_received_total[invoice['invoice_id']] | format_currency |
+                                            string}}</td>
+                                        <th>Pending:</th>
+                                        <td>{{ ((invoice['installment_amount'] | float) -
+                                            payments_received_total[invoice['invoice_id']]) | format_currency | string
+                                            }}
+                                        </td>
+                                    </tfoot>
+                                    {% endif %}
                                 </table>
                             </div>
                         </div>
