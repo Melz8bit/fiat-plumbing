@@ -17,13 +17,22 @@
         * {
             font-family: "Raleway", sans-serif;
         }
+
+        #invoiceTable>tbody>tr>td {
+            background-color: white;
+        }
+
+        #invoiceTable>tbody>tr:nth-child(4n+1)>td,
+        #invoiceTable>tbody>tr:nth-child(4n+2)>td {
+            background-color: #F9F9F9;
+        }
     </style>
 </head>
 
 <body>
     <!-- Invoices -->
     <div>
-        <table class="table table-striped mt-2">
+        <table class="table  mt-2" id="invoiceTable">
             <thead>
                 <tr class="text-center">
                     <th>#</th>
@@ -59,17 +68,33 @@
                                 Update
                             </button>
                             <button class="btn btn-primary btn-sm" {% if invoice['installment_status']!='Paid' and
-                                invoice['installment_status']!='Partial Payment' %} disabled {% endif %}>
+                                invoice['installment_status']!='Partial Payment' %} disabled {% endif %}
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapsePayments{{ invoice['installment_number'] }}"
+                                aria-expanded="false"
+                                aria-controls="collapsePayments{{ invoice['installment_number'] }}">
                                 Payments
                             </button>
                             <a href="{{ url_for('view_invoice', project_id=project['project_id'], installment_number=invoice['installment_number'] )}}"
                                 class="btn btn-primary btn-sm d-flex align-items-center" target=”_blank”>Print</a>
                         </div>
+
                     </td>
                     {% else %}
                     <td></td>
                     {% endif %}
                 </tr>
+                <tr class="collapse" id="collapsePayments{{ invoice['installment_number'] }}">
+                    <td colspan="999">
+                        <div>
+                            <div class="card card-body">
+                                Some placeholder content for the collapse component. This panel is hidden by default but
+                                revealed when the user activates the relevant trigger.
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
                 <!-- Modal -->
                 <div class="modal fade" id="invoiceStatusUpdateModal{{ invoice['installment_number'] }}" tabindex="-1"
                     aria-labelledby="invoiceStatusUpdateModalLabel" aria-hidden="true">

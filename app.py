@@ -428,20 +428,6 @@ def project_view(project_id, new_project=False):
     comment = None
     filename = None
 
-    # print(f"{request.form.get('invoice_status')=}")
-
-    # # if request.form["invoice_status"] == "Billed":
-    # #     print("hi there")
-
-    # if request.form.get("invoice_status") == "Billed":
-    #     print(date.today())
-    #     invoice_status_form.payment_details.payment_method.data = "Check"
-    #     invoice_status_form.payment_details.check_number.data = "0"
-    #     invoice_status_form.payment_details.date_received.data = date.today()
-    #     invoice_status_form.payment_details.payment_amount.data = 0.00
-    #     invoice_status_form.payment_details.note.data = ""
-    #     print(f"{type(invoice_status_form.payment_details.payment_amount.data)=}")
-
     if invoice_status_form.validate_on_submit():
         invoice_status = invoice_status_form.invoice_status.data
         invoice_status_form.invoice_status.data = ""
@@ -470,13 +456,22 @@ def project_view(project_id, new_project=False):
             if total_payments_received == installment_amount:
                 invoice_status = "Paid"
 
+        payment_info = {
+            "invoice_id": invoice_id,
+            "payment_method": payment_method,
+            "check_number": check_number,
+            "payment_amount": payment_amount,
+            "date_received": date_received,
+            "payment_note": note,
+        }
+
+        database.insert_payment(payment_info)
+
         update_invoice_status(
             project["project_id"],
             installment_number,
             invoice_status,
         )
-
-        # TODO: create query to insert payment information into the database
 
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
@@ -665,8 +660,6 @@ def view_invoice(project_id, installment_number):
     )
 
 
-# @app.route("/project/<project_id>/invoice/update/<installment_number>", method=["POST"])
-# @login_required
 def update_invoice_status(project_id, installment_number, installment_status):
     database.update_installment_status(
         project_id, installment_number, installment_status, session["user_id"]

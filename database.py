@@ -564,6 +564,29 @@ def get_invoice_payments_total(invoice_id):
         return ""
 
 
+def insert_payment(payment_info):
+    try:
+        mycursor = connection.cursor()
+        query = f"""INSERT INTO invoice_payments (invoice_id, payment_method, check_number, payment_amount, date_received, payment_note)
+                VALUES (%s, %s, %s, %s, %s, %s)"""
+
+        query_params = (
+            payment_info["invoice_id"],
+            payment_info["payment_method"],
+            payment_info["check_number"],
+            payment_info["payment_amount"],
+            payment_info["date_received"],
+            payment_info["payment_note"],
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("Payment addded")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
+
+
 ############## Document Queries ##############
 def get_project_docs(project_id):
     try:
