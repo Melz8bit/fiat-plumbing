@@ -167,23 +167,17 @@
                                             {% endif %}
                                             {% endfor %}
                                         </select>
-                                        <div class="collapse mt-2 w-100" id="collapseExample">
+                                        <div class="collapse mt-2 w-100"
+                                            id="collapsePayment{{ invoice['installment_number'] }}">
                                             <div class="card card-body">
                                                 <div class="input-group mb-3">
                                                     {{
                                                     invoice_status_form.payment_details.payment_method.label(class="input-group-text")
                                                     }}
-                                                    <select class="form-select" name="paymentMethod"
-                                                        id="paymentMethod-{{ invoice['installment_number'] }}">
-                                                        {% for option in
-                                                        invoice_status_form.payment_details.payment_method %}
-                                                        {% if loop.first %}
-                                                        <option selected disabled value="">Select Payment Method
-                                                        </option>
-                                                        {% endif %}
-                                                        {{ option }}
-                                                        {% endfor %}
-                                                    </select>
+                                                    {{
+                                                    invoice_status_form.payment_details.payment_method(class="form-select",
+                                                    id="paymentMethod-{{ invoice['installment_number'] }}")
+                                                    }}
                                                 </div>
                                                 <div class="input-group mb-3">
                                                     {{
@@ -232,10 +226,10 @@
                                             if (optionSelected.text() == 'Paid') {
                                                 $('#payment_details-payment_amount{{invoice["installment_number"]}}').val(null);
                                                 $('#payment_details-date_received{{invoice["installment_number"]}}').val(null);
-                                                $('.collapse').collapse('show');
+                                                $('#collapsePayment{{ invoice["installment_number"] }}').collapse('show');
                                             }
                                             else {
-                                                $('.collapse').collapse('hide');
+                                                $('#collapsePayment{{ invoice["installment_number"] }}').collapse('hide');
                                             }
                                         });
                                     </script>

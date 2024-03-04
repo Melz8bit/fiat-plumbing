@@ -348,7 +348,7 @@ def update_project_status(project_id, project_status, user_id):
         if "Phase" in project_status:
             installment_number = int(project_status[-1]) - 1
 
-            if installment_number == 0:
+            if installment_number <= 0:
                 return
 
             update_installment_status(project_id, installment_number, "Ready", user_id)
@@ -529,13 +529,14 @@ def update_installment_status(
         mycursor = connection.cursor()
         query = f"""UPDATE project_invoices
                     SET installment_status = %s, installment_status_date = %s
-                    WHERE project_id = %s AND installment_number = %s;
+                    WHERE project_id = %s AND installment_number = %s AND installment_status = %s;
                 """
         query_params = (
             installment_status,
             datetime.now().strftime("%Y-%m-%d"),
             project_id,
             installment_number,
+            "Pending",
         )
         mycursor.execute(query, query_params)
         connection.commit()
