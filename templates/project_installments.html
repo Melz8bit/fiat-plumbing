@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        /* #installmentTable>tbody>tr>td {
+            background-color: white;
+        }
+
+        #installmentTable>tbody>tr:nth-child(4n+1)>td,
+        #installmentTable>tbody>tr:nth-child(4n+2)>td {
+            background-color: #F9F9F9;
+        } */
+    </style>
+</head>
+
+<body>
+    <!-- Installments -->
+    <div>
+        <table class="table table-striped" id="installmentTable">
+            <thead>
+                <tr class="text-center">
+                    <th>#</th>
+                    <th class="text-start">Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Status Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if installments|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="100%">
+                        No installments have been created
+                    </td>
+                </tr>
+                {% else %}
+                {% for installment in installments %}
+                <tr class="text-center">
+                    <td>{{ installment['installment_number'] }}</td>
+                    <td class="text-start">{{ installment['installment_description'] }}</td>
+                    <td>{{ "${:,.2f}".format(installment['installment_amount']) }}</td>
+                    <td>{{ installment['installment_status'] | capitalize }}</td>
+                    <td>{{ installment['installment_status_date'] }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>

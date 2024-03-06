@@ -351,9 +351,10 @@ def update_project_status(project_id, project_status, user_id):
             if installment_number <= 0:
                 return
 
-            update_installment_status(
-                project_id, installment_number, "Ready", user_id, True
-            )
+            # TODO: Replace this call if needed
+            # update_installment_status(
+            #     project_id, installment_number, "Ready", user_id, True
+            # )
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
@@ -451,7 +452,7 @@ def insert_note(project_id, note, user_id):
         print("MySQL Error:", e)
 
 
-############## Invoices Queries ##############
+############## Invoices/Installment Queries ##############
 def get_invoices(project_id):
     try:
         return get_results(
@@ -523,48 +524,6 @@ def get_open_invoice_items(project_id, installment_number):
         return ""
 
 
-def update_installment_status(
-    project_id, installment_number, installment_status, user_id, phase_update=False
-):
-    try:
-        # Client Update
-        mycursor = connection.cursor()
-        query = f"""UPDATE project_invoices
-                    SET installment_status = %s, installment_status_date = %s
-                    WHERE project_id = %s AND installment_number = %s;
-                """
-        query_params = (
-            installment_status,
-            datetime.now().strftime("%Y-%m-%d"),
-            project_id,
-            installment_number,
-        )
-
-        if phase_update:
-            query = f"""UPDATE project_invoices
-                        SET installment_status = %s, installment_status_date = %s
-                        WHERE project_id = %s AND installment_number = %s AND installment_status = %s;
-                    """
-            query_params = (
-                installment_status,
-                datetime.now().strftime("%Y-%m-%d"),
-                project_id,
-                installment_number,
-                "Pending",
-            )
-        mycursor.execute(query, query_params)
-        connection.commit()
-
-        # insert_note(
-        #     project_id,
-        #     f"Installment #{installment_number} status updated: {installment_status}",
-        #     user_id,
-        # )
-
-    except MySQLdb.Error as e:
-        print("MySQL Error:", e)
-
-
 def get_invoice_payments_total(invoice_id):
     try:
         x = get_results(
@@ -613,6 +572,112 @@ def get_invoice_payments(invoice_id):
         )
     except:
         return ""
+
+
+def get_next_invoice_number(project_id):
+    try:
+        max_invoice = get_results(
+            f"""
+                SELECT MAX(invoice_id) as curr_inv
+                FROM project_installments
+                WHERE project_id = '{project_id}';
+            """
+        )[0]["curr_inv"]
+
+        if not max_invoice:
+            max_invoice = 1
+
+        return max_invoice + 1
+    except:
+        return ""
+
+
+def create_invoice(selected_installments, project_id):
+    next_invoice_number = get_next_invoice_number(project_id)
+    for installment in selected_installments:
+        try:
+            # Installment Update
+            mycursor = connection.cursor()
+            query = f"""UPDATE project_installments
+                        SET invoice_id = %s, installment_status = %s, installment_status_date = %s
+                        WHERE project_id = %s AND installment_id = %s;
+                    """
+            query_params = (
+                next_invoice_number,
+                "Billed",
+                datetime.now().strftime("%Y-%m-%d"),
+                project_id,
+                int(installment),
+            )
+
+            mycursor.execute(query, query_params)
+            connection.commit()
+
+            # Invoice Create
+
+            # insert_note(
+            #     project_id,
+            #     f"Installment #{installment_number} status updated: {installment_status}",
+            #     user_id,
+            # )
+
+        except MySQLdb.Error as e:
+            print("MySQL Error:", e)
+
+
+def get_installments(project_id):
+    try:
+        return get_results(
+            f"""
+                SELECT *
+                FROM project_installments
+                WHERE project_id = '{project_id}';
+            """
+        )
+    except:
+        return ""
+
+
+def update_installment_status(
+    project_id, installment_number, installment_status, user_id, phase_update=False
+):
+    try:
+        # Client Update
+        mycursor = connection.cursor()
+        query = f"""UPDATE project_invoices
+                    SET installment_status = %s, installment_status_date = %s
+                    WHERE project_id = %s AND installment_number = %s;
+                """
+        query_params = (
+            installment_status,
+            datetime.now().strftime("%Y-%m-%d"),
+            project_id,
+            installment_number,
+        )
+
+        if phase_update:
+            query = f"""UPDATE project_invoices
+                        SET installment_status = %s, installment_status_date = %s
+                        WHERE project_id = %s AND installment_number = %s AND installment_status = %s;
+                    """
+            query_params = (
+                installment_status,
+                datetime.now().strftime("%Y-%m-%d"),
+                project_id,
+                installment_number,
+                "Pending",
+            )
+        mycursor.execute(query, query_params)
+        connection.commit()
+
+        # insert_note(
+        #     project_id,
+        #     f"Installment #{installment_number} status updated: {installment_status}",
+        #     user_id,
+        # )
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
 
 
 ############## Document Queries ##############

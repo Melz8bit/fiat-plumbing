@@ -39,6 +39,7 @@ from forms import (
     ProjectStatusForm,
     InvoiceStatusUpdateForm,
     InvoicePaymentForm,
+    InvoiceCreateForm,
 )
 from models import users
 
@@ -410,6 +411,7 @@ def project_view(project_id, new_project=False):
     user = database.get_user(session["user_id"])
     project = database.get_project(project_id)
     notes = database.get_notes(project_id)
+    installments = database.get_installments(project_id)
     invoices = database.get_invoices(project_id)
     documents = database.get_project_docs(project_id)
     master_permit = database.get_master_permit(project_id)
@@ -423,6 +425,7 @@ def project_view(project_id, new_project=False):
     project_status_form = ProjectStatusForm()
     invoice_status_form = InvoiceStatusUpdateForm()
     payment_detail_form = InvoicePaymentForm()
+    invoice_create_form = InvoiceCreateForm()
 
     document_type = None
     comment = None
@@ -543,11 +546,16 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{document_form.errors=}")
 
+    if invoice_create_form.validate_on_submit():
+        selected_installments = request.form.getlist("installment_select")
+        database.create_invoice(selected_installments, project_id)
+
     return render_template(
         "project.html",
         user=user,
         project=project,
         notes=notes,
+        installments=installments,
         invoices=invoices,
         documents=documents,
         master_permit=master_permit,
@@ -557,6 +565,7 @@ def project_view(project_id, new_project=False):
         project_status_form=project_status_form,
         invoice_status_form=invoice_status_form,
         payment_detail_form=payment_detail_form,
+        invoice_create_form=invoice_create_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
     )

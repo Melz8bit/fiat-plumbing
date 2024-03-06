@@ -21,7 +21,17 @@
 <body>
     <!-- Invoices -->
     <div>
-        <table class="table  mt-2" id="invoiceTable">
+        <div class="text-end pt-1">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createInvoiceModal">Create
+                Invoice</button>
+        </div>
+        <!-- Create Invoice Modal -->
+        <div class="modal fade" id="createInvoiceModal" tabindex="-1" aria-labelledby="createInvoiceModalLabel"
+            aria-hidden="true">
+            {% include 'create_invoice_modal.html' %}
+        </div>
+
+        <table class="table" id="invoiceTable">
             <thead>
                 <tr class="text-center">
                     <th>#</th>
