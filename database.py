@@ -578,7 +578,7 @@ def get_next_invoice_number(project_id):
     try:
         max_invoice = get_results(
             f"""
-                SELECT MAX(invoice_id) as curr_inv
+                SELECT MAX(invoice_number) as curr_inv
                 FROM project_invoices
                 WHERE project_id = '{project_id}';
             """
@@ -587,17 +587,19 @@ def get_next_invoice_number(project_id):
         if not max_invoice:
             max_invoice = 0
 
+        print(type(max_invoice))
         return max_invoice + 1
     except:
         return ""
 
 
 def create_invoice(selected_installments, project_id):
+    print(f"{selected_installments=}")
+
     next_invoice_number = get_next_invoice_number(project_id)
     invoice_total = 0
 
     print(f"{next_invoice_number=}")
-    print(f"{selected_installments=}")
 
     for installment in selected_installments:
         try:
