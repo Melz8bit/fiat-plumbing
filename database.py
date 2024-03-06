@@ -351,7 +351,9 @@ def update_project_status(project_id, project_status, user_id):
             if installment_number <= 0:
                 return
 
-            update_installment_status(project_id, installment_number, "Ready", user_id)
+            update_installment_status(
+                project_id, installment_number, "Ready", user_id, True
+            )
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
@@ -522,22 +524,34 @@ def get_open_invoice_items(project_id, installment_number):
 
 
 def update_installment_status(
-    project_id, installment_number, installment_status, user_id
+    project_id, installment_number, installment_status, user_id, phase_update=False
 ):
     try:
         # Client Update
         mycursor = connection.cursor()
         query = f"""UPDATE project_invoices
                     SET installment_status = %s, installment_status_date = %s
-                    WHERE project_id = %s AND installment_number = %s AND installment_status = %s;
+                    WHERE project_id = %s AND installment_number = %s;
                 """
         query_params = (
             installment_status,
             datetime.now().strftime("%Y-%m-%d"),
             project_id,
             installment_number,
-            "Pending",
         )
+
+        if phase_update:
+            query = f"""UPDATE project_invoices
+                        SET installment_status = %s, installment_status_date = %s
+                        WHERE project_id = %s AND installment_number = %s AND installment_status = %s;
+                    """
+            query_params = (
+                installment_status,
+                datetime.now().strftime("%Y-%m-%d"),
+                project_id,
+                installment_number,
+                "Pending",
+            )
         mycursor.execute(query, query_params)
         connection.commit()
 
