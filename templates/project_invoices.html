@@ -35,10 +35,11 @@
             <thead>
                 <tr class="text-center">
                     <th>#</th>
-                    <th>Date</th>
-                    <th>Description</th>
+                    <th>Created Date</th>
                     <th>Amount</th>
+                    <th>Billed Date</th>
                     <th>Status</th>
+                    <th>Status Date</th>
                     <th></th>
                 </tr>
             </thead>
@@ -53,11 +54,13 @@
                 {% else %}
                 {% for invoice in invoices %}
                 <tr class="text-center">
-                    <td>{{ invoice['installment_number'] }}</td>
+                    <td>{{ invoice['invoice_number'] }}</td>
                     <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
-                    <td>{{ invoice['installment_description'] }}</td>
-                    <td>{{ "${:,.2f}".format(invoice['installment_amount']) }}</td>
-                    <td>{{ invoice['installment_status'] | capitalize }}</td>
+                    <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
+                    <td>{{ invoice['billed_date'].strftime('%m/%d/%Y') }}</td>
+                    <td>{{ invoice['invoice_status'] | capitalize }}</td>
+                    <td>{{ invoice['invoice_status_date'].strftime('%m/%d/%Y') }}</td>
+                    <!-- {*
                     {% if invoice['installment_status'] | capitalize != 'Pending' %}
                     <td class="w-25">
                         <div class="btn-group gap-1 justify-content-end">
@@ -82,8 +85,9 @@
                     {% else %}
                     <td></td>
                     {% endif %}
+                    *} -->
                 </tr>
-                <tr class="collapse" id="collapsePayments{{ invoice['installment_number'] }}">
+                <!-- {*<tr class="collapse" id="collapsePayments{{ invoice['installment_number'] }}">
                     <td colspan="999">
                         <div>
                             <div class="card card-body">
@@ -137,9 +141,10 @@
                             </div>
                         </div>
                     </td>
-                </tr>
+                </tr> *} -->
 
                 <!-- Modal -->
+                <!-- {*
                 <div class="modal fade" id="invoiceStatusUpdateModal{{ invoice['installment_number'] }}" tabindex="-1"
                     aria-labelledby="invoiceStatusUpdateModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
@@ -254,6 +259,7 @@
                         </form>
                     </div>
                 </div>
+                *} -->
 
                 {% endfor %}
                 {% endif %}

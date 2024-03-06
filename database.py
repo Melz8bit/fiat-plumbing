@@ -460,7 +460,7 @@ def get_invoices(project_id):
                 SELECT * 
                 FROM project_invoices
                 WHERE project_id = '{project_id}'
-                ORDER BY installment_number;
+                ORDER BY invoice_number;
             """
         )
     except:
@@ -579,13 +579,13 @@ def get_next_invoice_number(project_id):
         max_invoice = get_results(
             f"""
                 SELECT MAX(invoice_id) as curr_inv
-                FROM project_installments
+                FROM project_invoices
                 WHERE project_id = '{project_id}';
             """
         )[0]["curr_inv"]
 
         if not max_invoice:
-            max_invoice = 1
+            max_invoice = 0
 
         return max_invoice + 1
     except:
@@ -594,12 +594,17 @@ def get_next_invoice_number(project_id):
 
 def create_invoice(selected_installments, project_id):
     next_invoice_number = get_next_invoice_number(project_id)
+    invoice_total = 0
+
+    print(f"{next_invoice_number=}")
+    print(f"{selected_installments=}")
+
     for installment in selected_installments:
         try:
             # Installment Update
             mycursor = connection.cursor()
             query = f"""UPDATE project_installments
-                        SET invoice_id = %s, installment_status = %s, installment_status_date = %s
+                        SET invoice_number = %s, installment_status = %s, installment_status_date = %s
                         WHERE project_id = %s AND installment_id = %s;
                     """
             query_params = (
@@ -613,8 +618,6 @@ def create_invoice(selected_installments, project_id):
             mycursor.execute(query, query_params)
             connection.commit()
 
-            # Invoice Create
-
             # insert_note(
             #     project_id,
             #     f"Installment #{installment_number} status updated: {installment_status}",
@@ -623,6 +626,40 @@ def create_invoice(selected_installments, project_id):
 
         except MySQLdb.Error as e:
             print("MySQL Error:", e)
+
+    # Get Invoice Total
+    invoice_total = get_results(
+        f"""
+            SELECT SUM(installment_amount) as inv_total
+            FROM project_installments
+            WHERE project_id = '{project_id}' AND invoice_number = {next_invoice_number}; 
+        """
+    )[0]["inv_total"]
+
+    print(f"{invoice_total=}")
+
+    # Invoice Create
+    try:
+        mycursor = connection.cursor()
+        query = f"""
+                    INSERT INTO project_invoices (project_id, invoice_number, billed_date, invoice_amount, invoice_status)
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+
+        query_params = (
+            project_id,
+            next_invoice_number,
+            datetime.now().strftime("%Y-%m-%d"),
+            invoice_total,
+            "Billed",
+        )
+
+        mycursor.execute(query, query_params)
+        connection.commit()
+        print("Invoice Created")
+
+    except MySQLdb.Error as e:
+        print("MySQL Error:", e)
 
 
 def get_installments(project_id):

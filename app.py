@@ -433,68 +433,71 @@ def project_view(project_id, new_project=False):
 
     payment_info = {}
     payments_received_total = {}
-    for invoice in invoices:
-        payment = database.get_invoice_payments(invoice["invoice_id"])
-        if payment:
-            payment_info[invoice["invoice_id"]] = payment
-            payments_received_total[invoice["invoice_id"]] = (
-                database.get_invoice_payments_total(invoice["invoice_id"])
-            )
-
-    if invoice_status_form.validate_on_submit():
-        invoice_status = invoice_status_form.invoice_status.data
-        invoice_status_form.invoice_status.data = ""
-        invoice_id = invoice_status_form.invoice_id.data
-        invoice_status_form.invoice_id.data = ""
-        installment_number = invoice_status_form.installment_number.data
-        invoice_status_form.installment_number.data = ""
-        installment_amount = float(invoice_status_form.installment_amount.data)
-        invoice_status_form.installment_amount.data = ""
-
-        payment_method = invoice_status_form.payment_details.payment_method.data
-        invoice_status_form.payment_details.payment_method.data = ""
-        check_number = invoice_status_form.payment_details.check_number.data
-        invoice_status_form.payment_details.check_number.data = ""
-        date_received = invoice_status_form.payment_details.date_received.data
-        invoice_status_form.payment_details.date_received.data = ""
-        payment_amount = float(invoice_status_form.payment_details.payment_amount.data)
-        invoice_status_form.payment_details.payment_amount.data = ""
-        note = invoice_status_form.payment_details.note.data
-        invoice_status_form.payment_details.note.data = ""
-
-        if installment_amount != payment_amount and invoice_status == "Paid":
-            total_payments_received = database.get_invoice_payments_total(invoice_id)
-
-            if not total_payments_received:
-                total_payments_received = 0
-
-            total_payments_received = float(total_payments_received) + payment_amount
-
-            invoice_status = "Partial Payment"
-
-            if total_payments_received == installment_amount:
-                invoice_status = "Paid"
-
-        payment_info = {
-            "invoice_id": invoice_id,
-            "payment_method": payment_method,
-            "check_number": check_number,
-            "payment_amount": payment_amount,
-            "date_received": date_received,
-            "payment_note": note,
-        }
-
-        database.insert_payment(payment_info)
-
-        update_invoice_status(
-            project["project_id"],
-            installment_number,
-            invoice_status,
-        )
-
-        return redirect(url_for("project_view", project_id=project["project_id"]))
+    if invoices:
+        for invoice in invoices:
+            payment = database.get_invoice_payments(invoice["invoice_id"])
+            if payment:
+                payment_info[invoice["invoice_id"]] = payment
+                payments_received_total[invoice["invoice_id"]] = (
+                    database.get_invoice_payments_total(invoice["invoice_id"])
+                )
     else:
-        print(f"{invoice_status_form.errors=}")
+        invoices = []
+
+    # if invoice_status_form.validate_on_submit():
+    #     invoice_status = invoice_status_form.invoice_status.data
+    #     invoice_status_form.invoice_status.data = ""
+    #     invoice_id = invoice_status_form.invoice_id.data
+    #     invoice_status_form.invoice_id.data = ""
+    #     installment_number = invoice_status_form.installment_number.data
+    #     invoice_status_form.installment_number.data = ""
+    #     installment_amount = float(invoice_status_form.installment_amount.data)
+    #     invoice_status_form.installment_amount.data = ""
+
+    #     payment_method = invoice_status_form.payment_details.payment_method.data
+    #     invoice_status_form.payment_details.payment_method.data = ""
+    #     check_number = invoice_status_form.payment_details.check_number.data
+    #     invoice_status_form.payment_details.check_number.data = ""
+    #     date_received = invoice_status_form.payment_details.date_received.data
+    #     invoice_status_form.payment_details.date_received.data = ""
+    #     payment_amount = float(invoice_status_form.payment_details.payment_amount.data)
+    #     invoice_status_form.payment_details.payment_amount.data = ""
+    #     note = invoice_status_form.payment_details.note.data
+    #     invoice_status_form.payment_details.note.data = ""
+
+    #     if installment_amount != payment_amount and invoice_status == "Paid":
+    #         total_payments_received = database.get_invoice_payments_total(invoice_id)
+
+    #         if not total_payments_received:
+    #             total_payments_received = 0
+
+    #         total_payments_received = float(total_payments_received) + payment_amount
+
+    #         invoice_status = "Partial Payment"
+
+    #         if total_payments_received == installment_amount:
+    #             invoice_status = "Paid"
+
+    #     payment_info = {
+    #         "invoice_id": invoice_id,
+    #         "payment_method": payment_method,
+    #         "check_number": check_number,
+    #         "payment_amount": payment_amount,
+    #         "date_received": date_received,
+    #         "payment_note": note,
+    #     }
+
+    #     database.insert_payment(payment_info)
+
+    #     update_invoice_status(
+    #         project["project_id"],
+    #         installment_number,
+    #         invoice_status,
+    #     )
+
+    #     return redirect(url_for("project_view", project_id=project["project_id"]))
+    # else:
+    #     print(f"{invoice_status_form.errors=}")
 
     if master_form.validate_on_submit():
         master_permit = master_form.master_permit.data
@@ -549,6 +552,7 @@ def project_view(project_id, new_project=False):
     if invoice_create_form.validate_on_submit():
         selected_installments = request.form.getlist("installment_select")
         database.create_invoice(selected_installments, project_id)
+        return redirect(url_for("project_view", project_id=project["project_id"]))
 
     return render_template(
         "project.html",
