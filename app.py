@@ -83,9 +83,10 @@ def login():
         login_form.password.data = ""
 
         user_db_password = database.get_user_password(email)
+
         if user_db_password:
-            user_db_password = user_db_password[0]
-            if check_password_hash(user_db_password["password"], password):
+            # user_db_password = user_db_password[0]
+            if check_password_hash(user_db_password, password):
                 user_dict = database.get_user_from_email(email)
                 user = users.Users(user_dict)
                 login_user(user, remember=True)

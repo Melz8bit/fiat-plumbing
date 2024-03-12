@@ -9,33 +9,42 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from werkzeug.utils import secure_filename
 
+# from supabase import create_client, Client
+
 load_dotenv()
 
 TODAY = datetime.today().strftime("%Y-%m-%d")
 
-DB_CONNECTION_STRING = f"mysql+pymysql://{os.getenv('DATABASE_USERNAME')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_NAME')}?charset=utf8mb4"
-connection = MySQLdb.connect(
-    host=os.getenv("DATABASE_HOST"),
-    user=os.getenv("DATABASE_USERNAME"),
-    passwd=os.getenv("DATABASE_PASSWORD"),
-    db=os.getenv("DATABASE"),
-    autocommit=True,
-    ssl_mode="VERIFY_IDENTITY",
-    ssl={
-        "ssl_ca": "/etc/ssl/cert.pem",
-    },
-)
+# DB_CONNECTION_STRING = f"mysql+pymysql://{os.getenv('DATABASE_USERNAME')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_NAME')}?charset=utf8mb4"
+# connection = MySQLdb.connect(
+#     host=os.getenv("DATABASE_HOST"),
+#     user=os.getenv("DATABASE_USERNAME"),
+#     passwd=os.getenv("DATABASE_PASSWORD"),
+#     db=os.getenv("DATABASE"),
+#     autocommit=True,
+#     ssl_mode="VERIFY_IDENTITY",
+#     ssl={
+#         "ssl_ca": "/etc/ssl/cert.pem",
+#     },
+# )
 
-engine = create_engine(
-    DB_CONNECTION_STRING,
-    connect_args={
-        "ssl": {
-            "ssl_ca": "/etc/ssl/cert.pem",
-        }
-    },
-    echo=False,
-)
+# engine = create_engine(
+#     DB_CONNECTION_STRING,
+#     connect_args={
+#         "ssl": {
+#             "ssl_ca": "/etc/ssl/cert.pem",
+#         }
+#     },
+#     echo=False,
+# )
 
+url: str = os.environ.get("SUPABASE_URL")
+password: str = os.environ.get("SUPABASE_PWD")
+db_name: str = os.environ.get("SUPABASE_DB_NAME")
+host: str = os.environ.get("SUPABASE_HOST")
+
+DB_CONNECTION_STRING = f"postgresql+psycopg2://{url}:{password}@{host}:5432/{db_name}"
+engine = create_engine(DB_CONNECTION_STRING)
 
 Base = declarative_base()
 
@@ -54,10 +63,12 @@ def create_session(engine):
 
 def get_results(sqlQuery):
     try:
-        cursor = connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute(sqlQuery)
-        results = cursor.fetchall()
+        # cursor = connection.cursor(MySQLdb.cursors.DictCursor)
+        # cursor.execute(sqlQuery)
+        # results = cursor.fetchall()
 
+        with engine.connect() as connection:
+            results = connection.execute(text(f"{sqlQuery}")).all()
         return results
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
@@ -66,37 +77,47 @@ def get_results(sqlQuery):
 ############## User Queries ##############
 def get_user(user_id):
     try:
-        return get_results(
-            f"""
-                SELECT * FROM users WHERE users.user_id = '{user_id}' 
+        sqlQuery = f"""
+                SELECT * FROM users WHERE users.user_id = '{user_id}'; 
             """
-        )[0]
+
+        with engine.connect() as connection:
+            user = connection.execute(text(f"{sqlQuery}")).first()
+
+            return user
     except:
         return ""
 
 
 def get_user_password(email):
     try:
-        return get_results(
-            f"""
+        sqlQuery = f"""
                 SELECT password
                 FROM users
                 WHERE users.email = '{email}'
             """
-        )
+
+        with engine.connect() as connection:
+            password = connection.execute(text(f"{sqlQuery}")).first()[0]
+
+        return password
     except:
         return ""
 
 
 def get_user_from_email(email):
     try:
-        return get_results(
-            f"""
+        sqlQuery = f"""
                 SELECT *
                 FROM users
                 WHERE users.email = '{email}'
             """
-        )[0]
+
+        with engine.connect() as connection:
+            results = connection.execute(text(f"{sqlQuery}"))
+            user_dict = results.mappings().all()[0]
+
+        return user_dict
     except:
         return ""
 
@@ -154,15 +175,17 @@ def get_client_poc(client_id):
 
 def get_all_clients():
     try:
-        return get_results(
-            f"""
-                SELECT clients.*, count(project_id) AS project_count
-                FROM clients
-                LEFT JOIN projects ON clients.client_id = projects.client_id
-                GROUP BY clients.client_id
+        sqlQuery = f"""
+                SELECT clients.*, count(project_id) AS project_count FROM clients LEFT JOIN projects ON clients.client_id = projects.client_id GROUP BY clients.client_id
             """
-        )
-    except:
+
+        with engine.connect() as connection:
+            clients = connection.execute(text(f"{sqlQuery}"))
+            clients_dict = clients.mappings().all()
+
+        return clients_dict
+    except Exception as e:
+        print(f"{e=}")
         return ""
 
 
@@ -261,14 +284,17 @@ def update_client(client_info):
 ############## Project Queries ##############
 def get_all_projects():
     try:
-        return get_results(
-            f"""
+        sqlQuery = f"""
                 SELECT projects.*, clients.name
                 FROM projects
                 INNER JOIN clients
                 ON projects.client_id = clients.client_id;
             """
-        )
+
+        with engine.connect() as connection:
+            projects = connection.execute(text(f"{sqlQuery}")).all()
+
+        return projects
     except:
         return ""
 
