@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        #invoiceTable>tbody>tr>td {
+            background-color: white;
+        }
+
+        #invoiceTable>tbody>tr:nth-child(4n+1)>td,
+        #invoiceTable>tbody>tr:nth-child(4n+2)>td {
+            background-color: #F9F9F9;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Invoices -->
+    <div>
+        <div class="text-end pt-1">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createInvoiceModal">Create
+                Invoice</button>
+        </div>
+        <!-- Create Invoice Modal -->
+        <div class="modal fade" id="createInvoiceModal" tabindex="-1" aria-labelledby="createInvoiceModalLabel"
+            aria-hidden="true">
+            {% include 'create_invoice_modal.html' %}
+        </div>
+
+        <table class="table" id="invoiceTable">
+            <thead>
+                <tr class="text-center">
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if invoices|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="100%">
+                        No invoices have been created
+                    </td>
+                </tr>
+                {% else %}
+                {% for invoice in invoices %}
+                <tr class="text-center">
+                    <td>{{ invoice['installment_number'] }}</td>
+                    <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
+                    <td>{{ invoice['installment_description'] }}</td>
+                    <td>{{ "${:,.2f}".format(invoice['installment_amount']) }}</td>
+                    <td>{{ invoice['installment_status'] | capitalize }}</td>
+                    {% if invoice['installment_status'] | capitalize != 'Pending' %}
+                    <td class="w-25">
+                        <div class="btn-group gap-1 justify-content-end">
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#invoiceStatusUpdateModal{{ invoice['installment_number'] }}" {% if
+                                invoice['installment_status']=='Paid' %} disabled {% endif %}>
+                                Update
+                            </button>
+                            <button class="btn btn-primary btn-sm" {% if invoice['installment_status']!='Paid' and
+                                invoice['installment_status']!='Partial Payment' %} disabled {% endif %}
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapsePayments{{ invoice['installment_number'] }}"
+                                aria-expanded="false"
+                                aria-controls="collapsePayments{{ invoice['installment_number'] }}">
+                                Payments
+                            </button>
+                            <a href="{{ url_for('view_invoice', project_id=project['project_id'], installment_number=invoice['installment_number'] )}}"
+                                class="btn btn-primary btn-sm d-flex align-items-center" target=”_blank”>Print</a>
+                        </div>
+
+                    </td>
+                    {% else %}
+                    <td></td>
+                    {% endif %}
+                </tr>
+                <tr class="collapse" id="collapsePayments{{ invoice['installment_number'] }}">
+                    <td colspan="999">
+                        <div>
+                            <div class="card card-body">
+                                <table class="table mt-2">
+                                    <thead>
+                                        <tr class="text-center">
+                                            <th>Method</th>
+                                            <th>Check #</th>
+                                            <th>Amount</th>
+                                            <th>Date Received</th>
+                                            <th>Note</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if invoice['invoice_id'] not in payment_info %}
+                                        <tr>
+                                            <td class="text-center" colspan="100%">
+                                                No payments have been made
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        {% for payments in payment_info %}
+                                        {% for payment in payment_info[payments] %}
+                                        <tr class="text-center">
+                                            {% if payment['invoice_id'] == invoice['invoice_id'] %}
+                                            <td>{{ payment['payment_method'] }}</td>
+                                            <td>{{ payment['check_number'] }}</td>
+                                            <td>{{ "${:,.2f}".format(payment['payment_amount']) }}</td>
+                                            <td>{{ payment['date_received'].strftime('%m/%d/%Y') }}</td>
+                                            <td>{{ payment['payment_note'] }}</td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                        {% endfor %}
+                                        {% endif %}
+                                    </tbody>
+                                    {% if invoice['invoice_id'] in payments_received_total %}
+                                    <tfoot class="text-center">
+                                        <td></td>
+                                        <th>Total</th>
+                                        <td>{{ payments_received_total[invoice['invoice_id']] | format_currency |
+                                            string}}</td>
+                                        <th>Pending:</th>
+                                        <td>{{ ((invoice['installment_amount'] | float) -
+                                            payments_received_total[invoice['invoice_id']]) | format_currency | string
+                                            }}
+                                        </td>
+                                    </tfoot>
+                                    {% endif %}
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Modal -->
+                <div class="modal fade" id="invoiceStatusUpdateModal{{ invoice['installment_number'] }}" tabindex="-1"
+                    aria-labelledby="invoiceStatusUpdateModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form id='{{ invoice["installment_number"] }}' method="POST">
+                            {{ invoice_status_form.csrf_token() }}
+                            {{ invoice_status_form.payment_details.csrf_token() }}
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="invoiceStatusUpdateModalLabel">
+                                        Update Invoice Status
+                                    </h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="input-group mb-3">
+                                        {{
+                                        invoice_status_form.invoice_status.label(class="input-group-text")
+                                        }}
+                                        <select class="form-select" name="invoice_status"
+                                            id='invoice_status-{{ invoice["installment_number"] }}'>
+                                            <option selected disabled value="{{ invoice['installment_status'] }}">
+                                                {{ invoice['installment_status'] }}
+                                            </option>
+                                            <option disabled>
+                                                ─────────────────────────
+                                            </option>
+                                            {% for invoice_status in invoice_status_form.invoice_status %}
+                                            {% if invoice_status == invoice['installment_status'] %}
+                                            <option disabled value="">
+                                                {{ invoice['installment_status'] }}
+                                            </option>
+                                            {% else %}
+                                            {{ invoice_status }}
+                                            {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        <div class="collapse mt-2 w-100"
+                                            id="collapsePayment{{ invoice['installment_number'] }}">
+                                            <div class="card card-body">
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.payment_details.payment_method.label(class="input-group-text")
+                                                    }}
+                                                    {{
+                                                    invoice_status_form.payment_details.payment_method(class="form-select",
+                                                    id="paymentMethod-{{ invoice['installment_number'] }}")
+                                                    }}
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.payment_details.check_number.label(class="input-group-text")
+                                                    }}
+                                                    {{
+                                                    invoice_status_form.payment_details.check_number(class="form-control")
+                                                    }}
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.payment_details.payment_amount.label(class="input-group-text")
+                                                    }}
+                                                    {{
+                                                    invoice_status_form.payment_details.payment_amount(
+                                                    id="payment_details-payment_amount"+invoice["installment_number"]|string,
+                                                    class="form-control text-end"
+                                                    )
+                                                    }}
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.payment_details.date_received.label(class="input-group-text")
+                                                    }}
+                                                    {{
+                                                    invoice_status_form.payment_details.date_received(
+                                                    id="payment_details-date_received"+invoice["installment_number"]|string,
+                                                    class="form-control text-end"
+                                                    )
+                                                    }}
+                                                </div>
+                                                <div class="input-group mb-3">
+                                                    {{
+                                                    invoice_status_form.payment_details.note.label(class="input-group-text")
+                                                    }}
+                                                    {{ invoice_status_form.payment_details.note(class="form-control",
+                                                    style="resize:none") }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+                                    <script>
+                                        $('#invoice_status-{{ invoice["installment_number"] }}').on('change', function (e) {
+                                            var optionSelected = $("option:selected", this);
+                                            if (optionSelected.text() == 'Paid') {
+                                                $('#payment_details-payment_amount{{invoice["installment_number"]}}').val(null);
+                                                $('#payment_details-date_received{{invoice["installment_number"]}}').val(null);
+                                                $('#collapsePayment{{ invoice["installment_number"] }}').collapse('show');
+                                            }
+                                            else {
+                                                $('#collapsePayment{{ invoice["installment_number"] }}').collapse('hide');
+                                            }
+                                        });
+                                    </script>
+                                </div>
+                                <div class="modal-footer">
+                                    {{ invoice_status_form.installment_number(value=invoice['installment_number']) }}
+                                    {{ invoice_status_form.invoice_id(value=invoice['invoice_id']) }}
+                                    {{ invoice_status_form.installment_amount(value=invoice['installment_amount']) }}
+                                    {{ invoice_status_form.update(class="btn btn-outline-primary") }}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>
