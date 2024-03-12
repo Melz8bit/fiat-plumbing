@@ -313,46 +313,6 @@ def update_client(client_info):
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
         return ""
-    # try:
-    #     # Client Update
-    #     mycursor = connection.cursor()
-    #     query = f"""UPDATE clients
-    #                 SET name = %s, address = %s, city = %s, state = %s, zip_code = %s, website = %s, phone_number = %s
-    #                 WHERE client_id = %s;
-    #             """
-    #     query_params = (
-    #         client_info["name"],
-    #         client_info["address"],
-    #         client_info["city"],
-    #         client_info["state"],
-    #         client_info["zip_code"],
-    #         client_info["website"],
-    #         client_info["phone_number"],
-    #         client_info["client_id"],
-    #     )
-    #     mycursor.execute(query, query_params)
-    #     connection.commit()
-
-    #     # POC Update
-    #     if client_info["poc_exists"]:
-    #         query = f"""UPDATE client_poc
-    #                     SET name = %s, telephone = %s, email = %s
-    #                     WHERE client_id = %s;
-    #                 """
-    #         query_params = (
-    #             client_info["poc_name"],
-    #             client_info["poc_phone_number"],
-    #             client_info["poc_email"],
-    #             client_info["client_id"],
-    #         )
-    #         mycursor.execute(query, query_params)
-    #         connection.commit()
-    #         print("Client POC updated")
-    #     else:
-    #         create_client_poc(client_info)
-
-    # except MySQLdb.Error as e:
-    #     print("MySQL Error:", e)
 
 
 ############## Project Queries ##############
@@ -366,63 +326,99 @@ def get_all_projects():
             """
 
         with engine.connect() as connection:
-            projects = connection.execute(text(f"{sqlQuery}")).all()
+            projects = connection.execute(text(f"{sqlQuery}"))
+            projects_dict = projects.mappings().all()
 
-        return projects
-    except:
+        return projects_dict
+
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
         return ""
 
 
 def get_project(project_id):
     try:
-        return get_results(
-            f"""
-                SELECT projects.*, clients.name
-                FROM projects
-                INNER JOIN clients
-                ON projects.client_id = clients.client_id
-                WHERE projects.project_id = '{project_id}';
-            """
-        )[0]
-    except:
+        sqlQuery = (
+            "SELECT projects.*, clients.name"
+            + " FROM projects"
+            + " INNER JOIN clients"
+            + " ON projects.client_id = clients.client_id"
+            + " WHERE projects.project_id = :project_id;"
+        )
+
+        queryParams = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            project = connection.execute(text(f"{sqlQuery}"), queryParams)
+            project_dict = project.mappings().all()[0]
+
+        return project_dict
+
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
         return ""
+    # try:
+    #     return get_results(
+    #         f"""
+    #             SELECT projects.*, clients.name
+    #             FROM projects
+    #             INNER JOIN clients
+    #             ON projects.client_id = clients.client_id
+    #             WHERE projects.project_id = '{project_id}';
+    #         """
+    #     )[0]
+    # except:
+    #     return ""
 
 
 def create_project(project_info):
     try:
-        mycursor = connection.cursor()
-        query = f"""INSERT INTO projects (project_id, client_id, name, address, city, state, zip_code, county)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-
-        query_params = (
-            project_info["project_id"],
-            project_info["client"],
-            project_info["name"],
-            project_info["address"],
-            project_info["city"],
-            project_info["state"],
-            project_info["zip_code"],
-            project_info["county"],
+        sqlQuery = (
+            "INSERT INTO projects (project_id, client_id, name, address, city, state, zip_code, county)"
+            + " VALUES (:project_id, :client_id, :name, :address, :city, :state, :zip_code, :county)"
         )
 
-        mycursor.execute(query, query_params)
-        connection.commit()
+        query_params = {
+            "project_id": project_info["project_id"],
+            "client_id": project_info["client"],
+            "name": project_info["name"],
+            "address": project_info["address"],
+            "city": project_info["city"],
+            "state": project_info["state"],
+            "zip_code": project_info["zip_code"],
+            "county": project_info["county"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
         print("Project created")
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
+        return ""
 
 
 def get_client_projects(client_id):
+
     try:
-        return get_results(
-            f"""
-                SELECT *
-                FROM projects
-                WHERE client_id = {client_id};
-            """
-        )
-    except:
+        sqlQuery = "SELECT *" + " FROM projects" + " WHERE client_id = :client_id;"
+
+        queryParams = {
+            "client_id": client_id,
+        }
+
+        with engine.connect() as connection:
+            projects = connection.execute(text(f"{sqlQuery}"))
+            projects_dict = projects.mappings().all()
+
+        return projects_dict
+
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
         return ""
 
 
