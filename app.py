@@ -651,8 +651,8 @@ def update_invoice_status(project_id, installment_number, installment_status):
 ############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
 def populate_city_state_county():
-    results = database.get_city_state_county(request.args["zip_code"])[0]
-    return results
+    results = database.get_city_state_county(request.args["zip_code"])
+    return dict(results)
 
 
 @app.template_filter()
