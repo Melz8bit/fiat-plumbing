@@ -73,37 +73,40 @@ def load_user(user_id):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    login_form = LoginForm()
+    try:
+        login_form = LoginForm()
 
-    if login_form.validate_on_submit():
-        email = login_form.email.data
-        password = login_form.password.data
+        if login_form.validate_on_submit():
+            email = login_form.email.data
+            password = login_form.password.data
 
-        login_form.email.data = ""
-        login_form.password.data = ""
+            login_form.email.data = ""
+            login_form.password.data = ""
 
-        user_db_password = database.get_user_password(email)
+            user_db_password = database.get_user_password(email)
 
-        if user_db_password:
-            # user_db_password = user_db_password[0]
-            if check_password_hash(user_db_password, password):
-                user_dict = database.get_user_from_email(email)
-                user = users.Users(user_dict)
-                login_user(user, remember=True)
+            if user_db_password:
+                # user_db_password = user_db_password[0]
+                if check_password_hash(user_db_password, password):
+                    user_dict = database.get_user_from_email(email)
+                    user = users.Users(user_dict)
+                    login_user(user, remember=True)
 
-                session["user_id"] = user_dict["user_id"]
+                    session["user_id"] = user_dict["user_id"]
 
-                flash("Login successful")
-                return redirect(url_for("main"))
+                    flash("Login successful")
+                    return redirect(url_for("main"))
+                else:
+                    flash("Incorrect username or password")
             else:
                 flash("Incorrect username or password")
-        else:
-            flash("Incorrect username or password")
 
-    return render_template(
-        "login.html",
-        login_form=login_form,
-    )
+        return render_template(
+            "login.html",
+            login_form=login_form,
+        )
+    except:
+        return redirect(url_for("login"))
 
 
 @app.route("/sign-up", methods=["GET", "POST"])

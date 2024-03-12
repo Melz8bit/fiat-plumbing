@@ -5,7 +5,7 @@ from datetime import datetime, date
 import MySQLdb
 from dotenv import load_dotenv
 from flask_login import UserMixin
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, insert
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from werkzeug.utils import secure_filename
 
@@ -84,8 +84,9 @@ def get_user(user_id):
         with engine.connect() as connection:
             user = connection.execute(text(f"{sqlQuery}")).first()
 
-            return user
-    except:
+        return user
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
         return ""
 
 
@@ -101,7 +102,8 @@ def get_user_password(email):
             password = connection.execute(text(f"{sqlQuery}")).first()[0]
 
         return password
-    except:
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
         return ""
 
 
@@ -118,167 +120,239 @@ def get_user_from_email(email):
             user_dict = results.mappings().all()[0]
 
         return user_dict
-    except:
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
         return ""
 
 
 def create_user(user_info):
     try:
-        mycursor = connection.cursor()
-        query = f"""INSERT INTO users (user_id, first_name, last_name, email, password)
-                VALUES (%s, %s, %s, %s, %s)"""
-
-        query_params = (
-            str(uuid.uuid4()),
-            user_info["first_name"],
-            user_info["last_name"],
-            user_info["email"],
-            user_info["password"],
+        sqlQuery = (
+            "INSERT INTO users (user_id, first_name, last_name, email, password)"
+            + " VALUES (:user_id, :first_name, :last_name, :email, :password)"
         )
 
-        mycursor.execute(query, query_params)
-        connection.commit()
+        query_params = {
+            "user_id": str(uuid.uuid4()),
+            "first_name": user_info["first_name"],
+            "last_name": user_info["last_name"],
+            "email": user_info["email"],
+            "password": user_info["password"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
         print("User created")
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
+        return ""
 
 
 ############## Client Queries ##############
 def get_client(client_id):
     try:
-        return get_results(
-            f"""
-                SELECT *
-                FROM clients
-                WHERE client_id = {client_id};
-            """
-        )[0]
-    except:
+        sqlQuery = "SELECT * FROM clients WHERE client_id = :client_id;"
+
+        queryParams = {
+            "client_id": client_id,
+        }
+
+        with engine.connect() as connection:
+            client = connection.execute(text(f"{sqlQuery}"), queryParams)
+            client_dict = client.mappings().all()[0]
+
+        return client_dict
+
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
         return ""
 
 
 def get_client_poc(client_id):
     try:
-        poc = get_results(
-            f"""
-                SELECT *
-                FROM client_poc
-                WHERE client_id = {client_id};
-            """
-        )[0]
-    except:
-        poc = ""
+        sqlQuery = "SELECT * FROM client_poc WHERE client_id = :client_id;"
+        queryParams = {
+            "client_id": client_id,
+        }
 
-    return poc
+        with engine.connect() as connection:
+            poc = connection.execute(text(f"{sqlQuery}"), queryParams)
+            poc_dict = poc.mappings().all()[0]
+
+        return poc_dict
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
+        return ""
 
 
 def get_all_clients():
     try:
-        sqlQuery = f"""
-                SELECT clients.*, count(project_id) AS project_count FROM clients LEFT JOIN projects ON clients.client_id = projects.client_id GROUP BY clients.client_id
-            """
+        sqlQuery = (
+            "SELECT clients.*, count(project_id) AS project_count"
+            + " FROM clients"
+            + " LEFT JOIN projects ON clients.client_id = projects.client_id"
+            + " GROUP BY clients.client_id"
+        )
 
         with engine.connect() as connection:
             clients = connection.execute(text(f"{sqlQuery}"))
             clients_dict = clients.mappings().all()
 
         return clients_dict
-    except Exception as e:
-        print(f"{e=}")
+    except MySQLdb.Error as e:
+        print("Database Error:", e)
         return ""
 
 
 def create_client(client_info):
     try:
-        mycursor = connection.cursor()
-        query = f"""INSERT INTO clients (name, address, city, state, zip_code, website, phone_number)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)"""
-
-        query_params = (
-            client_info["name"],
-            client_info["address"],
-            client_info["city"],
-            client_info["state"],
-            client_info["zip_code"],
-            client_info["website"],
-            client_info["phone_number"],
+        sqlQuery = (
+            "INSERT INTO clients (name, address, city, state, zip_code, website, phone_number)"
+            + " VALUES (:name, :address, :city, :state, :zip_code, :website, :phone_number)"
         )
 
-        mycursor.execute(query, query_params)
-        connection.commit()
+        query_params = {
+            "name": client_info["name"],
+            "address": client_info["address"],
+            "city": client_info["city"],
+            "state": client_info["state"],
+            "zip_code": client_info["zip_code"],
+            "website": client_info["website"],
+            "phone_number": client_info["phone_number"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
         print("Client created")
 
-        create_client_poc(client_info)
+        # create_client_poc(client_info)
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
+        return ""
 
 
 def create_client_poc(client_info):
     try:
-        mycursor = connection.cursor()
-        query = f"""
-                    INSERT INTO client_poc (client_id, name, telephone, email)
-                    VALUES (%s, %s, %s, %s)
-                """
-
-        query_params = (
-            int(client_info["client_id"]),
-            client_info["poc_name"],
-            client_info["poc_phone_number"],
-            client_info["poc_email"],
+        sqlQuery = (
+            "INSERT INTO client_poc (client_id, name, telephone, email)"
+            + " VALUES (:client_id, :name, :telephone, :email)"
         )
 
-        mycursor.execute(query, query_params)
-        connection.commit()
+        query_params = {
+            "client_id": client_info["client_id"],
+            "name": client_info["poc_name"],
+            "telephone": client_info["poc_phone_number"],
+            "email": client_info["poc_email"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
         print("Client POC created")
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
+        return ""
 
 
 def update_client(client_info):
     try:
-        # Client Update
-        mycursor = connection.cursor()
-        query = f"""UPDATE clients
-                    SET name = %s, address = %s, city = %s, state = %s, zip_code = %s, website = %s, phone_number = %s
-                    WHERE client_id = %s;
-                """
-        query_params = (
-            client_info["name"],
-            client_info["address"],
-            client_info["city"],
-            client_info["state"],
-            client_info["zip_code"],
-            client_info["website"],
-            client_info["phone_number"],
-            client_info["client_id"],
+        sqlQuery = (
+            "UPDATE clients"
+            + " SET name = :name, address = :address, city = :city, state = :state, zip_code = :zip_code, website = :website, phone_number = :phone_number"
+            + " WHERE client_id = :client_id;"
         )
-        mycursor.execute(query, query_params)
-        connection.commit()
+
+        query_params = {
+            "name": client_info["name"],
+            "address": client_info["address"],
+            "city": client_info["city"],
+            "state": client_info["state"],
+            "zip_code": client_info["zip_code"],
+            "website": client_info["website"],
+            "phone_number": client_info["phone_number"],
+            "client_id": client_info["client_id"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Client updated")
 
         # POC Update
         if client_info["poc_exists"]:
-            query = f"""UPDATE client_poc
-                        SET name = %s, telephone = %s, email = %s
-                        WHERE client_id = %s;
-                    """
-            query_params = (
-                client_info["poc_name"],
-                client_info["poc_phone_number"],
-                client_info["poc_email"],
-                client_info["client_id"],
+            sqlQuery = (
+                "UPDATE client_poc"
+                + " SET name = :name, telephone = :telephone, email = :email"
+                + " WHERE client_id = :client_id;"
             )
-            mycursor.execute(query, query_params)
-            connection.commit()
+
+            query_params = {
+                "name": client_info["poc_name"],
+                "telephone": client_info["poc_phone_number"],
+                "email": client_info["poc_email"],
+                "client_id": client_info["client_id"],
+            }
+
+            with engine.connect() as connection:
+                result = connection.execute(text(f"{sqlQuery}"), query_params)
+                connection.commit()
+
             print("Client POC updated")
         else:
             create_client_poc(client_info)
 
     except MySQLdb.Error as e:
         print("MySQL Error:", e)
+        return ""
+    # try:
+    #     # Client Update
+    #     mycursor = connection.cursor()
+    #     query = f"""UPDATE clients
+    #                 SET name = %s, address = %s, city = %s, state = %s, zip_code = %s, website = %s, phone_number = %s
+    #                 WHERE client_id = %s;
+    #             """
+    #     query_params = (
+    #         client_info["name"],
+    #         client_info["address"],
+    #         client_info["city"],
+    #         client_info["state"],
+    #         client_info["zip_code"],
+    #         client_info["website"],
+    #         client_info["phone_number"],
+    #         client_info["client_id"],
+    #     )
+    #     mycursor.execute(query, query_params)
+    #     connection.commit()
+
+    #     # POC Update
+    #     if client_info["poc_exists"]:
+    #         query = f"""UPDATE client_poc
+    #                     SET name = %s, telephone = %s, email = %s
+    #                     WHERE client_id = %s;
+    #                 """
+    #         query_params = (
+    #             client_info["poc_name"],
+    #             client_info["poc_phone_number"],
+    #             client_info["poc_email"],
+    #             client_info["client_id"],
+    #         )
+    #         mycursor.execute(query, query_params)
+    #         connection.commit()
+    #         print("Client POC updated")
+    #     else:
+    #         create_client_poc(client_info)
+
+    # except MySQLdb.Error as e:
+    #     print("MySQL Error:", e)
 
 
 ############## Project Queries ##############
