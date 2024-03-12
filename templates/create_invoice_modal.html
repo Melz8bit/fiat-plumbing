@@ -1,7 +1,7 @@
 <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
-            <h1 class="modal-title fs-5" id="createinstallmentModalLabel">Create installment</h1>
+            <h1 class="modal-title fs-5" id="createinstallmentModalLabel">Create Invoice</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="createInvoice" name="createInvoice" method="POST">
@@ -51,8 +51,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                {{ invoice_create_form.create() }}
-                <!-- <button type="button" class="btn btn-primary">Create</button> -->
+                {{ invoice_create_form.create(class="btn btn-primary") }}
             </div>
         </form>
     </div>
