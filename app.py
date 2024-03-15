@@ -39,6 +39,7 @@ from forms import (
     ProjectStatusForm,
     InvoiceStatusUpdateForm,
     InvoicePaymentForm,
+    InvoiceCreateForm,
 )
 from models import users
 
@@ -72,36 +73,40 @@ def load_user(user_id):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    login_form = LoginForm()
+    try:
+        login_form = LoginForm()
 
-    if login_form.validate_on_submit():
-        email = login_form.email.data
-        password = login_form.password.data
+        if login_form.validate_on_submit():
+            email = login_form.email.data
+            password = login_form.password.data
 
-        login_form.email.data = ""
-        login_form.password.data = ""
+            login_form.email.data = ""
+            login_form.password.data = ""
 
-        user_db_password = database.get_user_password(email)
-        if user_db_password:
-            user_db_password = user_db_password[0]
-            if check_password_hash(user_db_password["password"], password):
-                user_dict = database.get_user_from_email(email)
-                user = users.Users(user_dict)
-                login_user(user, remember=True)
+            user_db_password = database.get_user_password(email)
 
-                session["user_id"] = user_dict["user_id"]
+            if user_db_password:
+                # user_db_password = user_db_password[0]
+                if check_password_hash(user_db_password, password):
+                    user_dict = database.get_user_from_email(email)
+                    user = users.Users(user_dict)
+                    login_user(user, remember=True)
 
-                flash("Login successful")
-                return redirect(url_for("main"))
+                    session["user_id"] = user_dict["user_id"]
+
+                    flash("Login successful")
+                    return redirect(url_for("main"))
+                else:
+                    flash("Incorrect username or password")
             else:
                 flash("Incorrect username or password")
-        else:
-            flash("Incorrect username or password")
 
-    return render_template(
-        "login.html",
-        login_form=login_form,
-    )
+        return render_template(
+            "login.html",
+            login_form=login_form,
+        )
+    except:
+        return redirect(url_for("login"))
 
 
 @app.route("/sign-up", methods=["GET", "POST"])
@@ -410,6 +415,7 @@ def project_view(project_id, new_project=False):
     user = database.get_user(session["user_id"])
     project = database.get_project(project_id)
     notes = database.get_notes(project_id)
+    installments = database.get_installments(project_id)
     invoices = database.get_invoices(project_id)
     documents = database.get_project_docs(project_id)
     master_permit = database.get_master_permit(project_id)
@@ -418,80 +424,32 @@ def project_view(project_id, new_project=False):
     if new_project:
         flash("Project has been created")
 
+    # Form Initialization
     master_form = MasterPermitForm()
     document_form = DocumentUploadForm()
     project_status_form = ProjectStatusForm()
     invoice_status_form = InvoiceStatusUpdateForm()
     payment_detail_form = InvoicePaymentForm()
+    invoice_create_form = InvoiceCreateForm()
 
+    # Variable Initialization
     document_type = None
     comment = None
     filename = None
 
+    # Track payments made on invoices
     payment_info = {}
     payments_received_total = {}
-    for invoice in invoices:
-        payment = database.get_invoice_payments(invoice["invoice_id"])
-        if payment:
-            payment_info[invoice["invoice_id"]] = payment
-            payments_received_total[invoice["invoice_id"]] = (
-                database.get_invoice_payments_total(invoice["invoice_id"])
-            )
-
-    if invoice_status_form.validate_on_submit():
-        invoice_status = invoice_status_form.invoice_status.data
-        invoice_status_form.invoice_status.data = ""
-        invoice_id = invoice_status_form.invoice_id.data
-        invoice_status_form.invoice_id.data = ""
-        installment_number = invoice_status_form.installment_number.data
-        invoice_status_form.installment_number.data = ""
-        installment_amount = float(invoice_status_form.installment_amount.data)
-        invoice_status_form.installment_amount.data = ""
-
-        payment_method = invoice_status_form.payment_details.payment_method.data
-        invoice_status_form.payment_details.payment_method.data = ""
-        check_number = invoice_status_form.payment_details.check_number.data
-        invoice_status_form.payment_details.check_number.data = ""
-        date_received = invoice_status_form.payment_details.date_received.data
-        invoice_status_form.payment_details.date_received.data = ""
-        payment_amount = float(invoice_status_form.payment_details.payment_amount.data)
-        invoice_status_form.payment_details.payment_amount.data = ""
-        note = invoice_status_form.payment_details.note.data
-        invoice_status_form.payment_details.note.data = ""
-
-        if installment_amount != payment_amount and invoice_status == "Paid":
-            total_payments_received = database.get_invoice_payments_total(invoice_id)
-
-            if not total_payments_received:
-                total_payments_received = 0
-
-            total_payments_received = float(total_payments_received) + payment_amount
-
-            invoice_status = "Partial Payment"
-
-            if total_payments_received == installment_amount:
-                invoice_status = "Paid"
-
-        payment_info = {
-            "invoice_id": invoice_id,
-            "payment_method": payment_method,
-            "check_number": check_number,
-            "payment_amount": payment_amount,
-            "date_received": date_received,
-            "payment_note": note,
-        }
-
-        database.insert_payment(payment_info)
-
-        update_invoice_status(
-            project["project_id"],
-            installment_number,
-            invoice_status,
-        )
-
-        return redirect(url_for("project_view", project_id=project["project_id"]))
+    if invoices:
+        for invoice in invoices:
+            payment = database.get_invoice_payments(invoice["invoice_id"])
+            if payment:
+                payment_info[invoice["invoice_id"]] = payment
+                payments_received_total[invoice["invoice_id"]] = (
+                    database.get_invoice_payments_total(invoice["invoice_id"])
+                )
     else:
-        print(f"{invoice_status_form.errors=}")
+        invoices = []
 
     if master_form.validate_on_submit():
         master_permit = master_form.master_permit.data
@@ -537,17 +495,21 @@ def project_view(project_id, new_project=False):
             upload_file_name,
         )
 
-        # flash(success_upload_msg)
-
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{document_form.errors=}")
+
+    if invoice_create_form.validate_on_submit():
+        selected_installments = request.form.getlist("installment_select")
+        database.create_invoice(selected_installments, project_id)
+        return redirect(url_for("project_view", project_id=project["project_id"]))
 
     return render_template(
         "project.html",
         user=user,
         project=project,
         notes=notes,
+        installments=installments,
         invoices=invoices,
         documents=documents,
         master_permit=master_permit,
@@ -557,6 +519,7 @@ def project_view(project_id, new_project=False):
         project_status_form=project_status_form,
         invoice_status_form=invoice_status_form,
         payment_detail_form=payment_detail_form,
+        invoice_create_form=invoice_create_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
     )
@@ -688,8 +651,8 @@ def update_invoice_status(project_id, installment_number, installment_status):
 ############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
 def populate_city_state_county():
-    results = database.get_city_state_county(request.args["zip_code"])[0]
-    return results
+    results = database.get_city_state_county(request.args["zip_code"])
+    return dict(results)
 
 
 @app.template_filter()

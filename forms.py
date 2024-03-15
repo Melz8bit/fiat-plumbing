@@ -2,6 +2,7 @@ import datetime
 import re
 from flask_wtf import FlaskForm
 from wtforms import (
+    BooleanField,
     DateField,
     DecimalField,
     EmailField,
@@ -220,3 +221,9 @@ class InvoiceStatusUpdateForm(FlaskForm):
     invoice_id = HiddenField()
     payment_details = FormField(InvoicePaymentForm)
     update = SubmitField("Apply")
+
+
+class InvoiceCreateForm(FlaskForm):
+    installment_select = BooleanField()
+    installment_number = HiddenField()
+    create = SubmitField("Create")

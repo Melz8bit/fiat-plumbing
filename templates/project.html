@@ -163,8 +163,17 @@
                     type="button" role="tab" aria-controls="notes-tab-pane" aria-selected="true">Notes</button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="installments-tab" data-bs-toggle="tab"
+                    data-bs-target="#installments-tab-pane" type="button" role="tab"
+                    aria-controls="installments-tab-pane" aria-selected="false">Installments</button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices-tab-pane"
                     type="button" role="tab" aria-controls="invoices-tab-pane" aria-selected="false">Invoices</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments-tab-pane"
+                    type="button" role="tab" aria-controls="payments-tab-pane" aria-selected="false">Payments</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="inspections-tab" data-bs-toggle="tab"
@@ -183,8 +192,15 @@
             <div class="tab-pane fade show active" id="notes-tab-pane" role="tabpanel" aria-labelledby="notes-tab"
                 tabindex="0">
                 <div class="ratio ratio-16x9">
-                    <!-- <iframe class="w-100 h-100" src="project_notes.html" frameborder="0"></iframe> -->
                     {% include 'project_notes.html' %}
+                </div>
+            </div>
+
+            <!-- Installments -->
+            <div class="tab-pane fade" id="installments-tab-pane" role="tabpanel" aria-labelledby="installments-tab"
+                tabindex="0">
+                <div class="ratio ratio-16x9">
+                    {% include 'project_installments.html' %}
                 </div>
             </div>
 
@@ -192,8 +208,15 @@
             <div class="tab-pane fade" id="invoices-tab-pane" role="tabpanel" aria-labelledby="invoices-tab"
                 tabindex="0">
                 <div class="ratio ratio-16x9">
-                    <!-- <iframe class="w-100" src="project_invoices.html" frameborder="0"></iframe> -->
                     {% include 'project_invoices.html' %}
+                </div>
+            </div>
+
+            <!-- Payments -->
+            <div class="tab-pane fade" id="payments-tab-pane" role="tabpanel" aria-labelledby="payments-tab"
+                tabindex="0">
+                <div class="ratio ratio-16x9">
+                    <!-- {# {% include 'project_payments.html' %} #} -->
                 </div>
             </div>
 
@@ -201,7 +224,6 @@
             <div class="tab-pane fade" id="documents-tab-pane" role="tabpanel" aria-labelledby="documents-tab"
                 tabindex="0">
                 <div class="ratio ratio-16x9">
-                    <!-- <iframe class="w-100" src="project_documents.html" frameborder="0"></iframe> -->
                     {% include 'project_documents.html' %}
                 </div>
             </div>

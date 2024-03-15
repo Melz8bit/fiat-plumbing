@@ -1,0 +1,58 @@
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title fs-5" id="createinstallmentModalLabel">Create Invoice</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="createInvoice" name="createInvoice" method="POST">
+            {{ invoice_create_form.csrf_token() }}
+            <div class="modal-body">
+                <h6>Select items:</h6>
+                <table class="table">
+                    <thead class="text-center">
+                        <th></th>
+                        <th>#</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                    </thead>
+                    <tbody>
+                        {% if installments|length == 0 %}
+                        <tr>
+                            <td class="text-center" colspan="100%">
+                                No installments found on this project
+                            </td>
+                        </tr>
+                        {% else %}
+                        {% for installment in installments %}
+                        {% if installment['installment_status'] == 'Pending' %}
+                        <tr class="text-center">
+                            <td>{{ invoice_create_form.installment_select(
+                                id="installmentChk{{ installment['installment_id'] }}",
+                                value=installment['installment_id']) }}</td>
+                            <td>{{ installment['installment_number'] }}</td>
+                            <td>{{ installment['installment_description'] }}</td>
+                            <td>{{ "${:,.2f}".format(installment['installment_amount']) }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="999">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Note</span>
+                                    <textarea class="form-control" aria-label="Insert Note"
+                                        style="resize: none;"></textarea>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="modal-footer">
+                {{ invoice_create_form.create(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
