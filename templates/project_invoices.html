@@ -22,12 +22,13 @@
     <!-- Invoices -->
     <div>
         <div class="text-end pt-1">
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createInvoiceModal">Create
-                Invoice</button>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createInvoiceModal">
+                Create Invoice
+            </button>
         </div>
         <!-- Create Invoice Modal -->
         <div class="modal fade" id="createInvoiceModal" tabindex="-1" aria-labelledby="createInvoiceModalLabel"
-            aria-hidden="true">
+            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             {% include 'create_invoice_modal.html' %}
         </div>
 

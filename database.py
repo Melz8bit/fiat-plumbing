@@ -297,7 +297,7 @@ def update_client(client_info):
 def get_all_projects():
     try:
         sqlQuery = f"""
-                SELECT projects.*, clients.name
+                SELECT projects.*, clients.name as client_name
                 FROM projects
                 INNER JOIN clients
                 ON projects.client_id = clients.client_id;
@@ -306,6 +306,7 @@ def get_all_projects():
         with engine.connect() as connection:
             projects = connection.execute(text(f"{sqlQuery}"))
             projects_dict = projects.mappings().all()
+            print(projects_dict[0])
 
         return projects_dict
 
@@ -317,7 +318,7 @@ def get_all_projects():
 def get_project(project_id):
     try:
         sqlQuery = (
-            "SELECT projects.*, clients.name"
+            "SELECT projects.*, clients.name as client_name"
             + " FROM projects"
             + " INNER JOIN clients"
             + " ON projects.client_id = clients.client_id"
