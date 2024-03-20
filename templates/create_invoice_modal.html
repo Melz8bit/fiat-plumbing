@@ -39,30 +39,22 @@
                                     <input id="installmentBillledPercent{{ installment['installment_id'] }}"
                                         type="number" value="100" class="form-control text-end"
                                         onchange="changeBilledAmount({{installment['installment_id']}}, this.value, {{installment['installment_amount']}});">
-                                    <!-- {{ invoice_create_form.billed_percentage(
-                                    id="installmentBillledPercent{{ installment['installment_id'] }}",
-                                    class="form-control text-end", value="100",
-                                    onchange="changeBilledAmount(installmentBillledPercent{{
-                                    installment['installment_id'] }})"
-                                    ) }} -->
                                     <span class="input-group-text">%</span>
                                 </div>
                             </td>
                             <td style="width:20%">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text">$</span>
-                                    <input id="installmentBillledAmount{{ installment['installment_id'] }}"
-                                        type="number" value={{installment['installment_amount']}}
-                                        class="form-control text-end">
-                                    <!-- {{ invoice_create_form.billed_amount(
-                                    id="installmentBillledAmount{{ installment['installment_id'] }}",
-                                    class="form-control form-control-sm text-end",
-                                    value='%0.2f'| format(installment['installment_amount']|float),
-                                    ) }} -->
+                                    {{ invoice_create_form.billed_amount(
+                                    id="installmentBilledAmount"+installment['installment_id']|string ,
+                                    class="form-control text-end",
+                                    value='%0.2f'| format(installment['installment_amount'] | float)
+                                    ) }}
+
                                 </div>
                                 <script>
                                     function changeBilledAmount(installmentID, percent, installmentAmount) {
-                                        let labelElement = document.getElementById("installmentBillledAmount" + installmentID);
+                                        let labelElement = document.getElementById("installmentBilledAmount" + installmentID);
                                         labelElement.value =
                                             parseFloat(installmentAmount * (percent / 100)).toFixed(2);
                                     }
@@ -75,7 +67,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="999">
+                            <td colspan="100%">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Note</span>
                                     <textarea class="form-control" aria-label="Insert Note"

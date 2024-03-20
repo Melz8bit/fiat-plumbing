@@ -227,5 +227,5 @@ class InvoiceCreateForm(FlaskForm):
     installment_select = BooleanField()
     installment_number = HiddenField()
     billed_percentage = DecimalField()
-    billed_amount = DecimalField()
+    billed_amount = DecimalField("$", render_kw={"readonly": True})
     create = SubmitField("Create")

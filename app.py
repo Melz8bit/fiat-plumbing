@@ -501,7 +501,9 @@ def project_view(project_id, new_project=False):
 
     if invoice_create_form.validate_on_submit():
         selected_installments = request.form.getlist("installment_select")
-        database.create_invoice(selected_installments, project_id)
+        print(f"{selected_installments=}")
+        print(f"{request.form.getlist('billed_amount')=}")
+        # database.create_invoice(selected_installments, project_id)
         return redirect(url_for("project_view", project_id=project["project_id"]))
 
     return render_template(
