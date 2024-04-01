@@ -500,9 +500,24 @@ def project_view(project_id, new_project=False):
         print(f"{document_form.errors=}")
 
     if invoice_create_form.validate_on_submit():
+        # print(f"{request.form=}")
         selected_installments = request.form.getlist("installment_select")
-        print(f"{selected_installments=}")
-        print(f"{request.form.getlist('billed_amount')=}")
+        # print(f"{selected_installments=}")
+        # print(f"{request.form.getlist('billed_amount')=}")
+        selected_invoices = {}
+        for x in selected_installments:
+            billed_invoice_amount = request.form.getlist("billed_amount")[int(x) - 1]
+
+            # INFO: selected_invoices{installment_number: (user_amount, installment_total, billed_amount)}
+            selected_invoices[x] = (
+                float(billed_invoice_amount),
+                installments[int(x) - 1]["installment_amount"],
+                installments[int(x) - 1]["billed_amount"],
+            )
+
+        # print(f"{selected_invoices=}")
+
+        database.create_invoice(selected_invoices, project_id)
         # database.create_invoice(selected_installments, project_id)
         return redirect(url_for("project_view", project_id=project["project_id"]))
 
