@@ -29,15 +29,17 @@
                         {% if installment['installment_status'] != 'Billed' %}
                         <tr class="text-center align-items-center">
                             <td>{{ invoice_create_form.installment_select(
-                                id="installmentChk{{ installment['installment_id'] }}",
-                                value=installment['installment_id']) }}</td>
+                                class="is-valid",
+                                id="installmentChk"+installment['installment_id']|string ,
+                                value=installment['installment_id'],
+                                ) }} </td>
                             <td>{{ installment['installment_number'] }}</td>
                             <td>{{ installment['installment_description'] }}</td>
                             <td>{{ "${:,.2f}".format(installment['installment_amount']) }}</td>
                             <td style="width:15%">
                                 <div class="input-group input-group-sm">
                                     <input id="installmentBillledPercent{{ installment['installment_id'] }}"
-                                        type="number" value="100" class="form-control text-end"
+                                        type="number" value="100" class="form-control text-end" disabled
                                         onchange="changeBilledAmount({{installment['installment_id']}}, this.value, {{installment['installment_amount'] - installment['billed_amount']}});">
                                     <span class="input-group-text">%</span>
                                 </div>
@@ -61,10 +63,42 @@
                                 </script>
                             </td>
                         </tr>
+                        <!-- <script>
+                            function checkCheckBoxes(theForm) {
+                                console.log("hi");
+
+                                // Select all checkboxes
+                                var checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+
+                                if (checkboxes.length) {
+                                    theForm.classList.add('was-validated');
+                                    return true;
+                                } else {
+                                    var validateMessage = document.getElementById("validationSelectInstallment");
+                                    validateMessage.style.display = "block";
+
+                                    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                                    const forms = document.querySelectorAll('.needs-validation')
+
+                                    // Loop over them and prevent submission
+                                    Array.from(forms).forEach(form => {
+                                        form.addEventListener('submit', event => {
+                                            if (!form.checkValidity()) {
+                                                event.preventDefault()
+                                                event.stopPropagation()
+                                            }
+
+                                            form.classList.add('was-validated')
+                                        }, false)
+                                    })
+                                    return false;
+                                }
+                            }
+                        </script> -->
                         {% else %}
                         <tr class="text-center align-items-center" style="display:none;">
                             <td>{{ invoice_create_form.installment_select(
-                                id="installmentChk{{ installment['installment_id'] }}",
+                                id="installmentChk"+installment['installment_id']|string,
                                 value=installment['installment_id']) }}</td>
                             <td>{{ installment['installment_number'] }}</td>
                             <td>{{ installment['installment_description'] }}</td>
@@ -113,8 +147,50 @@
                 </table>
             </div>
             <div class="modal-footer">
-                {{ invoice_create_form.create(class="btn btn-primary") }}
+                <div class="row">
+                    <div class="col">
+                        <div id="validationSelectInstallment" class="invalid-feedback" style="display: none;">
+                            Please choose at least one installment.
+                        </div>
+                    </div>
+                    <div class="col">
+                        {{ invoice_create_form.create(class="btn btn-primary") }}
+                    </div>
+                </div>
+
             </div>
         </form>
+        <script>
+            // Example starter JavaScript for disabling form submissions if there are invalid fields
+            (() => {
+                'use strict'
+
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                const forms = document.querySelectorAll('.needs-validation')
+
+                // Loop over them and prevent submission
+                Array.from(forms).forEach(form => {
+                    form.addEventListener('submit', event => {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+            })()
+        </script>
+        <script>
+            // Select all checkboxes with the name 'settings' using querySelectorAll.
+            var checkboxes = document.querySelectorAll("input[type=checkbox]");
+
+            // Use Array.forEach to add an event listener to each checkbox.
+            checkboxes.forEach(function (checkbox) {
+                checkbox.addEventListener('change', function () {
+                    document.getElementById("installmentBillledPercent" + checkbox.value).disabled = !checkbox.checked;
+                })
+            });
+        </script>
     </div>
 </div>

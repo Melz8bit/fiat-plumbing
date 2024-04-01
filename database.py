@@ -642,17 +642,17 @@ def get_invoice(project_id, installment_number):
         return ""
 
 
-def get_invoice_items(project_id, installment_number):
+def get_invoice_items(project_id, invoice_number):
     try:
         sqlQuery = (
             "SELECT * "
             + " FROM project_invoice_items"
-            + " WHERE project_id = :project_id' and installment_number = :installment_number;"
+            + " WHERE project_id = :project_id and invoice_number = :invoice_number;"
         )
 
         query_params = {
             "project_id": project_id,
-            "installment_number": installment_number,
+            "invoice_number": invoice_number,
         }
 
         with engine.connect() as connection:
@@ -792,10 +792,8 @@ def get_next_invoice_number(project_id):
 
 def create_invoice(selected_invoices, project_id):
     next_invoice_number = get_next_invoice_number(project_id)
-    print(f"{next_invoice_number=}")
     invoice_total = 0
 
-    print(f"{selected_invoices=}")
     for installment in selected_invoices:
         user_amount = selected_invoices[installment][0]
         installment_amount = selected_invoices[installment][1]
@@ -807,8 +805,8 @@ def create_invoice(selected_invoices, project_id):
             else "Partial Billed"
         )
 
+        # Installment Update
         try:
-            # Installment Update
             sqlQuery = (
                 "UPDATE project_installments"
                 + " SET invoice_number = :invoice_number, installment_status = :installment_status, installment_status_date = :installment_status_date, billed_amount = :billed_amount"
@@ -828,90 +826,67 @@ def create_invoice(selected_invoices, project_id):
                 result = connection.execute(text(f"{sqlQuery}"), query_params)
                 connection.commit()
 
-            print("Invoice created")
+            print("Installment updated")
 
         except Exception as e:
             print("Database Error:", e)
 
-        print(installment_status)
+        try:
+            # Invoice Items Append
+            sqlQuery = (
+                "INSERT INTO project_invoice_items (project_id, installment_number, item_amount, invoice_number)"
+                + " VALUES (:project_id, :installment_number, :item_amount, :invoice_number)"
+            )
 
+            query_params = {
+                "project_id": project_id,
+                "installment_number": int(installment),
+                "item_amount": user_amount,
+                "invoice_number": next_invoice_number,
+            }
 
-# def create_invoice(selected_installments, project_id):
-#     next_invoice_number = get_next_invoice_number(project_id)
-#     invoice_total = 0
+            with engine.connect() as connection:
+                result = connection.execute(text(f"{sqlQuery}"), query_params)
+                connection.commit()
 
-#     for installment in selected_installments:
-#         try:
-#             # Installment Update
-#             sqlQuery = (
-#                 "UPDATE project_installments"
-#                 + " SET invoice_number = :invoice_number, installment_status = :installment_status, installment_status_date = :installment_status_date"
-#                 + " WHERE project_id = :project_id AND installment_id = :installment_id;"
-#             )
+            print("Invoice items appended")
+        except Exception as e:
+            print("Database Error:", e)
 
-#             query_params = {
-#                 "invoice_number": next_invoice_number,
-#                 "installment_status": "Billed",
-#                 "installment_status_date": datetime.now().strftime("%Y-%m-%d"),
-#                 "project_id": project_id,
-#                 "installment_id": int(installment),
-#             }
+    # Get Invoice Total
+    try:
+        invoice_items = get_invoice_items(project_id, next_invoice_number)
 
-#             with engine.connect() as connection:
-#                 result = connection.execute(text(f"{sqlQuery}"), query_params)
-#                 connection.commit()
+        for item in invoice_items:
+            invoice_total += item["item_amount"]
 
-#             print("Payment inserted")
+    except Exception as e:
+        print("Database Error:", e)
 
-#         except Exception as e:
-#             print("Database Error:", e)
+    # Invoice Create
+    try:
+        sqlQuery = (
+            "INSERT INTO project_invoices (project_id, invoice_number, billed_date, invoice_amount, invoice_status)"
+            + " VALUES (:project_id, :invoice_number, :billed_date, :invoice_amount, :invoice_status)"
+        )
 
-#     # Get Invoice Total
-#     try:
-#         sqlQuery = (
-#             "SELECT SUM(installment_amount) as inv_total"
-#             + " FROM project_installments"
-#             + " WHERE project_id = :project_id AND invoice_number = :next_invoice_number;"
-#         )
+        query_params = {
+            "project_id": project_id,
+            "invoice_number": next_invoice_number,
+            "billed_date": datetime.now().strftime("%Y-%m-%d"),
+            "invoice_amount": invoice_total,
+            "invoice_status": "Billed",
+        }
 
-#         query_params = {
-#             "project_id": project_id,
-#             "next_invoice_number": next_invoice_number,
-#         }
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
 
-#         with engine.connect() as connection:
-#             invoice_total = connection.execute(text(f"{sqlQuery}"), query_params)
-#             invoice_total = invoice_total.mappings().all()[0]
+        print("Invoice created")
 
-#         invoice_total = float(invoice_total["inv_total"])
-
-#     except Exception as e:
-#         print("Database Error:", e)
-
-#     # Invoice Create
-#     try:
-#         sqlQuery = (
-#             "INSERT INTO project_invoices (project_id, invoice_number, billed_date, invoice_amount, invoice_status)"
-#             + " VALUES (:project_id, :invoice_number, :billed_date, :invoice_amount, :invoice_status)"
-#         )
-
-#         query_params = {
-#             "project_id": project_id,
-#             "invoice_number": next_invoice_number,
-#             "billed_date": datetime.now().strftime("%Y-%m-%d"),
-#             "invoice_amount": invoice_total,
-#             "invoice_status": "Billed",
-#         }
-
-#         with engine.connect() as connection:
-#             result = connection.execute(text(f"{sqlQuery}"), query_params)
-#             connection.commit()
-
-#         print("Invoice created")
-
-#     except Exception as e:
-#         print("Database Error:", e)
-#         return ""
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
 
 
 def get_installments(project_id):
