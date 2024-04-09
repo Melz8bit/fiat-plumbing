@@ -149,7 +149,7 @@
                     <thead>
                         <th class="text-center">Installment</th>
                         <th>Description</th>
-                        <th>Billed %</th>
+                        <th class="text-center">Billed %</th>
                         <td></td>
                         <td></td>
                         <th class="text-center">Item Amount</th>
@@ -159,7 +159,8 @@
                         <tr>
                             <td class="text-center">{{invoice_item['installment_number']}}</td>
                             <td>{{ invoice_item['installment_description'] }}</td>
-                            <td>{{ "{:,.2f}".format((invoice_item['item_amount'] / invoice_item['installment_amount']) *
+                            <td class="text-center">{{ "{:,.2f}".format((invoice_item['item_amount'] /
+                                invoice_item['installment_amount']) *
                                 100) }}%</td>
                             <td></td>
                             <td></td>
