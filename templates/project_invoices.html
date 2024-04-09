@@ -64,7 +64,7 @@
                     {% if invoice['installment_status'] | capitalize != 'Pending' %}
                     <td class="w-25">
                         <div class="btn-group gap-1 justify-content-end">
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            <!-- <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#invoiceStatusUpdateModal{{ invoice['installment_number'] }}" {% if
                                 invoice['installment_status']=='Paid' %} disabled {% endif %}>
                                 Update
@@ -76,7 +76,7 @@
                                 aria-expanded="false"
                                 aria-controls="collapsePayments{{ invoice['installment_number'] }}">
                                 Payments
-                            </button>
+                            </button> -->
                             <a href="{{ url_for('view_invoice', project_id=project['project_id'], invoice_number=invoice['invoice_number'] )}}"
                                 class="btn btn-primary btn-sm d-flex align-items-center" target=”_blank”>Print</a>
                         </div>
