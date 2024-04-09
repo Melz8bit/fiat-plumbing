@@ -68,28 +68,74 @@
                                 data-bs-target="#invoiceStatusUpdateModal{{ invoice['installment_number'] }}" {% if
                                 invoice['installment_status']=='Paid' %} disabled {% endif %}>
                                 Update
-                            </button>
-                            <button class="btn btn-primary btn-sm" {% if invoice['installment_status']!='Paid' and
-                                invoice['installment_status']!='Partial Payment' %} disabled {% endif %}
-                                data-bs-toggle="collapse"
-                                data-bs-target="#collapsePayments{{ invoice['installment_number'] }}"
-                                aria-expanded="false"
-                                aria-controls="collapsePayments{{ invoice['installment_number'] }}">
-                                Payments
                             </button> -->
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="collapse"
+                                data-bs-target="#collapseInvoiceInfo{{ invoice['invoice_number'] }}"
+                                aria-expanded="false"
+                                aria-controls="collapseInvoiceInfo{{ invoice['invoice_number'] }}">
+                                View Information
+                            </button>
                             <a href="{{ url_for('view_invoice', project_id=project['project_id'], invoice_number=invoice['invoice_number'] )}}"
                                 class="btn btn-primary btn-sm d-flex align-items-center" target=”_blank”>Print</a>
                         </div>
-
                     </td>
                     {% else %}
                     <td></td>
                     {% endif %}
                 </tr>
-                <!-- {*<tr class="collapse" id="collapsePayments{{ invoice['installment_number'] }}">
+                <tr class="collapse" id="collapseInvoiceInfo{{ invoice['invoice_number'] }}">
                     <td colspan="999">
                         <div>
+                            <div class="card card-body mb-1">
+                                <h4>Installment(s)</h4>
+                                <table class="table mt-2">
+                                    <thead>
+                                        <tr class="text-center">
+                                            <th>#</th>
+                                            <th>Description</th>
+                                            <th>Billed Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if invoice['invoice_id'] not in payment_info %}
+                                        <tr>
+                                            <td class="text-center" colspan="100%">
+                                                No payments have been made
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        {% for payments in payment_info %}
+                                        {% for payment in payment_info[payments] %}
+                                        <tr class="text-center">
+                                            {% if payment['invoice_id'] == invoice['invoice_id'] %}
+                                            <td>{{ payment['payment_method'] }}</td>
+                                            <td>{{ payment['check_number'] }}</td>
+                                            <td>{{ "${:,.2f}".format(payment['payment_amount']) }}</td>
+                                            <td>{{ payment['date_received'].strftime('%m/%d/%Y') }}</td>
+                                            <td>{{ payment['payment_note'] }}</td>
+                                            {% endif %}
+                                        </tr>
+                                        {% endfor %}
+                                        {% endfor %}
+                                        {% endif %}
+                                    </tbody>
+                                    {% if invoice['invoice_id'] in payments_received_total %}
+                                    <tfoot class="text-center">
+                                        <td></td>
+                                        <th>Total</th>
+                                        <td>{{ payments_received_total[invoice['invoice_id']] | format_currency |
+                                            string}}</td>
+                                        <th>Pending:</th>
+                                        <td>{{ ((invoice['installment_amount'] | float) -
+                                            payments_received_total[invoice['invoice_id']]) | format_currency | string
+                                            }}
+                                        </td>
+                                    </tfoot>
+                                    {% endif %}
+                                </table>
+                            </div>
                             <div class="card card-body">
+                                <h4>Payments</h4>
                                 <table class="table mt-2">
                                     <thead>
                                         <tr class="text-center">
@@ -140,7 +186,7 @@
                             </div>
                         </div>
                     </td>
-                </tr> *} -->
+                </tr>
 
                 <!-- Modal -->
                 <!-- {*
