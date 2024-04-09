@@ -63,38 +63,6 @@
                                 </script>
                             </td>
                         </tr>
-                        <!-- <script>
-                            function checkCheckBoxes(theForm) {
-                                console.log("hi");
-
-                                // Select all checkboxes
-                                var checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
-
-                                if (checkboxes.length) {
-                                    theForm.classList.add('was-validated');
-                                    return true;
-                                } else {
-                                    var validateMessage = document.getElementById("validationSelectInstallment");
-                                    validateMessage.style.display = "block";
-
-                                    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-                                    const forms = document.querySelectorAll('.needs-validation')
-
-                                    // Loop over them and prevent submission
-                                    Array.from(forms).forEach(form => {
-                                        form.addEventListener('submit', event => {
-                                            if (!form.checkValidity()) {
-                                                event.preventDefault()
-                                                event.stopPropagation()
-                                            }
-
-                                            form.classList.add('was-validated')
-                                        }, false)
-                                    })
-                                    return false;
-                                }
-                            }
-                        </script> -->
                         {% else %}
                         <tr class="text-center align-items-center" style="display:none;">
                             <td>{{ invoice_create_form.installment_select(

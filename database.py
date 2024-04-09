@@ -591,17 +591,17 @@ def get_invoices(project_id):
         return ""
 
 
-def get_open_invoices(project_id, installment_number):
+def get_open_invoices(project_id, invoice_number):
     try:
         sqlQuery = (
             "SELECT *"
             + " FROM project_invoices"
-            + " WHERE project_id = :project_id AND installment_number <= :installment_number AND installment_status != 'Paid';"
+            + " WHERE project_id = :project_id AND invoice_number <= :invoice_number AND invoice_status != 'Paid';"
         )
 
         query_params = {
             "project_id": project_id,
-            "installment_number": installment_number,
+            "invoice_number": int(invoice_number),
         }
 
         with engine.connect() as connection:
@@ -618,17 +618,17 @@ def get_open_invoices(project_id, installment_number):
         return ""
 
 
-def get_invoice(project_id, installment_number):
+def get_invoice(project_id, invoice_number):
     try:
         sqlQuery = (
             "SELECT * "
             + " FROM project_invoices"
-            + " WHERE project_id = :project_id' and installment_number = :installment_number;"
+            + " WHERE project_id = :project_id and invoice_number = :invoice_number;"
         )
 
         query_params = {
             "project_id": project_id,
-            "installment_number": installment_number,
+            "invoice_number": int(invoice_number),
         }
 
         with engine.connect() as connection:
@@ -645,14 +645,16 @@ def get_invoice(project_id, installment_number):
 def get_invoice_items(project_id, invoice_number):
     try:
         sqlQuery = (
-            "SELECT * "
+            "SELECT project_invoice_items.*, project_installments.installment_description, project_installments.installment_amount"
             + " FROM project_invoice_items"
-            + " WHERE project_id = :project_id and invoice_number = :invoice_number;"
+            + " INNER JOIN project_installments"
+            + " ON (project_invoice_items.project_id = project_installments.project_id AND project_invoice_items.installment_number = project_installments.installment_number)"
+            + " WHERE project_invoice_items.project_id = :project_id and project_invoice_items.invoice_number = :invoice_number;"
         )
 
         query_params = {
             "project_id": project_id,
-            "invoice_number": invoice_number,
+            "invoice_number": int(invoice_number),
         }
 
         with engine.connect() as connection:
@@ -666,17 +668,17 @@ def get_invoice_items(project_id, invoice_number):
         return ""
 
 
-def get_open_invoice_items(project_id, installment_number):
+def get_open_invoice_items(project_id, invoice_number):
     try:
         sqlQuery = (
             "SELECT * "
             + " FROM project_invoice_items"
-            + " WHERE project_id = :project_id' and installment_number <= :installment_number;"
+            + " WHERE project_id = :project_id and invoice_number <= :invoice_number;"
         )
 
         query_params = {
             "project_id": project_id,
-            "installment_number": installment_number,
+            "invoice_number": int(invoice_number),
         }
 
         with engine.connect() as connection:

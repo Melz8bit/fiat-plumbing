@@ -1,7 +1,7 @@
 import mimetypes
 import json
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from flask import (
     Flask,
     flash,
@@ -52,6 +52,7 @@ FIAT_PLUMBING = {
     "phone_number": "(305) 446-6366",
     "email": "afiat@aol.com",
 }
+DAYS_UNTIL_DUE = 30
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
@@ -624,32 +625,30 @@ def download_document(project_id, doc_filename):
     )
 
 
-@app.route("/project/<project_id>/invoice/view/<installment_number>")
+@app.route("/project/<project_id>/invoice/view/<invoice_number>")
 @login_required
-def view_invoice(project_id, installment_number):
+def view_invoice(project_id, invoice_number):
     user = database.get_user(session["user_id"])
     project_info = database.get_project(project_id)
-    invoice_info = [database.get_invoice(project_id, installment_number)]
+    invoice_info = [database.get_invoice(project_id, invoice_number)]
+    invoice_items = database.get_invoice_items(project_id, invoice_number)
     client_info = database.get_client(project_info["client_id"])
 
     today_date = datetime.now().strftime("%m/%d/%Y")
-    print(len(invoice_info))
-    if len(invoice_info) == 1:
-        if invoice_info[0]["installment_status"] != "Paid":
-            invoice_info = database.get_open_invoices(project_id, installment_number)
 
-    invoice_total = sum(invoice["installment_amount"] for invoice in invoice_info)
+    invoice_total = sum(invoice["invoice_amount"] for invoice in invoice_info)
 
     return render_template(
         "invoice_print.html",
         user=user,
         project_info=project_info,
         invoice_info=invoice_info,
+        invoice_items=invoice_items,
         client_info=client_info,
         today_date=today_date,
         fiat_plumbing=FIAT_PLUMBING,
         invoice_total=invoice_total,
-        installment_number=installment_number,
+        installment_number=invoice_number,
     )
 
 
@@ -678,6 +677,11 @@ def format_currency(value):
 
     return "$" + str(value)
     # return locale.currency(value, symbol=True, grouping=True)
+
+
+@app.template_filter()
+def calculate_due_date(value):
+    return (datetime.now() + timedelta(days=DAYS_UNTIL_DUE)).strftime("%m/%d/%Y")
 
 
 if __name__ == "__main__":

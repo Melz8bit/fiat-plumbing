@@ -138,7 +138,7 @@
                         <td>{{ project_info['address'] }}, {{ project_info['city'] }}, {{ project_info['state'] }}
                             {{
                             project_info['zip_code'] }}</td>
-                        <td>01/01/2024</td>
+                        <td>{{ today_date | calculate_due_date }}</td>
                     </tbody>
                 </table>
             </div>
@@ -149,20 +149,21 @@
                     <thead>
                         <th class="text-center">Installment</th>
                         <th>Description</th>
-                        <td></td>
+                        <th>Billed %</th>
                         <td></td>
                         <td></td>
                         <th class="text-center">Item Amount</th>
                     </thead>
                     <tbody class="table-group-divider">
-                        {% for invoice in invoice_info %}
+                        {% for invoice_item in invoice_items %}
                         <tr>
-                            <td class="text-center">{{invoice['installment_number']}}</td>
-                            <td>{{invoice['installment_description']}}</td>
+                            <td class="text-center">{{invoice_item['installment_number']}}</td>
+                            <td>{{ invoice_item['installment_description'] }}</td>
+                            <td>{{ "{:,.2f}".format((invoice_item['item_amount'] / invoice_item['installment_amount']) *
+                                100) }}%</td>
                             <td></td>
                             <td></td>
-                            <td></td>
-                            <td class="text-center">{{invoice['installment_amount'] | format_currency | string}}
+                            <td class="text-center">{{invoice_item['item_amount'] | format_currency | string}}
                             </td>
                         </tr>
                         {% endfor %}
