@@ -438,9 +438,10 @@ def project_view(project_id, new_project=False):
     comment = None
     filename = None
 
-    # Track payments made on invoices
+    # Track payments made on invoices and invoice items
     payment_info = {}
     payments_received_total = {}
+    invoice_items = {}
     if invoices:
         for invoice in invoices:
             payment = database.get_invoice_payments(invoice["invoice_id"])
@@ -449,6 +450,12 @@ def project_view(project_id, new_project=False):
                 payments_received_total[invoice["invoice_id"]] = (
                     database.get_invoice_payments_total(invoice["invoice_id"])
                 )
+
+            invoice_item = database.get_invoice_items(
+                project_id, invoice["invoice_number"]
+            )
+            if invoice_item:
+                invoice_items[invoice_item[0]["invoice_number"]] = invoice_item[0]
     else:
         invoices = []
 
@@ -524,6 +531,7 @@ def project_view(project_id, new_project=False):
         notes=notes,
         installments=installments,
         invoices=invoices,
+        invoice_items=invoice_items,
         documents=documents,
         master_permit=master_permit,
         plumbing_permit=plumbing_permit,

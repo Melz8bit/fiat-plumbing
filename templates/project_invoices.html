@@ -87,7 +87,7 @@
                     <td colspan="999">
                         <div>
                             <div class="card card-body mb-1">
-                                <h4>Installment(s)</h4>
+                                <h5>Installment(s)</h5>
                                 <table class="table mt-2">
                                     <thead>
                                         <tr class="text-center">
@@ -96,46 +96,18 @@
                                             <th>Billed Amount</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {% if invoice['invoice_id'] not in payment_info %}
-                                        <tr>
-                                            <td class="text-center" colspan="100%">
-                                                No payments have been made
-                                            </td>
-                                        </tr>
-                                        {% else %}
-                                        {% for payments in payment_info %}
-                                        {% for payment in payment_info[payments] %}
-                                        <tr class="text-center">
-                                            {% if payment['invoice_id'] == invoice['invoice_id'] %}
-                                            <td>{{ payment['payment_method'] }}</td>
-                                            <td>{{ payment['check_number'] }}</td>
-                                            <td>{{ "${:,.2f}".format(payment['payment_amount']) }}</td>
-                                            <td>{{ payment['date_received'].strftime('%m/%d/%Y') }}</td>
-                                            <td>{{ payment['payment_note'] }}</td>
-                                            {% endif %}
-                                        </tr>
-                                        {% endfor %}
-                                        {% endfor %}
-                                        {% endif %}
-                                    </tbody>
-                                    {% if invoice['invoice_id'] in payments_received_total %}
-                                    <tfoot class="text-center">
-                                        <td></td>
-                                        <th>Total</th>
-                                        <td>{{ payments_received_total[invoice['invoice_id']] | format_currency |
-                                            string}}</td>
-                                        <th>Pending:</th>
-                                        <td>{{ ((invoice['installment_amount'] | float) -
-                                            payments_received_total[invoice['invoice_id']]) | format_currency | string
-                                            }}
+                                    <tbody class="text-center">
+                                        <td>{{ invoice_items[invoice['invoice_number']]['installment_number'] }}</td>
+                                        <td>{{ invoice_items[invoice['invoice_number']]['installment_description'] }}
                                         </td>
-                                    </tfoot>
-                                    {% endif %}
+                                        <td>{{
+                                            "${:,.2f}".format(invoice_items[invoice['invoice_number']]['item_amount'])
+                                            }}</td>
+                                    </tbody>
                                 </table>
                             </div>
                             <div class="card card-body">
-                                <h4>Payments</h4>
+                                <h5>Payments</h5>
                                 <table class="table mt-2">
                                     <thead>
                                         <tr class="text-center">
