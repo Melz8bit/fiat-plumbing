@@ -626,7 +626,6 @@ def project_add(client_id=None):
 @login_required
 def download_document(project_id, doc_filename):
     my_file = download_file(doc_filename)
-    print(my_file["ContentType"])
     return Response(
         my_file["Body"].read(),
         mimetype=my_file["ContentType"],

@@ -306,7 +306,6 @@ def get_all_projects():
         with engine.connect() as connection:
             projects = connection.execute(text(f"{sqlQuery}"))
             projects_dict = projects.mappings().all()
-            print(projects_dict[0])
 
         return projects_dict
 
@@ -707,7 +706,6 @@ def get_invoice_payments_total(invoice_id):
         with engine.connect() as connection:
             invoice_items = connection.execute(text(f"{sqlQuery}"), query_params)
             invoice_items_dict = invoice_items.mappings().all()[0]
-            print(float(invoice_items_dict["sum(payment_amount)"]))
 
         return float(invoice_items_dict["sum(payment_amount)"])
         # return invoice_items_dict
@@ -1065,8 +1063,6 @@ def search(search_by, search_criteria):
                 + " WHERE clients.name LIKE '%'||:search_criteria||'%';"
             )
 
-            print(sqlQuery)
-
         query_params = {
             "search_criteria": search_criteria,
         }
@@ -1098,7 +1094,6 @@ def get_city_state_county(zip_code):
         with engine.connect() as connection:
             city_state_zip = connection.execute(text(f"{sqlQuery}"), query_params)
             city_state_zip_dict = city_state_zip.mappings().all()[0]
-            print(f"{city_state_zip_dict=}")
 
         return city_state_zip_dict
 
