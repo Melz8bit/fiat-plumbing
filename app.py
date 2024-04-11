@@ -455,7 +455,8 @@ def project_view(project_id, new_project=False):
                 project_id, invoice["invoice_number"]
             )
             if invoice_item:
-                invoice_items[invoice_item[0]["invoice_number"]] = invoice_item[0]
+                invoice_items[invoice_item[0]["invoice_number"]] = invoice_item
+
     else:
         invoices = []
 

@@ -97,12 +97,13 @@
                                         </tr>
                                     </thead>
                                     <tbody class="text-center">
-                                        <td>{{ invoice_items[invoice['invoice_number']]['installment_number'] }}</td>
-                                        <td>{{ invoice_items[invoice['invoice_number']]['installment_description'] }}
-                                        </td>
-                                        <td>{{
-                                            "${:,.2f}".format(invoice_items[invoice['invoice_number']]['item_amount'])
-                                            }}</td>
+                                        {% for invoice_item in invoice_items[invoice['invoice_number']] %}
+                                        <tr>
+                                            <td>{{invoice_item['installment_number']}}</td>
+                                            <td>{{invoice_item['installment_description']}}</td>
+                                            <td>{{ "${:,.2f}".format(invoice_item['item_amount']) }}</td>
+                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
