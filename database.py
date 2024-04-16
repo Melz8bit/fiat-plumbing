@@ -691,6 +691,30 @@ def get_open_invoice_items(project_id, invoice_number):
         return ""
 
 
+def get_open_invoices(project_id):
+    try:
+        sqlQuery = (
+            "SELECT * "
+            + " FROM project_invoices"
+            + " WHERE project_id = :project_id and invoice_status != 'Paid';"
+            + " ORDER BY invoice_id"
+        )
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            open_invoices = connection.execute(text(f"{sqlQuery}"), query_params)
+            open_invoices_dict = open_invoices.mappings().all()
+
+        return open_invoices_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 def get_invoice_payments_total(invoice_id):
     try:
         sqlQuery = (
@@ -736,6 +760,29 @@ def insert_payment(payment_info):
             connection.commit()
 
         print("Payment added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_project_payments(project_id):
+    try:
+        sqlQuery = (
+            "SELECT * "
+            + " FROM project_payments"
+            + " WHERE project_id = :project_id ORDER BY date_received;"
+        )
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            project_payments = connection.execute(text(f"{sqlQuery}"), query_params)
+            project_payments_dict = project_payments.mappings().all()
+
+        return project_payments_dict
 
     except Exception as e:
         print("Database Error:", e)

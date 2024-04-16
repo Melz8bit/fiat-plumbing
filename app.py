@@ -40,6 +40,7 @@ from forms import (
     InvoiceStatusUpdateForm,
     InvoicePaymentForm,
     InvoiceCreateForm,
+    ApplyPaymentForm,
 )
 from models import users
 
@@ -418,6 +419,8 @@ def project_view(project_id, new_project=False):
     notes = database.get_notes(project_id)
     installments = database.get_installments(project_id)
     invoices = database.get_invoices(project_id)
+    open_invoices = database.get_open_invoices(project_id)
+    project_payments = database.get_project_payments(project_id)
     documents = database.get_project_docs(project_id)
     master_permit = database.get_master_permit(project_id)
     plumbing_permit = database.get_plumbing_permit(project_id)
@@ -432,6 +435,7 @@ def project_view(project_id, new_project=False):
     invoice_status_form = InvoiceStatusUpdateForm()
     payment_detail_form = InvoicePaymentForm()
     invoice_create_form = InvoiceCreateForm()
+    apply_payment_form = ApplyPaymentForm()
 
     # Variable Initialization
     document_type = None
@@ -456,7 +460,6 @@ def project_view(project_id, new_project=False):
             )
             if invoice_item:
                 invoice_items[invoice_item[0]["invoice_number"]] = invoice_item
-
     else:
         invoices = []
 
@@ -541,9 +544,12 @@ def project_view(project_id, new_project=False):
         project_status_form=project_status_form,
         invoice_status_form=invoice_status_form,
         payment_detail_form=payment_detail_form,
+        apply_payment_form=apply_payment_form,
         invoice_create_form=invoice_create_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
+        open_invoices=open_invoices,
+        project_payments=project_payments,
     )
 
 

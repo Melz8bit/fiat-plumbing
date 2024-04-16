@@ -229,3 +229,25 @@ class InvoiceCreateForm(FlaskForm):
     billed_percentage = DecimalField()
     billed_amount = DecimalField("$", render_kw={"readonly": True})
     create = SubmitField("Create")
+
+
+class ApplyPaymentForm(FlaskForm):
+    payment_method = SelectField(
+        "Payment Method",
+        validators=[DataRequired()],
+        choices=["Check", "Direct Deposit"],
+    )
+    check_number = StringField(
+        "Payment Number",
+        validators=[DataRequired()],
+    )
+    payment_ammount = DecimalField(
+        "Payment Ammount",
+        validators=[DataRequired()],
+    )
+    date_received = DateField(
+        "Date Received",
+        validators=[DataRequired()],
+        default=datetime.date.today(),
+    )
+    payment_note = TextAreaField("Note")

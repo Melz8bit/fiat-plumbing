@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        #invoiceTable>tbody>tr>td {
+            background-color: white;
+        }
+
+        #invoiceTable>tbody>tr:nth-child(4n+1)>td,
+        #invoiceTable>tbody>tr:nth-child(4n+2)>td {
+            background-color: #F9F9F9;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Payments -->
+    <div>
+        <div class="text-end pt-1">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#applyPaymentModal">
+                Apply Payment
+            </button>
+        </div>
+        <!-- Apply Payment Modal -->
+        <div class="modal fade" id="applyPaymentModal" tabindex="-1" aria-labelledby="applyPaymentLabel"
+            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            {% include 'apply_payment_modal.html' %}
+        </div>
+
+        <table class="table" id="paymentsTable">
+            <thead>
+                <tr class="text-center">
+                    <th>Date Received</th>
+                    <th>Payment Method</th>
+                    <th>Check Number</th>
+                    <th>Amount</th>
+                    <th>Note</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if project_payments|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="100%">
+                        No payments have been received
+                    </td>
+                </tr>
+                {% else %}
+                {% for payment in project_payments %}
+                <tr class="text-center">
+                    <td>{{ payment['date_received'].strftime('%m/%d/%Y') }}</td>
+                    <td>{{ payment['payment_method'] }}</td>
+                    <td>{{ payment['check_number'] }}</td>
+                    <td>{{ "${:,.2f}".format(payment['payment_amount']) }}</td>
+                    <td>{{ payment['payment_note'] }}</td>
+                    <td class="w-25">
+                        <div class="btn-group gap-1 justify-content-end">
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="collapse"
+                                data-bs-target="#collapsePaymentInfo{{ payment['payment_id'] }}" aria-expanded="false"
+                                aria-controls="collapsePaymentInfo{{ payment['payment_id'] }}">
+                                View Invoices
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="collapse" id="collapsePaymentInfo{{ payment['payment_id'] }}">
+                    <td colspan="999">
+                        <div>
+                            <div class="card card-body mb-1">
+                                <h5>Invoice(s)</h5>
+                                {#<!-- <table class="table mt-2">
+                                    <thead>
+                                        <tr class="text-center">
+                                            <th>#</th>
+                                            <th>Description</th>
+                                            <th>Billed Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-center">
+                                        {% for invoice_item in invoice_items[invoice['invoice_number']] %}
+                                        <tr>
+                                            <td>{{invoice_item['installment_number']}}</td>
+                                            <td>{{invoice_item['installment_description']}}</td>
+                                            <td>{{ "${:,.2f}".format(invoice_item['item_amount']) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table> --> #}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>
