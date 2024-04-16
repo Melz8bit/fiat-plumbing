@@ -241,8 +241,8 @@ class ApplyPaymentForm(FlaskForm):
         "Payment Number",
         validators=[DataRequired()],
     )
-    payment_ammount = DecimalField(
-        "Payment Ammount",
+    payment_amount = DecimalField(
+        "Payment Amount",
         validators=[DataRequired()],
     )
     date_received = DateField(
@@ -251,3 +251,5 @@ class ApplyPaymentForm(FlaskForm):
         default=datetime.date.today(),
     )
     payment_note = TextAreaField("Note")
+    invoice_select = BooleanField()
+    submit = SubmitField()

@@ -5,99 +5,60 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="applyPayment" name="applyPayment" method="POST">
-            {{ invoice_create_form.csrf_token() }}
+            {{ apply_payment_form.csrf_token() }}
             <div class="modal-body">
-                <h6>Select items:</h6>
+                <!-- Payment Information -->
+                <h6>Payment Information</h6>
+                <div>
+                    <div class="row">
+                        <div class="input-group mb-3 col">
+                            {{ apply_payment_form.payment_method.label(class="input-group-text w-50") }}
+                            {{ apply_payment_form.payment_method(class="form-select") }}
+                        </div>
+                        <div class="input-group mb-3 col">
+                            {{ apply_payment_form.check_number.label(class="input-group-text w-50") }}
+                            {{ apply_payment_form.check_number(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-group mb-3 col">
+                            {{ apply_payment_form.payment_amount.label(class="input-group-text w-50") }}
+                            <span class="input-group-text">$</span>
+                            {{ apply_payment_form.payment_amount(class="form-control", min="0") }}
+                        </div>
+                        <div class="input-group mb-3 col">
+                            {{ apply_payment_form.date_received.label(class="input-group-text w-50") }}
+                            {{ apply_payment_form.date_received(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <h6>Select invoices:</h6>
                 <table class="table">
                     <thead class="text-center">
                         <th></th>
                         <th>#</th>
-                        <th>Description</th>
-                        <th>Total Amount</th>
-                        <th>Billed %</th>
-                        <th>Billed Amount</th>
+                        <th>Created Date</th>
+                        <th>Invoice Amount</th>
                     </thead>
                     <tbody>
-                        {% if installments|length == 0 %}
+                        {% if open_invoices|length == 0 %}
                         <tr>
                             <td class="text-center" colspan="100%">
-                                No installments found on this project
+                                No billable invoices found on this project
                             </td>
                         </tr>
                         {% else %}
-                        {% for installment in installments %}
-                        {% if installment['installment_status'] != 'Billed' %}
+                        {% for invoice in open_invoices %}
                         <tr class="text-center align-items-center">
-                            <td>{{ invoice_create_form.installment_select(
+                            <td>{{ apply_payment_form.invoice_select(
                                 class="is-valid",
-                                id="installmentChk"+installment['installment_id']|string ,
-                                value=installment['installment_id'],
+                                id="invoiceChkMk"+invoice['invoice_id']|string ,
+                                value=invoice['invoice_id'],
                                 ) }} </td>
-                            <td>{{ installment['installment_number'] }}</td>
-                            <td>{{ installment['installment_description'] }}</td>
-                            <td>{{ "${:,.2f}".format(installment['installment_amount']) }}</td>
-                            <td style="width:15%">
-                                <div class="input-group input-group-sm">
-                                    <input id="installmentBillledPercent{{ installment['installment_id'] }}"
-                                        type="number" value="100" class="form-control text-end" disabled
-                                        onchange="changeBilledAmount({{installment['installment_id']}}, this.value, {{installment['installment_amount'] - installment['billed_amount']}});">
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </td>
-                            <td style="width:20%">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text">$</span>
-                                    {{ invoice_create_form.billed_amount(
-                                    id="installmentBilledAmount"+installment['installment_id']|string ,
-                                    class="form-control text-end",
-                                    value='%0.2f'| format(installment['installment_amount'] -
-                                    installment['billed_amount'] | float)
-                                    ) }}
-                                </div>
-                                <script>
-                                    function changeBilledAmount(installmentID, percent, installmentAmount) {
-                                        let labelElement = document.getElementById("installmentBilledAmount" + installmentID);
-                                        labelElement.value =
-                                            parseFloat(installmentAmount * (percent / 100)).toFixed(2);
-                                    }
-                                </script>
-                            </td>
+                            <td>{{ invoice['invoice_number'] }}</td>
+                            <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
+                            <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
                         </tr>
-                        {% else %}
-                        <tr class="text-center align-items-center" style="display:none;">
-                            <td>{{ invoice_create_form.installment_select(
-                                id="installmentChk"+installment['installment_id']|string,
-                                value=installment['installment_id']) }}</td>
-                            <td>{{ installment['installment_number'] }}</td>
-                            <td>{{ installment['installment_description'] }}</td>
-                            <td>0.0</td>
-                            <td style="width:15%">
-                                <div class="input-group input-group-sm">
-                                    <input id="installmentBillledPercent{{ installment['installment_id'] }}"
-                                        type="number" value="100" class="form-control text-end"
-                                        onchange="changeBilledAmount({{installment['installment_id']}}, this.value, {{installment['installment_amount']}});">
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </td>
-                            <td style="width:20%">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text">$</span>
-                                    {{ invoice_create_form.billed_amount(
-                                    id="installmentBilledAmount"+installment['installment_id']|string ,
-                                    class="form-control text-end",
-                                    value=0
-                                    ) }}
-                                </div>
-                                <script>
-                                    function changeBilledAmount(installmentID, percent, installmentAmount) {
-                                        let labelElement = document.getElementById("installmentBilledAmount" + installmentID);
-                                        labelElement.value =
-                                            parseFloat(installmentAmount * (percent / 100)).toFixed(2);
-                                    }
-                                </script>
-                            </td>
-                        </tr>
-                        {% endif %}
                         {% endfor %}
                         {% endif %}
                     </tbody>
@@ -105,9 +66,8 @@
                         <tr>
                             <td colspan="100%">
                                 <div class="input-group mb-3">
-                                    <span class="input-group-text">Note</span>
-                                    <textarea class="form-control" aria-label="Insert Note"
-                                        style="resize: none;"></textarea>
+                                    {{ apply_payment_form.payment_note.label(class="input-group-text") }}
+                                    {{ apply_payment_form.payment_note(class="form-control") }}
                                 </div>
                             </td>
                         </tr>
@@ -125,10 +85,9 @@
                         {{ invoice_create_form.create(class="btn btn-primary") }}
                     </div>
                 </div>
-
             </div>
         </form>
-        <script>
+        <!-- <script>
             // Example starter JavaScript for disabling form submissions if there are invalid fields
             (() => {
                 'use strict'
@@ -159,6 +118,6 @@
                     document.getElementById("installmentBillledPercent" + checkbox.value).disabled = !checkbox.checked;
                 })
             });
-        </script>
+        </script> -->
     </div>
 </div>
