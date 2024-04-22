@@ -708,8 +708,6 @@ def get_open_invoices(project_id):
             open_invoices = connection.execute(text(f"{sqlQuery}"), query_params)
             open_invoices_dict = open_invoices.mappings().all()
 
-        print(open_invoices_dict)
-
         return open_invoices_dict
 
     except Exception as e:
