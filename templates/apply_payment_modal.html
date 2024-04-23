@@ -31,93 +31,82 @@
                             {{ apply_payment_form.date_received(class="form-control") }}
                         </div>
                     </div>
+                    <div class="text-end">
+                        <button class="btn btn-primary" id="btnApplyPayment" type="button">Apply</button>
+                    </div>
                 </div>
-                <h6>Select invoices:</h6>
-                <table class="table">
-                    <thead class="text-center">
-                        <th></th>
-                        <th>#</th>
-                        <th>Created Date</th>
-                        <th>Invoice Amount</th>
-                    </thead>
-                    <tbody>
-                        {% if open_invoices|length == 0 %}
-                        <tr>
-                            <td class="text-center" colspan="100%">
-                                No billable invoices found on this project
-                            </td>
-                        </tr>
-                        {% else %}
-                        {% for invoice in open_invoices %}
-                        <tr class="text-center align-items-center">
-                            <td>{{ apply_payment_form.invoice_select(
-                                class="is-valid",
-                                id="invoiceChkMk"+invoice['invoice_id']|string ,
-                                value=invoice['invoice_id'],
-                                ) }} </td>
-                            <td>{{ invoice['invoice_number'] }}</td>
-                            <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
-                            <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
-                        </tr>
-                        {% endfor %}
-                        {% endif %}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="100%">
-                                <div class="input-group mb-3">
-                                    {{ apply_payment_form.payment_note.label(class="input-group-text") }}
-                                    {{ apply_payment_form.payment_note(class="form-control") }}
-                                </div>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div id="paymentApplication">
+                    <h6>Payment Application</h6>
+                    <label id="lblPaymentRemaining">hello</label>
+                    <table class="table">
+                        <thead class="text-center">
+                            <th>#</th>
+                            <th>Created Date</th>
+                            <th>Invoice Amount</th>
+                            <th>Amount Applied</th>
+                            <th>Amount Owed</th>
+                        </thead>
+                        <tbody>
+                            {% if open_invoices|length == 0 %}
+                            <tr>
+                                <td class="text-center" colspan="100%">
+                                    No billable invoices found on this project
+                                </td>
+                            </tr>
+                            {% else %}
+                            {% for invoice in open_invoices %}
+                            <tr class="text-center align-items-center">
+                                <td>{{ invoice['invoice_number'] }}</td>
+                                <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
+                                <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
+                                <td>{{ apply_payment_form.amount_applied(
+                                    class="form-control form-control-sm text-end",
+                                    id="invoiceApplyPayment"+invoice['invoice_id']|string) }}</td>
+                                <td>{{ apply_payment_form.amount_remaining(
+                                    class="form-control form-control-sm text-end",
+                                    id="invoiceAmountRemaining"+invoice['invoice_id']|string) }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="100%">
+                                    <div class="input-group mb-3">
+                                        {{ apply_payment_form.payment_note.label(class="input-group-text") }}
+                                        {{ apply_payment_form.payment_note(class="form-control") }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
             <div class="modal-footer">
                 <div class="row">
-                    <div class="col">
-                        <div id="validationSelectInstallment" class="invalid-feedback" style="display: none;">
-                            Please choose at least one installment.
-                        </div>
-                    </div>
-                    <div class="col">
-                        {{ invoice_create_form.create(class="btn btn-primary") }}
-                    </div>
+                    {{ apply_payment_form.submit(class="btn btn-primary") }}
                 </div>
             </div>
+            <script>
+                document.getElementById("btnApplyPayment").addEventListener("click", function () {
+                    document.getElementById("lblPaymentRemaining").innerHTML = document.getElementById("payment_amount").value;
+                    console.log("hi");
+
+                    // var some_var = '{{ open_invoices | safe }}';
+                    // some_var.replaceAll("&#39;", "\"");
+                    // console.log(some_var);
+                    // var your_js_array = Array.from(JSON.parse(some_var));
+                    // console.log(your_js_array);
+
+                    // console.log('{{open_invoices | length }}');
+                    // for (let i = 0; i < '{{open_invoices | length }}'; i++) {
+                    //     console.log('{{open_invoices[0]["invoice_id"] }}');
+                    //     // text += cars[i] + "<br>";
+                    // }
+
+                });
+            </script>
         </form>
-        <!-- <script>
-            // Example starter JavaScript for disabling form submissions if there are invalid fields
-            (() => {
-                'use strict'
 
-                // Fetch all the forms we want to apply custom Bootstrap validation styles to
-                const forms = document.querySelectorAll('.needs-validation')
-
-                // Loop over them and prevent submission
-                Array.from(forms).forEach(form => {
-                    form.addEventListener('submit', event => {
-                        if (!form.checkValidity()) {
-                            event.preventDefault()
-                            event.stopPropagation()
-                        }
-
-                        form.classList.add('was-validated')
-                    }, false)
-                })
-            })()
-        </script>
-        <script>
-            // Select all checkboxes with the name 'settings' using querySelectorAll.
-            var checkboxes = document.querySelectorAll("input[type=checkbox]");
-
-            // Use Array.forEach to add an event listener to each checkbox.
-            checkboxes.forEach(function (checkbox) {
-                checkbox.addEventListener('change', function () {
-                    document.getElementById("installmentBillledPercent" + checkbox.value).disabled = !checkbox.checked;
-                })
-            });
-        </script> -->
     </div>
 </div>

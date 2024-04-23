@@ -250,6 +250,18 @@ class ApplyPaymentForm(FlaskForm):
         validators=[DataRequired()],
         default=datetime.date.today(),
     )
+    amount_applied = StringField(
+        "Amount Applied",
+        default=0,
+        render_kw={"disabled": ""},
+        validators=[DataRequired()],
+    )
+    amount_remaining = StringField(
+        "Amount Owed",
+        default=0,
+        render_kw={"disabled": ""},
+        validators=[DataRequired()],
+    )
     payment_note = TextAreaField("Note")
-    invoice_select = BooleanField()
+    # invoice_select = BooleanField()
     submit = SubmitField()

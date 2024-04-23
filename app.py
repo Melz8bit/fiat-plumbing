@@ -446,6 +446,7 @@ def project_view(project_id, new_project=False):
     payment_info = {}
     payments_received_total = {}
     invoice_items = {}
+
     if invoices:
         for invoice in invoices:
             payment = database.get_invoice_payments(invoice["invoice_id"])
@@ -511,6 +512,9 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{document_form.errors=}")
 
+    if apply_payment_form.validate_on_submit():
+        print("something")
+
     if invoice_create_form.validate_on_submit():
         selected_installments = request.form.getlist("installment_select")
         selected_invoices = {}
@@ -527,6 +531,8 @@ def project_view(project_id, new_project=False):
         database.create_invoice(selected_invoices, project_id)
 
         return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{invoice_create_form.errors=}")
 
     return render_template(
         "project.html",
