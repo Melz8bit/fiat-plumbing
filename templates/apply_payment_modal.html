@@ -66,6 +66,38 @@
                                     class="form-control form-control-sm text-end",
                                     id="invoiceAmountRemaining"+invoice['invoice_id']|string) }}</td>
                             </tr>
+                            <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+                            <script>
+                                $(document).ready(function () {
+                                    $("#btnApplyPayment").on("click", function (e) {
+                                        console.log("yo");
+                                        var url = "{{ url_for('apply_payment', invoice_id=invoice['invoice_id']) }}";
+                                        $.ajax({
+                                            type: "POST",
+                                            url: url,
+                                            data: $('#applyPayment').serialize(), // serializes the form's elements.
+                                            success: function (data) {
+                                                console.log(data)  // display the returned data in the console.
+                                                var x = document.getElementById("invoiceAmountRemaining{{invoice['invoice_id']}}");
+                                                x.value = data;
+                                                console.log("{{invoice['invoice_id']}}");
+                                                // x.value = "hi";
+
+                                            }
+                                        });
+                                        e.preventDefault(); // block the traditional submission of the form.
+                                    });
+
+                                    // Inject our CSRF token into our AJAX request.
+                                    $.ajaxSetup({
+                                        beforeSend: function (xhr, settings) {
+                                            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                                xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                                            }
+                                        }
+                                    })
+                                });
+                            </script>
                             {% endfor %}
                             {% endif %}
                         </tbody>
@@ -87,7 +119,9 @@
                     {{ apply_payment_form.submit(class="btn btn-primary") }}
                 </div>
             </div>
-            <script>
+
+
+            <!-- <script>
                 document.getElementById("btnApplyPayment").addEventListener("click", function () {
                     document.getElementById("lblPaymentRemaining").innerHTML = document.getElementById("payment_amount").value;
                     console.log("hi");
@@ -105,7 +139,7 @@
                     // }
 
                 });
-            </script>
+            </script> -->
         </form>
 
     </div>

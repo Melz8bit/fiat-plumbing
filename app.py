@@ -686,6 +686,15 @@ def populate_city_state_county():
     return dict(results)
 
 
+@app.route("/applyPayment/<invoice_id>", methods=["GET", "POST"])
+def apply_payment(invoice_id):
+    print("in the thing")
+    x = ApplyPaymentForm()
+    print(x.payment_amount)
+    print(invoice_id)
+    return jsonify("melz")
+
+
 @app.template_filter()
 def format_currency(value):
     # locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
