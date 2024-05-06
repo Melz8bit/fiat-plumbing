@@ -514,6 +514,9 @@ def project_view(project_id, new_project=False):
 
     if apply_payment_form.validate_on_submit():
         print("something")
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{apply_payment_form.errors=}")
 
     if invoice_create_form.validate_on_submit():
         selected_installments = request.form.getlist("installment_select")

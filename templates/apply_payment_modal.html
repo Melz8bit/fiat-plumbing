@@ -31,7 +31,7 @@
                             {{ apply_payment_form.date_received(class="form-control") }}
                         </div>
                     </div>
-                    <div class="text-end">
+                    <div class="text-center">
                         <button class="btn btn-primary" id="btnApplyPayment" type="button">Apply</button>
                     </div>
                 </div>
@@ -43,8 +43,8 @@
                             <th>#</th>
                             <th>Created Date</th>
                             <th>Invoice Amount</th>
-                            <th>Amount Applied</th>
-                            <th>Amount Owed</th>
+                            <th>Applied</th>
+                            <th>Remaining</th>
                         </thead>
                         <tbody>
                             {% if open_invoices|length == 0 %}
@@ -58,13 +58,23 @@
                             <tr class="text-center align-items-center">
                                 <td>{{ invoice['invoice_number'] }}</td>
                                 <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
-                                <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
-                                <td>{{ apply_payment_form.amount_applied(
-                                    class="form-control form-control-sm text-end",
-                                    id="invoiceApplyPayment"+invoice['invoice_id']|string) }}</td>
-                                <td>{{ apply_payment_form.amount_remaining(
-                                    class="form-control form-control-sm text-end",
-                                    id="invoiceAmountRemaining"+invoice['invoice_id']|string) }}</td>
+                                <td>{{ "$ {:,.2f}".format(invoice['invoice_amount']) }}</td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        {{ apply_payment_form.amount_applied(
+                                        class="form-control form-control-sm text-end",
+                                        id="invoiceApplyPayment"+invoice['invoice_id']|string) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        {{ apply_payment_form.amount_remaining(
+                                        class="form-control form-control-sm text-end",
+                                        id="invoiceAmountRemaining"+invoice['invoice_id']|string) }}
+                                    </div>
+                                </td>
                             </tr>
                             <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
                             <script>
@@ -116,7 +126,7 @@
             </div>
             <div class="modal-footer">
                 <div class="row">
-                    {{ apply_payment_form.submit(class="btn btn-primary") }}
+                    {{ apply_payment_form.apply_payment(class="btn btn-primary") }}
                 </div>
             </div>
 
