@@ -92,7 +92,6 @@
                                                 x.value = data;
                                                 console.log("{{invoice['invoice_id']}}");
                                                 // x.value = "hi";
-
                                             }
                                         });
                                         e.preventDefault(); // block the traditional submission of the form.
@@ -129,28 +128,6 @@
                     {{ apply_payment_form.apply_payment(class="btn btn-primary") }}
                 </div>
             </div>
-
-
-            <!-- <script>
-                document.getElementById("btnApplyPayment").addEventListener("click", function () {
-                    document.getElementById("lblPaymentRemaining").innerHTML = document.getElementById("payment_amount").value;
-                    console.log("hi");
-
-                    // var some_var = '{{ open_invoices | safe }}';
-                    // some_var.replaceAll("&#39;", "\"");
-                    // console.log(some_var);
-                    // var your_js_array = Array.from(JSON.parse(some_var));
-                    // console.log(your_js_array);
-
-                    // console.log('{{open_invoices | length }}');
-                    // for (let i = 0; i < '{{open_invoices | length }}'; i++) {
-                    //     console.log('{{open_invoices[0]["invoice_id"] }}');
-                    //     // text += cars[i] + "<br>";
-                    // }
-
-                });
-            </script> -->
         </form>
-
     </div>
 </div>
