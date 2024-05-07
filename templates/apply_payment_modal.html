@@ -45,6 +45,7 @@
                             <th>Invoice Amount</th>
                             <th>Applied</th>
                             <th>Remaining</th>
+                            <th>Status</th>
                         </thead>
                         <tbody>
                             {% if open_invoices|length == 0 %}
@@ -58,40 +59,62 @@
                             <tr class="text-center align-items-center">
                                 <td>{{ invoice['invoice_number'] }}</td>
                                 <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
-                                <td>{{ "$ {:,.2f}".format(invoice['invoice_amount']) }}</td>
+                                <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
                                 <td>
                                     <div class="input-group input-group-sm">
-                                        <span class="input-group-text">$</span>
-                                        {{ apply_payment_form.amount_applied(
-                                        class="form-control form-control-sm text-end",
-                                        id="invoiceApplyPayment"+invoice['invoice_id']|string) }}
+                                        {{ apply_payment_form.amount_remaining(
+                                        id="invoiceApplyPayment"+invoice['invoice_id']|string ,
+                                        class="form-control form-control-sm text-center",
+                                        value="$0.00"
+                                        ) }}
                                     </div>
                                 </td>
                                 <td>
                                     <div class="input-group input-group-sm">
-                                        <span class="input-group-text">$</span>
                                         {{ apply_payment_form.amount_remaining(
-                                        class="form-control form-control-sm text-end",
-                                        id="invoiceAmountRemaining"+invoice['invoice_id']|string) }}
+                                        id="invoiceAmountRemaining"+invoice['invoice_id']|string ,
+                                        class="form-control form-control-sm text-center",
+                                        value="$0.00"
+                                        ) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input id="invoiceStatus{{invoice['invoice_id']|string}}" type="text"
+                                            class="form-control form-control-sm text-center" disabled>
                                     </div>
                                 </td>
                             </tr>
+
+                            {% endfor %}
                             <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
                             <script>
                                 $(document).ready(function () {
                                     $("#btnApplyPayment").on("click", function (e) {
-                                        console.log("yo");
-                                        var url = "{{ url_for('apply_payment', invoice_id=invoice['invoice_id']) }}";
+                                        var url = "{{ url_for('apply_payment', project_id=project['project_id']) }}";
                                         $.ajax({
                                             type: "POST",
                                             url: url,
                                             data: $('#applyPayment').serialize(), // serializes the form's elements.
                                             success: function (data) {
-                                                console.log(data)  // display the returned data in the console.
-                                                var x = document.getElementById("invoiceAmountRemaining{{invoice['invoice_id']}}");
-                                                x.value = data;
-                                                console.log("{{invoice['invoice_id']}}");
-                                                // x.value = "hi";
+                                                // console.log(data)  // display the returned data in the console.
+                                                let formatting_options = {
+                                                    style: 'currency',
+                                                    currency: 'USD',
+                                                    minimumFractionDigits: 2,
+                                                }
+                                                let dollarString = new Intl.NumberFormat("en-US", formatting_options);
+                                                for (var i = 0; i < data.length; i++) {
+                                                    var invoice_id = data[i]["invoice_id"];
+                                                    var amount_applied = document.getElementById("invoiceApplyPayment" + String(invoice_id));
+                                                    var amount_remaining = document.getElementById("invoiceAmountRemaining" + String(invoice_id));
+                                                    var status = document.getElementById("invoiceStatus" + String(invoice_id));
+
+                                                    amount_applied.value = dollarString.format(data[i]["amount_received"]);
+                                                    amount_remaining.value = dollarString.format(data[i]["amount_remaining"]);
+                                                    status.value = data[i]["invoice_status"];
+                                                }
+
                                             }
                                         });
                                         e.preventDefault(); // block the traditional submission of the form.
@@ -107,7 +130,6 @@
                                     })
                                 });
                             </script>
-                            {% endfor %}
                             {% endif %}
                         </tbody>
                         <tfoot>

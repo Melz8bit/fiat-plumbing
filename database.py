@@ -914,8 +914,8 @@ def create_invoice(selected_invoices, project_id):
     # Invoice Create
     try:
         sqlQuery = (
-            "INSERT INTO project_invoices (project_id, invoice_number, billed_date, invoice_amount, invoice_status)"
-            + " VALUES (:project_id, :invoice_number, :billed_date, :invoice_amount, :invoice_status)"
+            "INSERT INTO project_invoices (project_id, invoice_number, billed_date, invoice_amount, invoice_status, payment_remaining)"
+            + " VALUES (:project_id, :invoice_number, :billed_date, :invoice_amount, :invoice_status, :payment_remaining)"
         )
 
         query_params = {
@@ -924,6 +924,7 @@ def create_invoice(selected_invoices, project_id):
             "billed_date": datetime.now().strftime("%Y-%m-%d"),
             "invoice_amount": invoice_total,
             "invoice_status": "Billed",
+            "payment_remaining": invoice_total,
         }
 
         with engine.connect() as connection:

@@ -689,12 +689,43 @@ def populate_city_state_county():
     return dict(results)
 
 
-@app.route("/applyPayment/<invoice_id>", methods=["GET", "POST"])
-def apply_payment(invoice_id):
-    print("in the thing")
-    x = ApplyPaymentForm()
-    print(x.payment_amount)
-    print(invoice_id)
+@app.route("/applyPayment/<project_id>", methods=["GET", "POST"])
+def apply_payment(project_id):
+    payment_form = ApplyPaymentForm()
+
+    payment_applied_info = []
+
+    payment_remaining = float(ApplyPaymentForm().data["payment_amount"])
+    open_invoices = database.get_open_invoices(project_id)
+
+    for invoice in open_invoices:
+        payment_dict = None
+        if payment_remaining < invoice["payment_remaining"]:
+            payment_dict = {
+                "invoice_id": invoice["invoice_id"],
+                "invoice_status": "Partial Payment",
+                "amount_remaining": invoice["payment_remaining"] - payment_remaining,
+                "amount_received": invoice["payment_received"] + payment_remaining,
+            }
+            payment_remaining = 0
+
+        if payment_remaining >= invoice["payment_remaining"]:
+            payment_dict = {
+                "invoice_id": invoice["invoice_id"],
+                "invoice_status": "Paid",
+                "amount_received": invoice["payment_received"]
+                + invoice["payment_remaining"],
+                "amount_remaining": 0,
+            }
+
+            payment_remaining -= invoice["payment_remaining"]
+
+        payment_applied_info.append(payment_dict)
+
+        if payment_remaining == 0:
+            return jsonify(payment_applied_info)
+
+    # print(f"{invoice_id=}")
     return jsonify("melz")
 
 
