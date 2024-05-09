@@ -760,8 +760,7 @@ def apply_payment(project_id):
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
                 "invoice_status": "Paid",
-                "amount_received": invoice["payment_received"]
-                + invoice["payment_remaining"],
+                "amount_received": invoice["payment_remaining"],
                 "amount_remaining": 0,
             }
 

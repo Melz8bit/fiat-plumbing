@@ -41,7 +41,7 @@
                         <thead class="text-center">
                             <th>#</th>
                             <th>Created Date</th>
-                            <th>Invoice Amount</th>
+                            <th>Current Owed</th>
                             <th>Applied</th>
                             <th>Remaining</th>
                             <th>Status</th>
@@ -63,7 +63,7 @@
                                     }}
                                 </td>
                                 <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
-                                <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
+                                <td>{{ "${:,.2f}".format(invoice['payment_remaining']) }}</td>
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <input id="txtInvoiceApplyPayment{{ invoice['invoice_id']|string }}"
