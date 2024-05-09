@@ -555,7 +555,7 @@ def insert_note(project_id, note, user_id):
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
 
-        print("Payment inserted")
+        print("Comment added")
 
     except Exception as e:
         print("Database Error:", e)
@@ -742,17 +742,44 @@ def get_invoice_payments_total(invoice_id):
 def insert_payment(payment_info):
     try:
         sqlQuery = (
-            "INSERT INTO invoice_payments (invoice_id, payment_method, check_number, payment_amount, date_received, payment_note)"
-            + " VALUES (:invoice_id, :payment_method, :check_number, :payment_amount, :date_received, :payment_note)"
+            "INSERT INTO project_payments (project_id, payment_method, check_number, payment_amount, date_received, payment_note)"
+            + " VALUES (:project_id, :payment_method, :check_number, :payment_amount, :date_received, :payment_note)"
         )
 
         query_params = {
-            "invoice_id": payment_info["invoice_id"],
+            "project_id": payment_info["project_id"],
             "payment_method": payment_info["payment_method"],
             "check_number": payment_info["check_number"],
             "payment_amount": payment_info["payment_amount"],
             "date_received": payment_info["date_received"],
             "payment_note": payment_info["payment_note"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Payment added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def apply_payment(invoice_info):
+    try:
+        sqlQuery = (
+            "UPDATE project_invoices"
+            + " SET payment_received = :payment_received, payment_remaining = :payment_remaining, invoice_status = :invoice_status, invoice_status_date = :invoice_status_date"
+            + " WHERE invoice_id = :invoice_id;"
+        )
+
+        query_params = {
+            "invoice_id": invoice_info["invoice_id"],
+            "payment_received": invoice_info["payment_received"],
+            "payment_remaining": invoice_info["payment_remaining"],
+            "invoice_status": invoice_info["invoice_status"],
+            "invoice_status_date": invoice_info["date_received"],
         }
 
         with engine.connect() as connection:

@@ -514,6 +514,53 @@ def project_view(project_id, new_project=False):
 
     if apply_payment_form.validate_on_submit():
         print("something")
+
+        # Payment Information Data
+        payment_method = apply_payment_form.payment_method.data
+        check_number = apply_payment_form.check_number.data
+        payment_amount = apply_payment_form.payment_amount.data
+        date_received = apply_payment_form.date_received.data
+        payment_note = apply_payment_form.payment_note.data
+
+        payment_information = {
+            "project_id": project_id,
+            "payment_method": payment_method,
+            "check_number": check_number,
+            "payment_amount": payment_amount,
+            "date_received": date_received,
+            "payment_note": payment_note,
+        }
+
+        # Invoice Application Data
+        invoice_id_list = [int(x) for x in request.form.getlist("invoice_id")]
+        payment_applied_list = [
+            float(x) for x in request.form.getlist("amount_applied")
+        ]
+        payment_remaining_list = [
+            float(x) for x in request.form.getlist("amount_remaining")
+        ]
+        invoice_status_list = request.form.getlist("invoice_status")
+
+        for invoice_id, applied_amount, remaining_amount, invoice_status in list(
+            zip(
+                invoice_id_list,
+                payment_applied_list,
+                payment_remaining_list,
+                invoice_status_list,
+            )
+        ):
+            if applied_amount > 0:
+                payment = {
+                    "invoice_id": invoice_id,
+                    "payment_received": applied_amount,
+                    "payment_remaining": remaining_amount,
+                    "invoice_status": invoice_status,
+                    "date_received": date_received,
+                }
+                database.apply_payment(payment)
+
+        database.insert_payment(payment_information)
+
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{apply_payment_form.errors=}")

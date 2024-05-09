@@ -232,6 +232,9 @@ class InvoiceCreateForm(FlaskForm):
 
 
 class ApplyPaymentForm(FlaskForm):
+    invoice_id = HiddenField(
+        "Invoice ID",
+    )
     payment_method = SelectField(
         "Payment Method",
         validators=[DataRequired()],
@@ -250,18 +253,18 @@ class ApplyPaymentForm(FlaskForm):
         validators=[DataRequired()],
         default=datetime.date.today(),
     )
-    amount_applied = StringField(
+    amount_applied = HiddenField(
         "Amount Applied",
         default=0.00,
-        render_kw={"disabled": ""},
-        validators=[DataRequired()],
     )
-    amount_remaining = StringField(
+    amount_remaining = HiddenField(
         "Amount Remaining",
         default=0.00,
-        render_kw={"disabled": ""},
-        validators=[DataRequired()],
     )
+    invoice_status = HiddenField(
+        "Invoice Status",
+    )
+
     payment_note = TextAreaField("Note")
     # invoice_select = BooleanField()
     apply_payment = SubmitField("Submit")

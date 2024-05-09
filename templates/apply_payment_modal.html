@@ -37,7 +37,6 @@
                 </div>
                 <div id="paymentApplication">
                     <h6>Payment Application</h6>
-                    <label id="lblPaymentRemaining">hello</label>
                     <table class="table">
                         <thead class="text-center">
                             <th>#</th>
@@ -57,31 +56,41 @@
                             {% else %}
                             {% for invoice in open_invoices %}
                             <tr class="text-center align-items-center">
-                                <td>{{ invoice['invoice_number'] }}</td>
+                                <td>{{ invoice['invoice_number'] }}
+                                    {{ apply_payment_form.invoice_id(
+                                    id=invoice['invoice_id']|string,
+                                    value=invoice['invoice_id'])
+                                    }}
+                                </td>
                                 <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
                                 <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
                                 <td>
                                     <div class="input-group input-group-sm">
-                                        {{ apply_payment_form.amount_remaining(
-                                        id="invoiceApplyPayment"+invoice['invoice_id']|string ,
-                                        class="form-control form-control-sm text-center",
-                                        value="$0.00"
+                                        <input id="txtInvoiceApplyPayment{{ invoice['invoice_id']|string }}"
+                                            class="form-control form-control-sm text-center" value="$0.00" disabled>
+                                        {{ apply_payment_form.amount_applied(
+                                        id="invoiceApplyPayment"+invoice['invoice_id']|string
                                         ) }}
                                     </div>
                                 </td>
                                 <td>
                                     <div class="input-group input-group-sm">
+                                        <input id="txtInvoiceAmountRemaining{{ invoice['invoice_id']|string }}"
+                                            class="form-control form-control-sm text-center" value="$0.00" disabled>
                                         {{ apply_payment_form.amount_remaining(
-                                        id="invoiceAmountRemaining"+invoice['invoice_id']|string ,
-                                        class="form-control form-control-sm text-center",
-                                        value="$0.00"
+                                        id="invoiceAmountRemaining"+invoice['invoice_id']|string
                                         ) }}
                                     </div>
                                 </td>
                                 <td>
                                     <div class="input-group input-group-sm">
-                                        <input id="invoiceStatus{{invoice['invoice_id']|string}}" type="text"
-                                            class="form-control form-control-sm text-center" disabled>
+                                        <input id="txtInvoiceStatus{{ invoice['invoice_id']|string }}"
+                                            class="form-control form-control-sm text-center" value="" disabled>
+                                        {{ apply_payment_form.invoice_status(
+                                        id="invoiceStatus"+invoice['invoice_id']|string
+                                        ) }}
+                                        <!-- <input id="invoiceStatus{{invoice['invoice_id']|string}}" type="text"
+                                            class="form-control form-control-sm text-center" disabled> -->
                                     </div>
                                 </td>
                             </tr>
@@ -106,13 +115,19 @@
                                                 let dollarString = new Intl.NumberFormat("en-US", formatting_options);
                                                 for (var i = 0; i < data.length; i++) {
                                                     var invoice_id = data[i]["invoice_id"];
-                                                    var amount_applied = document.getElementById("invoiceApplyPayment" + String(invoice_id));
-                                                    var amount_remaining = document.getElementById("invoiceAmountRemaining" + String(invoice_id));
-                                                    var status = document.getElementById("invoiceStatus" + String(invoice_id));
+                                                    var amount_applied = document.getElementById("txtInvoiceApplyPayment" + String(invoice_id));
+                                                    var amount_applied_hidden = document.getElementById("invoiceApplyPayment" + String(invoice_id));
+                                                    var amount_remaining = document.getElementById("txtInvoiceAmountRemaining" + String(invoice_id));
+                                                    var amount_remaining_hidden = document.getElementById("invoiceAmountRemaining" + String(invoice_id));
+                                                    var status = document.getElementById("txtInvoiceStatus" + String(invoice_id));
+                                                    var status_hidden = document.getElementById("invoiceStatus" + String(invoice_id));
 
                                                     amount_applied.value = dollarString.format(data[i]["amount_received"]);
+                                                    amount_applied_hidden.value = parseFloat(data[i]["amount_received"]);
                                                     amount_remaining.value = dollarString.format(data[i]["amount_remaining"]);
+                                                    amount_remaining_hidden.value = parseFloat(data[i]["amount_remaining"]);
                                                     status.value = data[i]["invoice_status"];
+                                                    status_hidden.value = data[i]["invoice_status"];
                                                 }
 
                                             }
