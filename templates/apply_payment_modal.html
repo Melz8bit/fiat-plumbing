@@ -106,13 +106,15 @@
                                             url: url,
                                             data: $('#applyPayment').serialize(), // serializes the form's elements.
                                             success: function (data) {
-                                                // console.log(data)  // display the returned data in the console.
+                                                console.log(data)  // display the returned data in the console.
                                                 let formatting_options = {
                                                     style: 'currency',
                                                     currency: 'USD',
                                                     minimumFractionDigits: 2,
                                                 }
                                                 let dollarString = new Intl.NumberFormat("en-US", formatting_options);
+                                                var payment_applied = document.getElementById("payment_applied");
+
                                                 for (var i = 0; i < data.length; i++) {
                                                     var invoice_id = data[i]["invoice_id"];
                                                     var amount_applied = document.getElementById("txtInvoiceApplyPayment" + String(invoice_id));
@@ -122,13 +124,23 @@
                                                     var status = document.getElementById("txtInvoiceStatus" + String(invoice_id));
                                                     var status_hidden = document.getElementById("invoiceStatus" + String(invoice_id));
 
+                                                    // TODO: Set all values to 0
+                                                    amount_applied.value = "$0.00";
+                                                    amount_applied_hidden.value = 0.00;
+                                                    amount_remaining.value = "$0.00";
+                                                    amount_remaining_hidden.value = 0.00;
+                                                    status.value = "";
+                                                    status_hidden.value = "";
+
                                                     amount_applied.value = dollarString.format(data[i]["amount_received"]);
                                                     amount_applied_hidden.value = parseFloat(data[i]["amount_received"]);
                                                     amount_remaining.value = dollarString.format(data[i]["amount_remaining"]);
                                                     amount_remaining_hidden.value = parseFloat(data[i]["amount_remaining"]);
                                                     status.value = data[i]["invoice_status"];
                                                     status_hidden.value = data[i]["invoice_status"];
+
                                                 }
+                                                payment_applied.value = true;
 
                                             }
                                         });
@@ -163,6 +175,7 @@
             <div class="modal-footer">
                 <div class="row">
                     {{ apply_payment_form.apply_payment(class="btn btn-primary") }}
+                    {{ apply_payment_form.payment_applied(id="payment_applied") }}
                 </div>
             </div>
         </form>

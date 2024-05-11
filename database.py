@@ -766,7 +766,29 @@ def insert_payment(payment_info):
         return ""
 
 
+def invoice_received_amount(invoice_id):
+    try:
+        sqlQuery = (
+            "SELECT payment_received"
+            + " FROM project_invoices"
+            + " WHERE invoice_id = :invoice_id"
+        )
+
+        query_params = {
+            "invoice_id": invoice_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params).first()
+            connection.commit()
+            return result[0]
+
+    except Exception as e:
+        print("Database Error:", e)
+
+
 def apply_payment(invoice_info):
+    amount_received = invoice_received_amount(invoice_info["invoice_id"])
     try:
         sqlQuery = (
             "UPDATE project_invoices"
@@ -776,7 +798,7 @@ def apply_payment(invoice_info):
 
         query_params = {
             "invoice_id": invoice_info["invoice_id"],
-            "payment_received": invoice_info["payment_received"],
+            "payment_received": invoice_info["payment_received"] + amount_received,
             "payment_remaining": invoice_info["payment_remaining"],
             "invoice_status": invoice_info["invoice_status"],
             "invoice_status_date": invoice_info["date_received"],

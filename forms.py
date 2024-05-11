@@ -241,7 +241,7 @@ class ApplyPaymentForm(FlaskForm):
         choices=["Check", "Direct Deposit"],
     )
     check_number = StringField(
-        "Payment Number",
+        "Check Number",
         validators=[DataRequired()],
     )
     payment_amount = DecimalField(
@@ -263,6 +263,11 @@ class ApplyPaymentForm(FlaskForm):
     )
     invoice_status = HiddenField(
         "Invoice Status",
+    )
+
+    payment_applied = HiddenField(
+        "Payment Applied",
+        default=False,
     )
 
     payment_note = TextAreaField("Note")

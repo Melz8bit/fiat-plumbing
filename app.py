@@ -513,8 +513,6 @@ def project_view(project_id, new_project=False):
         print(f"{document_form.errors=}")
 
     if apply_payment_form.validate_on_submit():
-        print("something")
-
         # Payment Information Data
         payment_method = apply_payment_form.payment_method.data
         check_number = apply_payment_form.check_number.data
@@ -747,12 +745,14 @@ def apply_payment(project_id):
 
     for invoice in open_invoices:
         payment_dict = None
+        print(f"{invoice['payment_remaining']=}")
+        print(f"{invoice['payment_received']=}")
         if payment_remaining < invoice["payment_remaining"]:
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
                 "invoice_status": "Partial Payment",
                 "amount_remaining": invoice["payment_remaining"] - payment_remaining,
-                "amount_received": invoice["payment_received"] + payment_remaining,
+                "amount_received": payment_remaining,
             }
             payment_remaining = 0
 
@@ -769,6 +769,7 @@ def apply_payment(project_id):
         payment_applied_info.append(payment_dict)
 
         if payment_remaining == 0:
+            print(payment_applied_info)
             return jsonify(payment_applied_info)
 
     # print(f"{invoice_id=}")
