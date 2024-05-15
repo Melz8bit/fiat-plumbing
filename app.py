@@ -559,6 +559,7 @@ def project_view(project_id, new_project=False):
 
         database.insert_payment(payment_information)
 
+        flash("Payment has been applied")
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{apply_payment_form.errors=}")
@@ -578,6 +579,7 @@ def project_view(project_id, new_project=False):
 
         database.create_invoice(selected_invoices, project_id)
 
+        flash("Invoice created")
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{invoice_create_form.errors=}")

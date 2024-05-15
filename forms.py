@@ -264,12 +264,5 @@ class ApplyPaymentForm(FlaskForm):
     invoice_status = HiddenField(
         "Invoice Status",
     )
-
-    payment_applied = HiddenField(
-        "Payment Applied",
-        default=False,
-    )
-
     payment_note = TextAreaField("Note")
-    # invoice_select = BooleanField()
     apply_payment = SubmitField("Submit")

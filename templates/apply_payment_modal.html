@@ -4,7 +4,7 @@
             <h1 class="modal-title fs-5">Apply Payment</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form id="applyPayment" name="applyPayment" method="POST">
+        <form id="applyPayment" name="applyPayment" method="POST" class="needs-validation" novalidate>
             {{ apply_payment_form.csrf_token() }}
             <div class="modal-body">
                 <!-- Payment Information -->
@@ -33,6 +33,10 @@
                     </div>
                     <div class="text-center">
                         <button class="btn btn-primary" id="btnApplyPayment" type="button">Apply</button>
+                        <input type="checkbox" class="form-check-input d-none" id="payment_applied" required>
+                        <div class="invalid-feedback">
+                            Please apply a payment.
+                        </div>
                     </div>
                 </div>
                 <div id="paymentApplication">
@@ -89,8 +93,6 @@
                                         {{ apply_payment_form.invoice_status(
                                         id="invoiceStatus"+invoice['invoice_id']|string
                                         ) }}
-                                        <!-- <input id="invoiceStatus{{invoice['invoice_id']|string}}" type="text"
-                                            class="form-control form-control-sm text-center" disabled> -->
                                     </div>
                                 </td>
                             </tr>
@@ -140,7 +142,8 @@
                                                     status_hidden.value = data[i]["invoice_status"];
 
                                                 }
-                                                payment_applied.value = true;
+                                                payment_applied.checked = true;
+                                                console.log(payment_applied.value);
 
                                             }
                                         });
@@ -175,9 +178,28 @@
             <div class="modal-footer">
                 <div class="row">
                     {{ apply_payment_form.apply_payment(class="btn btn-primary") }}
-                    {{ apply_payment_form.payment_applied(id="payment_applied") }}
                 </div>
             </div>
         </form>
+        <script>
+            (() => {
+                'use strict'
+
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                const forms = document.querySelectorAll('.needs-validation')
+
+                // Loop over them and prevent submission
+                Array.from(forms).forEach(form => {
+                    form.addEventListener('submit', event => {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+            })()
+        </script>
     </div>
 </div>
