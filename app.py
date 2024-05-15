@@ -41,6 +41,7 @@ from forms import (
     InvoicePaymentForm,
     InvoiceCreateForm,
     ApplyPaymentForm,
+    ProjectNoteForm,
 )
 from models import users
 
@@ -436,6 +437,7 @@ def project_view(project_id, new_project=False):
     payment_detail_form = InvoicePaymentForm()
     invoice_create_form = InvoiceCreateForm()
     apply_payment_form = ApplyPaymentForm()
+    project_note_form = ProjectNoteForm()
 
     # Variable Initialization
     document_type = None
@@ -463,6 +465,12 @@ def project_view(project_id, new_project=False):
                 invoice_items[invoice_item[0]["invoice_number"]] = invoice_item
     else:
         invoices = []
+
+    if project_note_form.validate_on_submit():
+        note = project_note_form.note.data
+        database.insert_note(project_id, note, session["user_id"])
+        flash("Note has been added")
+        return redirect(url_for("project_view", project_id=project["project_id"]))
 
     if master_form.validate_on_submit():
         master_permit = master_form.master_permit.data
@@ -602,6 +610,7 @@ def project_view(project_id, new_project=False):
         payment_detail_form=payment_detail_form,
         apply_payment_form=apply_payment_form,
         invoice_create_form=invoice_create_form,
+        project_note_form=project_note_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
         open_invoices=open_invoices,

@@ -266,3 +266,11 @@ class ApplyPaymentForm(FlaskForm):
     )
     payment_note = TextAreaField("Note")
     apply_payment = SubmitField("Submit")
+
+
+class ProjectNoteForm(FlaskForm):
+    note = TextAreaField(
+        "Note",
+        validators=[DataRequired()],
+    )
+    submit = SubmitField("Add Note")
