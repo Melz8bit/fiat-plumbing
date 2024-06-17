@@ -129,15 +129,15 @@
                                         {% else %}
                                         {% for payments in payment_info %}
                                         {% for payment in payment_info[payments] %}
+                                        {% if payment['invoice_id'] == invoice['invoice_id'] %}
                                         <tr class="text-center">
-                                            {% if payment['invoice_id'] == invoice['invoice_id'] %}
                                             <td>{{ payment['payment_method'] }}</td>
                                             <td>{{ payment['check_number'] }}</td>
-                                            <td>{{ "${:,.2f}".format(payment['payment_amount']) }}</td>
+                                            <td>{{ "${:,.2f}".format(payment['amount_applied']) }}</td>
                                             <td>{{ payment['date_received'].strftime('%m/%d/%Y') }}</td>
                                             <td>{{ payment['payment_note'] }}</td>
-                                            {% endif %}
                                         </tr>
+                                        {% endif %}
                                         {% endfor %}
                                         {% endfor %}
                                         {% endif %}
@@ -149,9 +149,11 @@
                                         <td>{{ payments_received_total[invoice['invoice_id']] | format_currency |
                                             string}}</td>
                                         <th>Pending:</th>
-                                        <td>{{ ((invoice['installment_amount'] | float) -
-                                            payments_received_total[invoice['invoice_id']]) | format_currency | string
+                                        <td>{{ ((invoice['invoice_amount'] | float) -
+                                            payments_received_total[invoice['invoice_id']]) | format_currency |
+                                            string
                                             }}
+
                                         </td>
                                     </tfoot>
                                     {% endif %}

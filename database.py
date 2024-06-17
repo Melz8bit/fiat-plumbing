@@ -716,9 +716,17 @@ def get_open_invoices(project_id):
 
 
 def get_invoice_payments_total(invoice_id):
+    # print(f"{invoice_id=}")
     try:
+        # sqlQuery = (
+        #     "SELECT invoice_payments.*, project_payments.*"
+        #     + " FROM invoice_payments"
+        #     + " INNER JOIN project_payments ON invoice_payments.project_id = project_payments.project_id"
+        #     + " WHERE invoice_payments.invoice_id = :invoice_id"
+        # )
+
         sqlQuery = (
-            "SELECT SUM(payment_amount)"
+            "SELECT SUM(amount_applied)"
             + " FROM invoice_payments"
             + " WHERE invoice_id = :invoice_id"
         )
@@ -731,8 +739,10 @@ def get_invoice_payments_total(invoice_id):
             invoice_items = connection.execute(text(f"{sqlQuery}"), query_params)
             invoice_items_dict = invoice_items.mappings().all()[0]
 
-        return float(invoice_items_dict["sum(payment_amount)"])
-        # return invoice_items_dict
+            # print(f"{invoice_items_dict=}")
+
+            return float(invoice_items_dict["sum"])
+            # return invoice_items_dict
 
     except Exception as e:
         print("Database Error:", e)
@@ -789,6 +799,7 @@ def invoice_received_amount(invoice_id):
 
 def apply_payment(invoice_info):
     amount_received = invoice_received_amount(invoice_info["invoice_id"])
+    # Update the invoice information
     try:
         sqlQuery = (
             "UPDATE project_invoices"
@@ -808,7 +819,50 @@ def apply_payment(invoice_info):
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
 
+        # print("Payment added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Insert the payment line items
+    project_payment_id = get_project_payment_id(invoice_info)
+
+    sqlQuery = (
+        "INSERT INTO invoice_payments (invoice_id, amount_applied, project_id, check_number, project_payment_id)"
+        + " VALUES (:invoice_id, :amount_applied, :project_id, :check_number, :project_payment_id)"
+    )
+    try:
+        query_params = {
+            "invoice_id": invoice_info["invoice_id"],
+            "amount_applied": invoice_info["payment_received"],
+            "project_id": invoice_info["project_id"],
+            "check_number": invoice_info["check_number"],
+            "project_payment_id": project_payment_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
         print("Payment added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_project_payment_id(invoice_info):
+    sqlQuery = "SELECT project_payment_id FROM project_payments WHERE check_number = :check_number AND project_id = :project_id;"
+    try:
+        query_params = {
+            "check_number": invoice_info["check_number"],
+            "project_id": invoice_info["project_id"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params).first()
+            return result[0]
 
     except Exception as e:
         print("Database Error:", e)
@@ -841,9 +895,10 @@ def get_project_payments(project_id):
 
 def get_invoice_payments(invoice_id):
     try:
-        sqlQuery = (
-            "SELECT * " + " FROM invoice_payments" + " WHERE invoice_id = :invoice_id;"
-        )
+        # sqlQuery = (
+        #     "SELECT * " + " FROM invoice_payments" + " WHERE invoice_id = :invoice_id;"
+        # )
+        sqlQuery = "SELECT * FROM invoice_payments INNER JOIN project_payments ON invoice_payments.project_payment_id = project_payments.project_payment_id WHERE invoice_payments.invoice_id = :invoice_id;"
 
         query_params = {
             "invoice_id": invoice_id,
@@ -860,11 +915,34 @@ def get_invoice_payments(invoice_id):
         return ""
 
 
+def get_installment_number(project_id, installment_id):
+    try:
+        sqlQuery = (
+            "SELECT installment_number "
+            + " FROM project_installments"
+            + " WHERE project_id = :project_id AND installment_id = :installment_id;"
+        )
+
+        query_params = {
+            "project_id": project_id,
+            "installment_id": installment_id,
+        }
+
+        with engine.connect() as connection:
+            installment_number = connection.execute(text(f"{sqlQuery}"), query_params)
+
+        return installment_number.first()[0]
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 def get_next_invoice_number(project_id):
     try:
         sqlQuery = (
             "SELECT MAX(invoice_number) AS curr_inv"
-            + " FROM project_installments"
+            + " FROM project_invoices"
             + " WHERE project_id = :project_id;"
         )
 
@@ -892,9 +970,12 @@ def create_invoice(selected_invoices, project_id):
     invoice_total = 0
 
     for installment in selected_invoices:
-        user_amount = selected_invoices[installment][0]
-        installment_amount = selected_invoices[installment][1]
-        billed_amount = selected_invoices[installment][2]
+        installment_id = installment[0]
+        user_amount = installment[1]
+        installment_amount = installment[2]
+        billed_amount = installment[3]
+
+        installment_number = get_installment_number(project_id, installment_id)
 
         installment_status = (
             "Billed"
@@ -915,7 +996,7 @@ def create_invoice(selected_invoices, project_id):
                 "installment_status": installment_status,
                 "installment_status_date": datetime.now().strftime("%Y-%m-%d"),
                 "project_id": project_id,
-                "installment_id": int(installment),
+                "installment_id": installment_id,
                 "billed_amount": billed_amount + user_amount,
             }
 
@@ -928,8 +1009,8 @@ def create_invoice(selected_invoices, project_id):
         except Exception as e:
             print("Database Error:", e)
 
+        # Invoice Items Append
         try:
-            # Invoice Items Append
             sqlQuery = (
                 "INSERT INTO project_invoice_items (project_id, installment_number, item_amount, invoice_number)"
                 + " VALUES (:project_id, :installment_number, :item_amount, :invoice_number)"
@@ -937,7 +1018,7 @@ def create_invoice(selected_invoices, project_id):
 
             query_params = {
                 "project_id": project_id,
-                "installment_number": int(installment),
+                "installment_number": installment_number,
                 "item_amount": user_amount,
                 "invoice_number": next_invoice_number,
             }
@@ -956,6 +1037,8 @@ def create_invoice(selected_invoices, project_id):
 
         for item in invoice_items:
             invoice_total += item["item_amount"]
+
+        print(f"{invoice_items=}")
 
     except Exception as e:
         print("Database Error:", e)

@@ -447,6 +447,16 @@ def project_view(project_id, new_project=False):
     payments_received_total = {}
     invoice_items = {}
 
+    # Get project total amount
+    project_total = 0
+    for installment in installments:
+        project_total += installment["installment_amount"]
+
+    # Get total amount of payments received
+    payments_total = 0
+    for payment in project_payments:
+        payments_total += payment["payment_amount"]
+
     if invoices:
         for invoice in invoices:
             payment = database.get_invoice_payments(invoice["invoice_id"])
@@ -539,6 +549,8 @@ def project_view(project_id, new_project=False):
         ]
         invoice_status_list = request.form.getlist("invoice_status")
 
+        database.insert_payment(payment_information)
+
         for invoice_id, applied_amount, remaining_amount, invoice_status in list(
             zip(
                 invoice_id_list,
@@ -554,10 +566,12 @@ def project_view(project_id, new_project=False):
                     "payment_remaining": remaining_amount,
                     "invoice_status": invoice_status,
                     "date_received": date_received,
+                    "project_id": project_id,
+                    "check_number": check_number,
                 }
                 database.apply_payment(payment)
 
-        database.insert_payment(payment_information)
+        # database.insert_payment(payment_information)
 
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
@@ -565,15 +579,27 @@ def project_view(project_id, new_project=False):
 
     if invoice_create_form.validate_on_submit():
         selected_installments = request.form.getlist("installment_select")
-        selected_invoices = {}
-        for x in selected_installments:
-            billed_invoice_amount = request.form.getlist("billed_amount")[int(x) - 1]
+
+        selected_invoices = []
+        billed_invoice_amount = request.form.getlist("billed_amount")
+        while "0" in billed_invoice_amount:
+            billed_invoice_amount.remove("0")
+
+        zipped_installments = zip(selected_installments, billed_invoice_amount)
+
+        for installment_id, billed_amount in zipped_installments:
+            current_installment = [
+                d for d in installments if d["installment_id"] == int(installment_id)
+            ]
 
             # INFO: selected_invoices{installment_number: (user_amount, installment_total, billed_amount)}
-            selected_invoices[x] = (
-                float(billed_invoice_amount),
-                installments[int(x) - 1]["installment_amount"],
-                installments[int(x) - 1]["billed_amount"],
+            selected_invoices.append(
+                (
+                    int(installment_id),
+                    float(billed_amount),
+                    current_installment[0]["installment_amount"],
+                    current_installment[0]["billed_amount"],
+                )
             )
 
         database.create_invoice(selected_invoices, project_id)
@@ -581,6 +607,15 @@ def project_view(project_id, new_project=False):
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{invoice_create_form.errors=}")
+
+    # payment = {
+    #     "project_id": "24-9999",
+    #     "check_number": "pmt2",
+    # }
+    # database.get_project_payment_id(payment)
+    # # for payments in payment_info:
+    # #     for payment in payment_info[payments]:
+    # #         print(f"{payment=}")
 
     return render_template(
         "project.html",
@@ -604,6 +639,8 @@ def project_view(project_id, new_project=False):
         payments_received_total=payments_received_total,
         open_invoices=open_invoices,
         project_payments=project_payments,
+        project_total=project_total,
+        payments_total=payments_total,
     )
 
 
@@ -745,8 +782,8 @@ def apply_payment(project_id):
 
     for invoice in open_invoices:
         payment_dict = None
-        print(f"{invoice['payment_remaining']=}")
-        print(f"{invoice['payment_received']=}")
+        # print(f"{invoice['payment_remaining']=}")
+        # print(f"{invoice['payment_received']=}")
         if payment_remaining < invoice["payment_remaining"]:
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
@@ -766,14 +803,15 @@ def apply_payment(project_id):
 
             payment_remaining -= invoice["payment_remaining"]
 
+        print(f"{payment_dict=}")
         payment_applied_info.append(payment_dict)
 
         if payment_remaining == 0:
-            print(payment_applied_info)
+            # print(payment_applied_info)
             return jsonify(payment_applied_info)
 
     # print(f"{invoice_id=}")
-    return jsonify("melz")
+    return jsonify("")
 
 
 @app.template_filter()
