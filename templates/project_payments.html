@@ -62,36 +62,37 @@
                     <td class="w-25">
                         <div class="btn-group gap-1 justify-content-end">
                             <button class="btn btn-primary btn-sm" data-bs-toggle="collapse"
-                                data-bs-target="#collapsePaymentInfo{{ payment['payment_id'] }}" aria-expanded="false"
-                                aria-controls="collapsePaymentInfo{{ payment['payment_id'] }}">
+                                data-bs-target="#collapsePaymentInfo{{ payment['project_payment_id'] }}"
+                                aria-expanded="false"
+                                aria-controls="collapsePaymentInfo{{ payment['project_payment_id'] }}">
                                 View Invoices
                             </button>
                         </div>
                     </td>
                 </tr>
-                <tr class="collapse" id="collapsePaymentInfo{{ payment['payment_id'] }}">
+                <tr class="collapse" id="collapsePaymentInfo{{ payment['project_payment_id'] }}">
                     <td colspan="999">
                         <div>
                             <div class="card card-body mb-1">
                                 <h5>Invoice(s)</h5>
-                                {#<!-- <table class="table mt-2">
+                                <table class="table mt-2">
                                     <thead>
                                         <tr class="text-center">
                                             <th>#</th>
-                                            <th>Description</th>
-                                            <th>Billed Amount</th>
+                                            <th>Applied Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody class="text-center">
-                                        {% for invoice_item in invoice_items[invoice['invoice_number']] %}
+                                        {% for installment in installment_payments %}
+                                        {% if installment['check_number'] == payment['check_number'] %}
                                         <tr>
-                                            <td>{{invoice_item['installment_number']}}</td>
-                                            <td>{{invoice_item['installment_description']}}</td>
-                                            <td>{{ "${:,.2f}".format(invoice_item['item_amount']) }}</td>
+                                            <td>{{ installment['invoice_number'] }}</td>
+                                            <td>{{ "${:,.2f}".format(installment['amount_applied']) }}</td>
                                         </tr>
+                                        {% endif %}
                                         {% endfor %}
                                     </tbody>
-                                </table> --> #}
+                                </table>
                             </div>
                         </div>
                     </td>

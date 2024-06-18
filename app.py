@@ -447,6 +447,9 @@ def project_view(project_id, new_project=False):
     payments_received_total = {}
     invoice_items = {}
 
+    # Get installments per payment
+    installment_payments = database.get_payment_installments(project_id)
+
     # Get project total amount
     project_total = 0
     for installment in installments:
@@ -613,9 +616,12 @@ def project_view(project_id, new_project=False):
     #     "check_number": "pmt2",
     # }
     # database.get_project_payment_id(payment)
-    # # for payments in payment_info:
-    # #     for payment in payment_info[payments]:
-    # #         print(f"{payment=}")
+    # for payments in payment_info:
+    #     for payment in payment_info[payments]:
+    #         print(f"{payment=}")
+    for pmts in installment_payments:
+        if pmts["check_number"] == "9090":
+            print(pmts)
 
     return render_template(
         "project.html",
@@ -641,6 +647,7 @@ def project_view(project_id, new_project=False):
         project_payments=project_payments,
         project_total=project_total,
         payments_total=payments_total,
+        installment_payments=installment_payments,
     )
 
 

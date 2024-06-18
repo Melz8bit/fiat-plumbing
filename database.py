@@ -893,6 +893,26 @@ def get_project_payments(project_id):
         return ""
 
 
+def get_payment_installments(project_id):
+    try:
+        # sqlQuery = "SELECT * FROM project_installments INNER JOIN project_payments ON project_installments.project_id = project_payments.project_id WHERE project_payments.project_id = :project_id;"
+        sqlQuery = "select * from invoice_payments inner join project_invoices on invoice_payments.invoice_id = project_invoices.invoice_id where invoice_payments.project_id = :project_id;"
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            payment_installments = connection.execute(text(f"{sqlQuery}"), query_params)
+            payment_installments_dict = payment_installments.mappings().all()
+
+        return payment_installments_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 def get_invoice_payments(invoice_id):
     try:
         # sqlQuery = (
