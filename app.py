@@ -416,6 +416,7 @@ def projects_list():
 def project_view(project_id, new_project=False):
     user = database.get_user(session["user_id"])
     project = database.get_project(project_id)
+    client = database.get_client(project["client_id"])
     notes = database.get_notes(project_id)
     installments = database.get_installments(project_id)
     invoices = database.get_invoices(project_id)
@@ -619,14 +620,16 @@ def project_view(project_id, new_project=False):
     # for payments in payment_info:
     #     for payment in payment_info[payments]:
     #         print(f"{payment=}")
-    for pmts in installment_payments:
-        if pmts["check_number"] == "9090":
-            print(pmts)
+
+    # for pmts in installment_payments:
+    #     if pmts["check_number"] == "9090":
+    #         print(pmts)
 
     return render_template(
         "project.html",
         user=user,
         project=project,
+        client=client,
         notes=notes,
         installments=installments,
         invoices=invoices,

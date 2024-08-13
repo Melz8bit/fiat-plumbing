@@ -17,11 +17,29 @@
     {% include 'nav.html' %}
 
     <div class="container pt-4">
-        <h1 class="mb-4 display-5">{{ project['name'] }}</h1>
+        <div class="row d-flex align-items-center mb-4">
+            <div class="col">
+                <h1 class="display-5">{{ project['name'] }}</h1>
+            </div>
+            <div class="col text-end">
+                <button class="btn btn-outline-primary" data-bs-toggle="modal"
+                    data-bs-target="#modalProposalCreation">Create
+                    Proposal</button>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="modalProposalCreation" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+                <div class="modal-content">
+                    {% include 'proposal_create.html' %}
+                </div>
+            </div>
+        </div>
 
         <!-- Project Info -->
         <div>
-            <div class="row">
+            <div class=" row">
                 <div class="col">
                     <div class="input-group mb-3">
                         <span class="input-group-text" id="basic-addon1">Contract #</span>
