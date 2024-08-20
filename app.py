@@ -41,6 +41,7 @@ from forms import (
     InvoicePaymentForm,
     InvoiceCreateForm,
     ApplyPaymentForm,
+    ProposalForm,
 )
 from models import users
 
@@ -437,6 +438,7 @@ def project_view(project_id, new_project=False):
     payment_detail_form = InvoicePaymentForm()
     invoice_create_form = InvoiceCreateForm()
     apply_payment_form = ApplyPaymentForm()
+    proposal_form = ProposalForm()
 
     # Variable Initialization
     document_type = None
@@ -644,6 +646,7 @@ def project_view(project_id, new_project=False):
         payment_detail_form=payment_detail_form,
         apply_payment_form=apply_payment_form,
         invoice_create_form=invoice_create_form,
+        proposal_form=proposal_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
         open_invoices=open_invoices,

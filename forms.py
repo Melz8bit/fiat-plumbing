@@ -14,11 +14,17 @@ from wtforms import (
     SubmitField,
     TextAreaField,
     validators,
+    IntegerField,
 )
 from flask_wtf.file import FileField, FileRequired
 from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
 
-from database import get_all_clients, get_document_types, get_project_statuses
+from database import (
+    get_all_clients,
+    get_document_types,
+    get_project_statuses,
+    get_fixtures,
+)
 
 STATE_OPTIONS = [
     ("AL", "Alabama"),
@@ -273,3 +279,21 @@ class ApplyPaymentForm(FlaskForm):
     payment_note = TextAreaField("Note")
     # invoice_select = BooleanField()
     apply_payment = SubmitField("Submit")
+
+
+class ProposalForm(FlaskForm):
+    fixtures = SelectField(
+        "Fixtures",
+        validators=[DataRequired()],
+        choices=get_fixtures(),
+    )
+
+    fixture_quantity = IntegerField(
+        "Fixture Amount",
+        validators=[DataRequired()],
+    )
+
+    fixture_amount = DecimalField(
+        "Cost (Per Fixture) $",
+        validators=[DataRequired()],
+    )

@@ -1279,6 +1279,30 @@ def search(search_by, search_criteria):
         return ""
 
 
+############## Proposal Queries ##############
+def get_fixtures():
+    try:
+        sqlQuery = (
+            "SELECT fixture_abbreviation, fixture_name"
+            + " FROM matrix_fixtures"
+            + " ORDER BY fixture_abbreviation;"
+        )
+
+        with engine.connect() as connection:
+            fixtures = connection.execute(text(f"{sqlQuery}"))
+            # fixtures_list = fixtures.mappings().all()
+            fixtures_list = [
+                f"{fixture.fixture_abbreviation} - {fixture.fixture_name}"
+                for fixture in fixtures
+            ]
+
+        return fixtures_list
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 ############## Misc. Queries ##############
 def get_city_state_county(zip_code):
     try:
