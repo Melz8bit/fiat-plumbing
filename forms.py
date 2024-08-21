@@ -282,6 +282,9 @@ class ApplyPaymentForm(FlaskForm):
 
 
 class ProposalForm(FlaskForm):
+    project_id = HiddenField(
+        "Project ID",
+    )
     fixtures = SelectField(
         "Fixtures",
         validators=[DataRequired()],
@@ -293,7 +296,7 @@ class ProposalForm(FlaskForm):
         validators=[DataRequired()],
     )
 
-    fixture_amount = DecimalField(
+    fixture_cost = DecimalField(
         "Cost (Per Fixture) $",
         validators=[DataRequired()],
     )

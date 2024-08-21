@@ -1303,6 +1303,61 @@ def get_fixtures():
         return ""
 
 
+def get_proposal_fixtures(project_id):
+    try:
+        sqlQuery = (
+            "SELECT project_proposal_fixtures.*, matrix_fixtures.fixture_name AS fixture_name"
+            + " FROM project_proposal_fixtures"
+            + " INNER JOIN matrix_fixtures ON project_proposal_fixtures.fixture_abbreviation = matrix_fixtures.fixture_abbreviation"
+            + " WHERE project_id = :project_id"
+            + " AND proposal_id = 0 ORDER BY fixture_id;"
+        )
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            fixtures = connection.execute(text(f"{sqlQuery}"), query_params)
+            try:
+                fixtures_dict = fixtures.mappings().all()
+            except:
+                fixtures_dict = ""
+
+        return fixtures_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return None
+
+
+def add_proposal_fixture(fixture_data):
+    total_per_fixture = fixture_data["fixture_quantity"] * fixture_data["fixture_cost"]
+    try:
+        sqlQuery = (
+            "INSERT INTO project_proposal_fixtures (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture)"
+            + " VALUES (:project_id, :fixture_abbreviation, :quantity, :cost_per_fixture, :total_per_fixture)"
+        )
+
+        query_params = {
+            "project_id": fixture_data["project_id"],
+            "fixture_abbreviation": fixture_data["fixture_select"],
+            "quantity": fixture_data["fixture_quantity"],
+            "cost_per_fixture": fixture_data["fixture_cost"],
+            "total_per_fixture": total_per_fixture,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Fixture added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 ############## Misc. Queries ##############
 def get_city_state_county(zip_code):
     try:

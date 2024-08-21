@@ -1,6 +1,7 @@
 import mimetypes
 import json
 import os
+import urllib.parse
 from datetime import datetime, date, timedelta
 from flask import (
     Flask,
@@ -426,6 +427,7 @@ def project_view(project_id, new_project=False):
     documents = database.get_project_docs(project_id)
     master_permit = database.get_master_permit(project_id)
     plumbing_permit = database.get_plumbing_permit(project_id)
+    proposal_fixtures = database.get_proposal_fixtures(project_id)
 
     if new_project:
         flash("Project has been created")
@@ -654,6 +656,8 @@ def project_view(project_id, new_project=False):
         project_total=project_total,
         payments_total=payments_total,
         installment_payments=installment_payments,
+        proposal_fixtures=proposal_fixtures,
+        proposal_fixtures_total=fixtures_total(proposal_fixtures),
     )
 
 
@@ -777,11 +781,59 @@ def update_invoice_status(project_id, installment_number, installment_status):
     )
 
 
+def fixtures_total(fixtures):
+    total = sum(fixture["total_per_fixture"] for fixture in fixtures)
+    return total
+
+
 ############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
 def populate_city_state_county():
     results = database.get_city_state_county(request.args["zip_code"])
     return dict(results)
+
+
+@app.route(
+    "/addProposalFixture",
+    methods=["POST"],
+)
+def add_fixture():
+    # Decode the bytes to a string
+    serialized_data = request.data.decode("utf-8")
+
+    # Parse the query string into a dictionary
+    parsed_data = urllib.parse.parse_qs(serialized_data)
+
+    # Convert the dictionary values to strings (if needed)
+    for key, value in parsed_data.items():
+        parsed_data[key] = value[0]
+
+    # Get values for returning
+    fixture_abbreviation = str(parsed_data["fixture_select"]).split(" - ")[0]
+    fixture_name = str(parsed_data["fixture_select"]).split(" - ")[1]
+
+    # Convert to correct format and data types
+    parsed_data["fixture_select"] = fixture_abbreviation
+    parsed_data["fixture_quantity"] = int(parsed_data["fixture_quantity"])
+    parsed_data["fixture_cost"] = float(parsed_data["fixture_cost"])
+
+    database.add_proposal_fixture(parsed_data)
+
+    fixtures_added = []
+    fixtures = database.get_proposal_fixtures(parsed_data["project_id"])
+
+    for fixture in fixtures:
+        fixtures_added.append(
+            {
+                "fixture_id": fixture["fixture_id"],
+                "fixture_name": fixture["fixture_name"],
+                "fixture_abbreviation": fixture["fixture_abbreviation"],
+                "fixture_quantity": fixture["quantity"],
+                "fixture_cost": fixture["cost_per_fixture"],
+                "fixture_total": fixture["total_per_fixture"],
+            }
+        )
+    return jsonify(fixtures_added)
 
 
 @app.route("/applyPayment/<project_id>", methods=["GET", "POST"])

@@ -66,9 +66,11 @@
         <hr>
 
         <h3>Items</h3>
-        <form id="proposalsForm" method="POST" enctype="multipart/form-data">
+        <form id="addFixtures" method="POST" enctype="multipart/form-data">
             {{ proposal_form.csrf_token() }}
+            {{ proposal_form.project_id(value=project['project_id']) }}
             <!-- Fixtures -->
+            <!-- Add Fixture -->
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
@@ -86,105 +88,173 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         {{ proposal_form.fixture_quantity.label(class="input-group-text") }}
-                        {{ proposal_form.fixture_quantity(class="form-control text-end", placeholder="0", min=0) }}
+                        {{ proposal_form.fixture_quantity(class="form-control text-end", placeholder="0", text=0,
+                        min=0) }}
                     </div>
                 </div>
 
                 <div class="col">
                     <div class="input-group mb-3">
-                        {{ proposal_form.fixture_amount.label(class="input-group-text") }}
-                        {{ proposal_form.fixture_amount(class="form-control text-end", placeholder="0.00", step="0.01",
+                        {{ proposal_form.fixture_cost.label(class="input-group-text") }}
+                        {{ proposal_form.fixture_cost(class="form-control text-end", placeholder="0.00", text=0.00,
+                        step="0.01",
                         min=0.00)
                         }}
                     </div>
                 </div>
 
                 <div class="col-2 text-end">
-                    <button class="btn btn-primary">Add Item</button>
+                    <button class="btn btn-primary" id="btnAddFixture" type="button">Add Fixture</button>
                 </div>
             </div>
 
-            <!-- Quantity, Amount, Add Button -->
-            <!-- <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Quantity</span>
-                        <input type="text" class="form-control" placeholder="How many?" aria-label="Username"
-                            aria-describedby="basic-addon1">
-                    </div>
-                </div>
+            <table id="fixtureTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="text-center">Abbreviation</th>
+                        <th class="text-center">Name</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-center">Amount</th>
+                        <th class="text-center">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Fixture Table-->
+                    {% if proposal_fixtures|length == 0 %}
+                    <tr id="emptyFixtureRow">
+                        <td class="text-center" colspan="100%">
+                            Please add fixture(s)
+                        </td>
+                    </tr>
+                    {% else %}
+                    {% for fixture in proposal_fixtures %}
+                    <tr class="text-center">
+                        <td id="lblFixtureAbbr{{ fixture['fixture_id']|string }}">
+                            {{ fixture['fixture_abbreviation'] }}
+                        </td>
+                        <td id="lblFixtureName{{ fixture['fixture_id']|string }}">
+                            {{ fixture['fixture_name'] }}
+                        </td>
+                        <td id="lblFixtureQty{{ fixture['fixture_id']|string }}">
+                            {{ fixture['quantity'] }}
+                        </td>
+                        <td id="lblFixtureCost{{ fixture['fixture_id']|string }}">
+                            {{ "${:,.2f}".format(fixture['cost_per_fixture']) }}
+                        </td>
+                        <td id="lblFixtureTotal{{ fixture['fixture_id']|string }}">
+                            {{ "${:,.2f}".format(fixture['total_per_fixture']) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                    <tr class="text-center">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="fw-semibold">Total</td>
+                        <td id="proposalFixturesTotal" class="fw-semibold">{{ "${:,.2f}".format(proposal_fixtures_total)
+                            }}</td>
+                    </tr>
+                </tfoot>
+            </table>
 
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">$</span>
-                        <input type="text" class="form-control" placeholder="How much per unit?" aria-label="Username"
-                            aria-describedby="basic-addon1">
-                    </div>
-                </div>
-
-                <div class="col-2 text-end">
-                    <button class="btn btn-sm btn-primary">Add Item</button>
-                </div>
-            </div> -->
         </form>
+        <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $("#btnAddFixture").on("click", function (e) {
+                    var url = "{{ url_for('add_fixture') }}";
+                    var data = $('#addFixtures').serializeArray();
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        data: data, // serializes the form's elements.
+                        success: function (data) {
+                            // console.log(data)  // display the returned data in the console.
 
-        <!-- Table with Items Added-->
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th class="text-center">Quantity</th>
-                    <th class="text-end">Amount</th>
-                    <th class="text-end">Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>WC - Water Closet</td>
-                    <td class="text-center">2</td>
-                    <td class="text-end">$1,500.00</td>
-                    <td class="text-end">$3,000.00</td>
-                </tr>
-                <tr>
-                    <td>LV - Lavatory</td>
-                    <td class="text-center">2</td>
-                    <td class="text-end">$1,500.00</td>
-                    <td class="text-end">$3,000.00</td>
-                </tr>
-                <tr>
-                    <td>SH - Shower</td>
-                    <td class="text-center">4</td>
-                    <td class="text-end">$2,000.00</td>
-                    <td class="text-end">$8,000.00</td>
-                </tr>
-                <tr>
-                    <td>SK - Sink</td>
-                    <td class="text-center">1</td>
-                    <td class="text-end">$1,500.00</td>
-                    <td class="text-end">$1,500.00</td>
-                </tr>
-                <tr>
-                    <td>WM - Washing Machine</td>
-                    <td class="text-center">1</td>
-                    <td class="text-end">$1,500.00</td>
-                    <td class="text-end">$1,500.00</td>
-                </tr>
-                <tr>
-                    <td>WH - Water Heater</td>
-                    <td class="text-center">1</td>
-                    <td class="text-end">$1,500.00</td>
-                    <td class="text-end">$1,500.00</td>
-                </tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td class="fw-semibold text-end">Total</td>
-                    <td class="fw-semibold text-end">$18,500.00</td>
-                </tr>
-            </tfoot>
-        </table>
+                            console.log(data.length);
+                            if (data.length == 1) {
+                                var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
+                                var rowToDelete = document.getElementById("emptyFixtureRow");
+                                rowToDelete.remove();
+                            }
+
+                            let formatting_options = {
+                                style: 'currency',
+                                currency: 'USD',
+                                minimumFractionDigits: 2,
+                            }
+                            let dollarString = new Intl.NumberFormat("en-US", formatting_options);
+                            var total_fixtures_cost = 0;
+
+                            // Create a new table row
+                            var newRow = document.createElement("tr");
+                            newRow.classList.add("text-center");
+
+                            // Create table cells for each item detail
+                            var abbrCell = document.createElement("td");
+                            abbrCell.textContent = data[data.length - 1]['fixture_abbreviation'];
+                            newRow.appendChild(abbrCell);
+
+                            var nameCell = document.createElement("td");
+                            nameCell.textContent = data[data.length - 1]['fixture_name'];
+                            newRow.appendChild(nameCell);
+
+                            var qtyCell = document.createElement("td");
+                            qtyCell.textContent = data[data.length - 1]['fixture_quantity'];
+                            newRow.appendChild(qtyCell);
+
+                            var costCell = document.createElement("td");
+                            costCell.textContent = dollarString.format(data[data.length - 1]['fixture_cost']);
+                            newRow.appendChild(costCell);
+
+                            var totalCell = document.createElement("td");
+                            totalCell.textContent = dollarString.format(data[data.length - 1]['fixture_total']);
+                            newRow.appendChild(totalCell);
+
+                            // Get the table body
+                            var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
+
+                            // Append the new row to the table body
+                            tableBody.appendChild(newRow);
+
+                            // Get overall total
+                            for (var i = 0; i < data.length; i++) {
+                                total_fixtures_cost = total_fixtures_cost + data[i]['fixture_total'];
+                            }
+                            // console.log("Total: " + total_fixtures_cost);
+
+                            document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
+
+                            // Reset fixture info fields
+                            var fixture_select = document.getElementById("fixture_select");
+                            var fixture_quantity = document.getElementById("fixture_quantity");
+                            var fixture_cost = document.getElementById("fixture_cost");
+                            fixture_select.selectedIndex = 0;
+                            fixture_quantity.value = "";
+                            fixture_cost.value = "";
+                        }
+                    });
+                    e.preventDefault(); // block the traditional submission of the form.
+                });
+
+                // Inject our CSRF token into our AJAX request.
+                $.ajaxSetup({
+                    beforeSend: function (xhr, settings) {
+                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                        }
+                    }
+                })
+            });
+        </script>
+
 
         <hr>
 
