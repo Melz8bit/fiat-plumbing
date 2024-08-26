@@ -1358,6 +1358,79 @@ def add_proposal_fixture(fixture_data):
         return ""
 
 
+def get_installment_categories():
+    try:
+        sqlQuery = (
+            "SELECT installment_category"
+            + " FROM matrix_installments"
+            + " ORDER BY installment_category;"
+        )
+
+        with engine.connect() as connection:
+            installments = connection.execute(text(f"{sqlQuery}"))
+            # installments_list = installments.mappings().all()
+            installments_list = [
+                installment.installment_category for installment in installments
+            ]
+
+        return installments_list
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_proposal_installments(project_id):
+    try:
+        sqlQuery = (
+            "SELECT *"
+            + " FROM project_proposal_installments"
+            + " WHERE project_id = :project_id AND proposal_id = 0 ORDER BY installment_id;"
+        )
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            installments = connection.execute(text(f"{sqlQuery}"), query_params)
+            try:
+                installments_dict = installments.mappings().all()
+            except:
+                installments_dict = ""
+
+        return installments_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return None
+
+
+def add_proposal_installment(installment_data):
+    try:
+        sqlQuery = (
+            "INSERT INTO project_proposal_installments (project_id, installment_number, installment_category, installment_amount)"
+            + " VALUES (:project_id, :installment_number, :installment_category, :installment_amount)"
+        )
+
+        query_params = {
+            "project_id": installment_data["project_id"],
+            "installment_number": int(installment_data["installment_number"]),
+            "installment_category": installment_data["installment_select"],
+            "installment_amount": installment_data["installment_amount"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Installment added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 ############## Misc. Queries ##############
 def get_city_state_county(zip_code):
     try:

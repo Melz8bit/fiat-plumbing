@@ -24,6 +24,7 @@ from database import (
     get_document_types,
     get_project_statuses,
     get_fixtures,
+    get_installment_categories,
 )
 
 STATE_OPTIONS = [
@@ -281,7 +282,7 @@ class ApplyPaymentForm(FlaskForm):
     apply_payment = SubmitField("Submit")
 
 
-class ProposalForm(FlaskForm):
+class ProposalFixturesForm(FlaskForm):
     project_id = HiddenField(
         "Project ID",
     )
@@ -290,13 +291,32 @@ class ProposalForm(FlaskForm):
         validators=[DataRequired()],
         choices=get_fixtures(),
     )
-
     fixture_quantity = IntegerField(
         "Fixture Amount",
         validators=[DataRequired()],
     )
-
     fixture_cost = DecimalField(
         "Cost (Per Fixture) $",
+        validators=[DataRequired()],
+    )
+
+
+class ProposalInstallmentsForm(FlaskForm):
+    project_id = HiddenField(
+        "Project ID",
+    )
+    installment_number = IntegerField(
+        "#",
+        validators=[DataRequired()],
+        default=1,
+        render_kw={"readonly": ""},
+    )
+    installments = SelectField(
+        "Installment Category",
+        validators=[DataRequired()],
+        choices=get_installment_categories(),
+    )
+    installment_amount = DecimalField(
+        "Installment Amount $",
         validators=[DataRequired()],
     )

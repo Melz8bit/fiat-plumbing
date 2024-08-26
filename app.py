@@ -42,7 +42,8 @@ from forms import (
     InvoicePaymentForm,
     InvoiceCreateForm,
     ApplyPaymentForm,
-    ProposalForm,
+    ProposalFixturesForm,
+    ProposalInstallmentsForm,
 )
 from models import users
 
@@ -428,6 +429,7 @@ def project_view(project_id, new_project=False):
     master_permit = database.get_master_permit(project_id)
     plumbing_permit = database.get_plumbing_permit(project_id)
     proposal_fixtures = database.get_proposal_fixtures(project_id)
+    proposal_installments = database.get_proposal_installments(project_id)
 
     if new_project:
         flash("Project has been created")
@@ -440,7 +442,8 @@ def project_view(project_id, new_project=False):
     payment_detail_form = InvoicePaymentForm()
     invoice_create_form = InvoiceCreateForm()
     apply_payment_form = ApplyPaymentForm()
-    proposal_form = ProposalForm()
+    proposal_fixtures_form = ProposalFixturesForm()
+    proposal_installments_form = ProposalInstallmentsForm()
 
     # Variable Initialization
     document_type = None
@@ -648,7 +651,8 @@ def project_view(project_id, new_project=False):
         payment_detail_form=payment_detail_form,
         apply_payment_form=apply_payment_form,
         invoice_create_form=invoice_create_form,
-        proposal_form=proposal_form,
+        proposal_fixtures_form=proposal_fixtures_form,
+        proposal_installments_form=proposal_installments_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
         open_invoices=open_invoices,
@@ -658,6 +662,8 @@ def project_view(project_id, new_project=False):
         installment_payments=installment_payments,
         proposal_fixtures=proposal_fixtures,
         proposal_fixtures_total=fixtures_total(proposal_fixtures),
+        proposal_installments=proposal_installments,
+        proposal_installments_total=installments_total(proposal_installments),
     )
 
 
@@ -786,6 +792,11 @@ def fixtures_total(fixtures):
     return total
 
 
+def installments_total(installments):
+    total = sum(installment["installment_amount"] for installment in installments)
+    return total
+
+
 ############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
 def populate_city_state_county():
@@ -793,10 +804,7 @@ def populate_city_state_county():
     return dict(results)
 
 
-@app.route(
-    "/addProposalFixture",
-    methods=["POST"],
-)
+@app.route("/addProposalFixture", methods=["POST"])
 def add_fixture():
     # Decode the bytes to a string
     serialized_data = request.data.decode("utf-8")
@@ -834,6 +842,38 @@ def add_fixture():
             }
         )
     return jsonify(fixtures_added)
+
+
+@app.route("/addProposalInstallment", methods=["POST"])
+def add_installment():
+    # Decode the bytes to a string
+    serialized_data = request.data.decode("utf-8")
+
+    # Parse the query string into a dictionary
+    parsed_data = urllib.parse.parse_qs(serialized_data)
+
+    # Convert the dictionary values to strings (if needed)
+    for key, value in parsed_data.items():
+        parsed_data[key] = value[0]
+
+    # Convert to correct format and data types
+    parsed_data["installment_amount"] = float(parsed_data["installment_amount"])
+
+    database.add_proposal_installment(parsed_data)
+
+    installments_added = []
+    installments = database.get_proposal_installments(parsed_data["project_id"])
+
+    for installment in installments:
+        installments_added.append(
+            {
+                "installment_id": installment["installment_id"],
+                "installment_number": installment["installment_number"],
+                "installment_category": installment["installment_category"],
+                "installment_amount": installment["installment_amount"],
+            }
+        )
+    return jsonify(installments_added)
 
 
 @app.route("/applyPayment/<project_id>", methods=["GET", "POST"])
