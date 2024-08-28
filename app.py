@@ -832,7 +832,6 @@ def add_fixture():
 
 @app.route("/deleteProposalFixture/<fixture_id>/<project_id>", methods=["POST"])
 def delete_fixture(fixture_id, project_id):
-    print(fixture_id)
     database.delete_proposal_fixture(fixture_id)
 
     return get_all_proposal_fixtures(project_id)

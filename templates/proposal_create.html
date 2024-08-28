@@ -1,4 +1,112 @@
 <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+<script>
+    function updateTable(data) {
+        let formatting_options = {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+        }
+        let dollarString = new Intl.NumberFormat("en-US", formatting_options);
+        var total_fixtures_cost = 0;
+
+        var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
+        tableBody.innerHTML = "";
+
+        if (data.length == 0 || data == null) {
+            var newRow = document.createElement("tr");
+            newRow.classList.add("text-center");
+
+            // Create table cells for each item detail
+            var deleteCell = document.createElement("td");
+            deleteCell.id = "emptyFixtureRow"
+            deleteCell.colSpan = "999";
+            deleteCell.textContent = "Please add fixture(s)";
+            newRow.appendChild(deleteCell);
+
+            // Get the table body
+            var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
+
+            // Append the new row to the table body
+            tableBody.appendChild(newRow);
+
+        }
+        else {
+            for (let i = 0; i < data.length; i++) {
+                // Create a new table row
+                var newRow = document.createElement("tr");
+                newRow.classList.add("text-center");
+
+                // Create table cells for each item detail
+                var abbrCell = document.createElement("td");
+                abbrCell.textContent = data[i]['fixture_abbreviation'];
+                newRow.appendChild(abbrCell);
+
+                var nameCell = document.createElement("td");
+                nameCell.textContent = data[i]['fixture_name'];
+                newRow.appendChild(nameCell);
+
+                var qtyCell = document.createElement("td");
+                qtyCell.textContent = data[i]['fixture_quantity'];
+                newRow.appendChild(qtyCell);
+
+                var costCell = document.createElement("td");
+                costCell.textContent = dollarString.format(data[i]['fixture_cost']);
+                newRow.appendChild(costCell);
+
+                var totalCell = document.createElement("td");
+                totalCell.textContent = dollarString.format(data[i]['fixture_total']);
+                newRow.appendChild(totalCell);
+
+                var deleteCell = document.createElement("td");
+                var deleteButton = document.createElement("button");
+                deleteButton.id = "btnDeleteFixtureLine" + data[i]['fixture_id'];
+                deleteButton.setAttribute("data-fixture-id", data[i]['fixture_id']);
+                deleteButton.classList.add("border-0", "bg-transparent");
+
+                var deleteIcon = document.createElement("i");
+                deleteIcon.className = "fa-solid fa-trash-can";
+
+                deleteButton.appendChild(deleteIcon);
+                deleteCell.appendChild(deleteButton);
+                deleteButton.addEventListener("click", function () {
+                    var fixtureID = data[data.length - 1]['fixture_id'];
+                    var url = "{{ url_for('delete_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
+                    url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        data: "", // serializes the form's elements.
+                        success: function (data) {
+                            // console.log(data)  // display the returned data in the console.
+
+                            updateTable(data);
+                        }
+                    });
+
+                    e.preventDefault(); // block the traditional submission of the form.
+                });
+                newRow.appendChild(deleteCell);
+
+                // Get the table body
+                var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
+
+                // Append the new row to the table body
+                tableBody.appendChild(newRow);
+            }
+        }
+        // Get overall total
+        for (var i = 0; i < data.length; i++) {
+            total_fixtures_cost = total_fixtures_cost + data[i]['fixture_total'];
+        }
+        // console.log("Total: " + total_fixtures_cost);
+
+        document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
+    }
+</script>
 <div class="modal-header">
     <h1 class="modal-title fs-4" id="modalProposalCreationLabel">Proposal Creation</h1>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -151,7 +259,7 @@
                         {{ "${:,.2f}".format(fixture['total_per_fixture']) }}
                     </td>
                     <td>
-                        <button id="btnDeleteFixtureLine{{ fixture['fixture_id']|string }}"
+                        <button id="btnDeleteFixtureLine{{ fixture['fixture_id']|string }}" type="button"
                             class="border-0 bg-transparent" data-fixture-id="{{ fixture['fixture_id']|string }}">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
@@ -171,7 +279,8 @@
                                     },
                                     data: "", // serializes the form's elements.
                                     success: function (data) {
-                                        console.log(data)  // display the returned data in the console.
+                                        // console.log(data)  // display the returned data in the console.
+                                        // console.log(data.length)
 
                                         updateTable(data);
                                     }
@@ -190,74 +299,7 @@
                             })
                         });
 
-                        function updateTable(data) {
-                            console.log(data);
-                            let formatting_options = {
-                                style: 'currency',
-                                currency: 'USD',
-                                minimumFractionDigits: 2,
-                            }
-                            let dollarString = new Intl.NumberFormat("en-US", formatting_options);
-                            var total_fixtures_cost = 0;
 
-                            var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
-                            tableBody.innerHTML = "";
-
-                            for (let i = 0; i < data.length; i++) {
-                                // Create a new table row
-                                var newRow = document.createElement("tr");
-                                newRow.classList.add("text-center");
-
-                                // Create table cells for each item detail
-                                var abbrCell = document.createElement("td");
-                                abbrCell.textContent = data[i]['fixture_abbreviation'];
-                                newRow.appendChild(abbrCell);
-
-                                var nameCell = document.createElement("td");
-                                nameCell.textContent = data[i]['fixture_name'];
-                                newRow.appendChild(nameCell);
-
-                                var qtyCell = document.createElement("td");
-                                qtyCell.textContent = data[i]['fixture_quantity'];
-                                newRow.appendChild(qtyCell);
-
-                                var costCell = document.createElement("td");
-                                costCell.textContent = dollarString.format(data[i]['fixture_cost']);
-                                newRow.appendChild(costCell);
-
-                                var totalCell = document.createElement("td");
-                                totalCell.textContent = dollarString.format(data[i]['fixture_total']);
-                                newRow.appendChild(totalCell);
-
-                                var deleteCell = document.createElement("td");
-                                var deleteButton = document.createElement("button");
-                                deleteButton.id = "btnDeleteFixtureLine" + data[i]['fixture_id'];
-                                deleteButton.setAttribute("data-fixture-id", data[i]['fixture_id']);
-                                deleteButton.classList.add("border-0", "bg-transparent");
-
-                                var deleteIcon = document.createElement("i");
-                                deleteIcon.className = "fa-solid fa-trash-can";
-
-                                deleteButton.appendChild(deleteIcon);
-                                deleteCell.appendChild(deleteButton);
-
-                                newRow.appendChild(deleteCell);
-
-                                // Get the table body
-                                var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
-
-                                // Append the new row to the table body
-                                tableBody.appendChild(newRow);
-                            }
-
-                            // Get overall total
-                            for (var i = 0; i < data.length; i++) {
-                                total_fixtures_cost = total_fixtures_cost + data[i]['fixture_total'];
-                            }
-                            // console.log("Total: " + total_fixtures_cost);
-
-                            document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
-                        }
                     </script>
                 </tr>
                 {% endfor %}
@@ -276,6 +318,7 @@
             </tfoot>
         </table>
         <script>
+            var fixture_id = null;
             // Add fixture line item
             $(document).ready(function () {
                 $("#addFixtures").on("click", "button[id^='btnAddFixture']", function (e) {
@@ -307,6 +350,8 @@
                             let dollarString = new Intl.NumberFormat("en-US", formatting_options);
                             var total_fixtures_cost = 0;
 
+                            fixture_id = data[data.length - 1]['fixture_abbreviation'];
+
                             // Create a new table row
                             var newRow = document.createElement("tr");
                             newRow.classList.add("text-center");
@@ -335,6 +380,7 @@
                             var deleteCell = document.createElement("td");
                             var deleteButton = document.createElement("button");
                             deleteButton.id = "btnDeleteFixtureLine" + data[data.length - 1]['fixture_id'];
+                            deleteButton.type = "button";
                             deleteButton.setAttribute("data-fixture-id", data[data.length - 1]['fixture_id']);
                             deleteButton.classList.add("border-0", "bg-transparent");
 
@@ -344,7 +390,6 @@
                             deleteButton.appendChild(deleteIcon);
                             deleteCell.appendChild(deleteButton);
                             deleteButton.addEventListener("click", function () {
-                                console.log("Go");
                                 var fixtureID = data[data.length - 1]['fixture_id'];
                                 var url = "{{ url_for('delete_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
                                 url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
@@ -357,7 +402,7 @@
                                     },
                                     data: "", // serializes the form's elements.
                                     success: function (data) {
-                                        console.log(data)  // display the returned data in the console.
+                                        // console.log(data)  // display the returned data in the console.
 
                                         updateTable(data);
                                     }
