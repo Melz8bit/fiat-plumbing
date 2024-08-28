@@ -1,3 +1,4 @@
+<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
 <div class="modal-header">
     <h1 class="modal-title fs-4" id="modalProposalCreationLabel">Proposal Creation</h1>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -109,65 +110,175 @@
                     <button class="btn btn-primary" id="btnAddFixture" type="button">Add Fixture</button>
                 </div>
             </div>
-
-            <!-- Fixture Display Table -->
-            <table id="fixtureTable" class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="text-center">Abbreviation</th>
-                        <th class="text-center">Name</th>
-                        <th class="text-center">Quantity</th>
-                        <th class="text-center">Amount</th>
-                        <th class="text-center">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Fixture Table-->
-                    {% if proposal_fixtures|length == 0 %}
-                    <tr id="emptyFixtureRow">
-                        <td class="text-center" colspan="100%">
-                            Please add fixture(s)
-                        </td>
-                    </tr>
-                    {% else %}
-                    {% for fixture in proposal_fixtures %}
-                    <tr class="text-center">
-                        <td id="lblFixtureAbbr{{ fixture['fixture_id']|string }}">
-                            {{ fixture['fixture_abbreviation'] }}
-                        </td>
-                        <td id="lblFixtureName{{ fixture['fixture_id']|string }}">
-                            {{ fixture['fixture_name'] }}
-                        </td>
-                        <td id="lblFixtureQty{{ fixture['fixture_id']|string }}">
-                            {{ fixture['quantity'] }}
-                        </td>
-                        <td id="lblFixtureCost{{ fixture['fixture_id']|string }}">
-                            {{ "${:,.2f}".format(fixture['cost_per_fixture']) }}
-                        </td>
-                        <td id="lblFixtureTotal{{ fixture['fixture_id']|string }}">
-                            {{ "${:,.2f}".format(fixture['total_per_fixture']) }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% endif %}
-                </tbody>
-                <tfoot>
-                    <tr class="text-center">
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td class="fw-semibold">Total</td>
-                        <td id="proposalFixturesTotal" class="fw-semibold">{{ "${:,.2f}".format(proposal_fixtures_total)
-                            }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-
         </form>
-        <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+        <!-- Fixture Display Table -->
+        <table id="fixtureTable" class="table table-striped">
+            <thead>
+                <tr>
+                    <th class="text-center">Abbreviation</th>
+                    <th class="text-center">Name</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-center">Amount</th>
+                    <th class="text-center">Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Fixture Table-->
+                {% if proposal_fixtures|length == 0 %}
+                <tr id="emptyFixtureRow">
+                    <td class="text-center" colspan="100%">
+                        Please add fixture(s)
+                    </td>
+                </tr>
+                {% else %}
+                {% for fixture in proposal_fixtures %}
+                <tr id="fixtureLineItem{{ fixture['fixture_id']|string }}" class="text-center">
+                    <td id="lblFixtureAbbr{{ fixture['fixture_id']|string }}">
+                        {{ fixture['fixture_abbreviation'] }}
+                        {{ proposal_fixtures_form.fixture_id(value=fixture['fixture_id']) }}
+                    </td>
+                    <td id="lblFixtureName{{ fixture['fixture_id']|string }}">
+                        {{ fixture['fixture_name'] }}
+                    </td>
+                    <td id="lblFixtureQty{{ fixture['fixture_id']|string }}">
+                        {{ fixture['quantity'] }}
+                    </td>
+                    <td id="lblFixtureCost{{ fixture['fixture_id']|string }}">
+                        {{ "${:,.2f}".format(fixture['cost_per_fixture']) }}
+                    </td>
+                    <td id="lblFixtureTotal{{ fixture['fixture_id']|string }}">
+                        {{ "${:,.2f}".format(fixture['total_per_fixture']) }}
+                    </td>
+                    <td>
+                        <button id="btnDeleteFixtureLine{{ fixture['fixture_id']|string }}"
+                            class="border-0 bg-transparent" data-fixture-id="{{ fixture['fixture_id']|string }}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                    <script>
+                        // Delete fixture line item
+                        $(document).ready(function () {
+                            $("#fixtureTable").on("click", "button[id^='btnDeleteFixtureLine{{ fixture['fixture_id']|string }}']", function (e) {
+                                var fixtureId = $(this).data("fixture-id");
+                                var url = "{{ url_for('delete_fixture', fixture_id=fixture['fixture_id'], project_id=fixture['project_id']) }}";
+                                $.ajax({
+                                    type: "POST",
+                                    url: url,
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    data: "", // serializes the form's elements.
+                                    success: function (data) {
+                                        console.log(data)  // display the returned data in the console.
+
+                                        updateTable(data);
+                                    }
+                                });
+
+                                e.preventDefault(); // block the traditional submission of the form.
+                            });
+
+                            // Inject our CSRF token into our AJAX request.
+                            $.ajaxSetup({
+                                beforeSend: function (xhr, settings) {
+                                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                        xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                                    }
+                                }
+                            })
+                        });
+
+                        function updateTable(data) {
+                            console.log(data);
+                            let formatting_options = {
+                                style: 'currency',
+                                currency: 'USD',
+                                minimumFractionDigits: 2,
+                            }
+                            let dollarString = new Intl.NumberFormat("en-US", formatting_options);
+                            var total_fixtures_cost = 0;
+
+                            var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
+                            tableBody.innerHTML = "";
+
+                            for (let i = 0; i < data.length; i++) {
+                                // Create a new table row
+                                var newRow = document.createElement("tr");
+                                newRow.classList.add("text-center");
+
+                                // Create table cells for each item detail
+                                var abbrCell = document.createElement("td");
+                                abbrCell.textContent = data[i]['fixture_abbreviation'];
+                                newRow.appendChild(abbrCell);
+
+                                var nameCell = document.createElement("td");
+                                nameCell.textContent = data[i]['fixture_name'];
+                                newRow.appendChild(nameCell);
+
+                                var qtyCell = document.createElement("td");
+                                qtyCell.textContent = data[i]['fixture_quantity'];
+                                newRow.appendChild(qtyCell);
+
+                                var costCell = document.createElement("td");
+                                costCell.textContent = dollarString.format(data[i]['fixture_cost']);
+                                newRow.appendChild(costCell);
+
+                                var totalCell = document.createElement("td");
+                                totalCell.textContent = dollarString.format(data[i]['fixture_total']);
+                                newRow.appendChild(totalCell);
+
+                                var deleteCell = document.createElement("td");
+                                var deleteButton = document.createElement("button");
+                                deleteButton.id = "btnDeleteFixtureLine" + data[i]['fixture_id'];
+                                deleteButton.setAttribute("data-fixture-id", data[i]['fixture_id']);
+                                deleteButton.classList.add("border-0", "bg-transparent");
+
+                                var deleteIcon = document.createElement("i");
+                                deleteIcon.className = "fa-solid fa-trash-can";
+
+                                deleteButton.appendChild(deleteIcon);
+                                deleteCell.appendChild(deleteButton);
+
+                                newRow.appendChild(deleteCell);
+
+                                // Get the table body
+                                var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
+
+                                // Append the new row to the table body
+                                tableBody.appendChild(newRow);
+                            }
+
+                            // Get overall total
+                            for (var i = 0; i < data.length; i++) {
+                                total_fixtures_cost = total_fixtures_cost + data[i]['fixture_total'];
+                            }
+                            // console.log("Total: " + total_fixtures_cost);
+
+                            document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
+                        }
+                    </script>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+            <tfoot>
+                <tr class="text-center">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="fw-semibold">Total</td>
+                    <td id="proposalFixturesTotal" class="fw-semibold">{{ "${:,.2f}".format(proposal_fixtures_total)
+                        }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
         <script>
+            // Add fixture line item
             $(document).ready(function () {
-                $("#btnAddFixture").on("click", function (e) {
+                $("#addFixtures").on("click", "button[id^='btnAddFixture']", function (e) {
                     var url = "{{ url_for('add_fixture') }}";
                     var data = $('#addFixtures').serializeArray();
                     $.ajax({
@@ -221,6 +332,41 @@
                             totalCell.textContent = dollarString.format(data[data.length - 1]['fixture_total']);
                             newRow.appendChild(totalCell);
 
+                            var deleteCell = document.createElement("td");
+                            var deleteButton = document.createElement("button");
+                            deleteButton.id = "btnDeleteFixtureLine" + data[data.length - 1]['fixture_id'];
+                            deleteButton.setAttribute("data-fixture-id", data[data.length - 1]['fixture_id']);
+                            deleteButton.classList.add("border-0", "bg-transparent");
+
+                            var deleteIcon = document.createElement("i");
+                            deleteIcon.className = "fa-solid fa-trash-can";
+
+                            deleteButton.appendChild(deleteIcon);
+                            deleteCell.appendChild(deleteButton);
+                            deleteButton.addEventListener("click", function () {
+                                console.log("Go");
+                                var fixtureID = data[data.length - 1]['fixture_id'];
+                                var url = "{{ url_for('delete_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
+                                url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
+                                $.ajax({
+                                    type: "POST",
+                                    url: url,
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    data: "", // serializes the form's elements.
+                                    success: function (data) {
+                                        console.log(data)  // display the returned data in the console.
+
+                                        updateTable(data);
+                                    }
+                                });
+
+                                e.preventDefault(); // block the traditional submission of the form.
+                            });
+                            newRow.appendChild(deleteCell);
+
                             // Get the table body
                             var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
 
@@ -247,6 +393,7 @@
                     e.preventDefault(); // block the traditional submission of the form.
                 });
 
+
                 // Inject our CSRF token into our AJAX request.
                 $.ajaxSetup({
                     beforeSend: function (xhr, settings) {
@@ -260,7 +407,7 @@
 
         <hr>
 
-        <!-- Payment Plan -->
+        <!-- Installments - Payment Plan -->
         <h3>Payment Plan</h3>
         <form id="addInstallments" method="POST" enctype="multipart/form-data">
             {{ proposal_installments_form.csrf_token() }}

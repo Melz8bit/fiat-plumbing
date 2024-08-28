@@ -286,6 +286,9 @@ class ProposalFixturesForm(FlaskForm):
     project_id = HiddenField(
         "Project ID",
     )
+    fixture_id = HiddenField(
+        "Fixture ID",
+    )
     fixtures = SelectField(
         "Fixtures",
         validators=[DataRequired()],

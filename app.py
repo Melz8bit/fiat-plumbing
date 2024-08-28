@@ -827,8 +827,20 @@ def add_fixture():
 
     database.add_proposal_fixture(parsed_data)
 
+    return get_all_proposal_fixtures(parsed_data["project_id"])
+
+
+@app.route("/deleteProposalFixture/<fixture_id>/<project_id>", methods=["POST"])
+def delete_fixture(fixture_id, project_id):
+    print(fixture_id)
+    database.delete_proposal_fixture(fixture_id)
+
+    return get_all_proposal_fixtures(project_id)
+
+
+def get_all_proposal_fixtures(project_id):
     fixtures_added = []
-    fixtures = database.get_proposal_fixtures(parsed_data["project_id"])
+    fixtures = database.get_proposal_fixtures(project_id)
 
     for fixture in fixtures:
         fixtures_added.append(
@@ -841,6 +853,7 @@ def add_fixture():
                 "fixture_total": fixture["total_per_fixture"],
             }
         )
+
     return jsonify(fixtures_added)
 
 

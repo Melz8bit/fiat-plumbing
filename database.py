@@ -1358,6 +1358,27 @@ def add_proposal_fixture(fixture_data):
         return ""
 
 
+def delete_proposal_fixture(fixture_id):
+    try:
+        sqlQuery = (
+            "DELETE FROM project_proposal_fixtures WHERE fixture_id = :fixture_id;"
+        )
+
+        query_params = {
+            "fixture_id": int(fixture_id),
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Fixture deleted")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 def get_installment_categories():
     try:
         sqlQuery = (
