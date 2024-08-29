@@ -1,6 +1,6 @@
 <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
 <script>
-    function updateTable(data) {
+    function updateFixtureTable(data) {
         let formatting_options = {
             style: 'currency',
             currency: 'USD',
@@ -70,7 +70,7 @@
                 deleteCell.appendChild(deleteButton);
                 deleteButton.addEventListener("click", function () {
                     var fixtureID = data[data.length - 1]['fixture_id'];
-                    var url = "{{ url_for('delete_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
+                    var url = "{{ url_for('delete_proposal_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
                     url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
                     $.ajax({
                         type: "POST",
@@ -83,7 +83,7 @@
                         success: function (data) {
                             // console.log(data)  // display the returned data in the console.
 
-                            updateTable(data);
+                            updateFixtureTable(data);
                         }
                     });
 
@@ -93,6 +93,90 @@
 
                 // Get the table body
                 var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
+
+                // Append the new row to the table body
+                tableBody.appendChild(newRow);
+            }
+        }
+        // Get overall total
+        for (var i = 0; i < data.length; i++) {
+            total_fixtures_cost = total_fixtures_cost + data[i]['fixture_total'];
+        }
+        // console.log("Total: " + total_fixtures_cost);
+
+        document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
+    }
+
+    function updateNoteTable(data) {
+        var tableBody = document.getElementById("noteTable").querySelector("tbody");
+        tableBody.innerHTML = "";
+
+        if (data.length == 0 || data == null) {
+            var newRow = document.createElement("tr");
+            newRow.classList.add("text-center");
+
+            // Create table cells for each item detail
+            var deleteCell = document.createElement("td");
+            deleteCell.id = "emptyNoteRow"
+            deleteCell.colSpan = "999";
+            deleteCell.textContent = "Please add note(s)";
+            newRow.appendChild(deleteCell);
+
+            // Get the table body
+            var tableBody = document.getElementById("noteTable").querySelector("tbody");
+
+            // Append the new row to the table body
+            tableBody.appendChild(newRow);
+
+        }
+        else {
+            for (let i = 0; i < data.length; i++) {
+                // Create a new table row
+                var newRow = document.createElement("tr");
+                newRow.classList.add("text-center");
+
+                // Create table cells for each item detail
+                var noteCell = document.createElement("td");
+                noteCell.textContent = data[i]['note'];
+                newRow.appendChild(noteCell);
+
+                // Create delete button
+                var deleteCell = document.createElement("td");
+                var deleteButton = document.createElement("button");
+                deleteButton.id = "btnDeleteNoteLine" + data[i]['note_id'];
+                deleteButton.setAttribute("data-note-id", data[i]['note_id']);
+                deleteButton.classList.add("border-0", "bg-transparent");
+
+                var deleteIcon = document.createElement("i");
+                deleteIcon.className = "fa-solid fa-trash-can";
+
+                deleteButton.appendChild(deleteIcon);
+                deleteCell.appendChild(deleteButton);
+                deleteButton.addEventListener("click", function () {
+                    var noteID = data[data.length - 1]['note_id'];
+                    var url = "{{ url_for('delete_proposal_note', note_id='NOTE_ID_REPLACE', project_id=project['project_id']) }}";
+                    url = url.replace("NOTE_ID_REPLACE", noteID);
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        data: "", // serializes the form's elements.
+                        success: function (data) {
+                            // console.log(data)  // display the returned data in the console.
+
+                            updateNoteTable(data);
+                        }
+                    });
+
+                    e.preventDefault(); // block the traditional submission of the form.
+                });
+                newRow.appendChild(deleteCell);
+
+                // Get the table body
+                var tableBody = document.getElementById("noteTable").querySelector("tbody");
 
                 // Append the new row to the table body
                 tableBody.appendChild(newRow);
@@ -269,7 +353,7 @@
                         $(document).ready(function () {
                             $("#fixtureTable").on("click", "button[id^='btnDeleteFixtureLine{{ fixture['fixture_id']|string }}']", function (e) {
                                 var fixtureId = $(this).data("fixture-id");
-                                var url = "{{ url_for('delete_fixture', fixture_id=fixture['fixture_id'], project_id=fixture['project_id']) }}";
+                                var url = "{{ url_for('delete_proposal_fixture', fixture_id=fixture['fixture_id'], project_id=fixture['project_id']) }}";
                                 $.ajax({
                                     type: "POST",
                                     url: url,
@@ -282,7 +366,7 @@
                                         // console.log(data)  // display the returned data in the console.
                                         // console.log(data.length)
 
-                                        updateTable(data);
+                                        updateFixtureTable(data);
                                     }
                                 });
 
@@ -322,7 +406,7 @@
             // Add fixture line item
             $(document).ready(function () {
                 $("#addFixtures").on("click", "button[id^='btnAddFixture']", function (e) {
-                    var url = "{{ url_for('add_fixture') }}";
+                    var url = "{{ url_for('add_proposal_fixture') }}";
                     var data = $('#addFixtures').serializeArray();
                     $.ajax({
                         type: "POST",
@@ -350,7 +434,7 @@
                             let dollarString = new Intl.NumberFormat("en-US", formatting_options);
                             var total_fixtures_cost = 0;
 
-                            fixture_id = data[data.length - 1]['fixture_abbreviation'];
+                            // fixture_id = data[data.length - 1]['fixture_abbreviation'];
 
                             // Create a new table row
                             var newRow = document.createElement("tr");
@@ -391,7 +475,7 @@
                             deleteCell.appendChild(deleteButton);
                             deleteButton.addEventListener("click", function () {
                                 var fixtureID = data[data.length - 1]['fixture_id'];
-                                var url = "{{ url_for('delete_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
+                                var url = "{{ url_for('delete_proposal_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
                                 url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
                                 $.ajax({
                                     type: "POST",
@@ -404,7 +488,7 @@
                                     success: function (data) {
                                         // console.log(data)  // display the returned data in the console.
 
-                                        updateTable(data);
+                                        updateFixtureTable(data);
                                     }
                                 });
 
@@ -544,7 +628,7 @@
         <script>
             $(document).ready(function () {
                 $("#btnAddInstallment").on("click", function (e) {
-                    var url = "{{ url_for('add_installment') }}";
+                    var url = "{{ url_for('add_proposal_installment') }}";
                     var data = $('#addInstallments').serializeArray();
                     var curr_install_number = document.getElementById("installment_number").value;
                     $.ajax({
@@ -627,10 +711,196 @@
             });
         </script>
 
+        <hr>
 
-        <div class="text-center mt-4">
+        <!-- Notes -->
+        <h3>Notes</h3>
+        <form id="addNotes" method="POST" enctype="multipart/form-data">
+            {{ proposal_notes_form.csrf_token() }}
+            {{ proposal_notes_form.project_id(value=project['project_id']) }}
+            <!-- Add note -->
+            <div class="row">
+                <div class="col">
+                    <div class="input-group mb-3">
+                        {{ proposal_notes_form.note.label(class="input-group-text") }}
+                        {{ proposal_notes_form.note(class="form-control text-center w-25") }}
+                    </div>
+                </div>
+
+                <div class="col text-end">
+                    <button class="btn btn-primary" id="btnAddNote" type="button">Add Note</button>
+                </div>
+            </div>
+        </form>
+        <!-- Notes Display Table -->
+        <table id="noteTable" class="table table-striped">
+            <thead>
+                <tr class="text-center">
+                    <th>{{ proposal_notes_form.note.label }}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if proposal_notes|length == 0 %}
+                <tr id="emptyNoteRow">
+                    <td class="text-center" colspan="100%">
+                        Please add note(s)
+                    </td>
+                </tr>
+                {% else %}
+                {% for note in proposal_notes %}
+                <tr class="text-center">
+                    <td id="lblNoteNumber{{ note['note_id']|string }}">
+                        {{ note['note'] }}
+                        {{ proposal_notes_form.note_id(value=note['note_id']) }}
+                    </td>
+                    <td>
+                        <button id="btnDeleteNoteLine{{ note['note_id']|string }}" type="button"
+                            class="border-0 bg-transparent" data-fixture-id="{{ note['note_id']|string }}">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                    <!-- Delete note line item -->
+                    <script>
+                        $(document).ready(function () {
+                            $("#noteTable").on("click", "button[id^='btnDeleteNoteLine{{ note['note_id']|string }}']", function (e) {
+                                var noteId = $(this).data("note-id");
+                                var url = "{{ url_for('delete_proposal_note', note_id=note['note_id'], project_id=note['project_id']) }}";
+                                $.ajax({
+                                    type: "POST",
+                                    url: url,
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    data: "", // serializes the form's elements.
+                                    success: function (data) {
+                                        // console.log(data)  // display the returned data in the console.
+                                        // console.log(data.length)
+
+                                        updateNoteTable(data);
+                                    }
+                                });
+
+                                e.preventDefault(); // block the traditional submission of the form.
+                            });
+
+                            // Inject our CSRF token into our AJAX request.
+                            $.ajaxSetup({
+                                beforeSend: function (xhr, settings) {
+                                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                        xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                                    }
+                                }
+                            })
+                        });
+
+
+                    </script>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+            <tfoot>
+            </tfoot>
+        </table>
+        <!-- Add note line item -->
+        <script>
+            $(document).ready(function () {
+                $("#addNotes").on("click", "button[id^='btnAddNote']", function (e) {
+                    var url = "{{ url_for('add_proposal_note') }}";
+                    var data = $('#addNotes').serializeArray();
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        data: data, // serializes the form's elements.
+                        success: function (data) {
+                            // console.log(data)  // display the returned data in the console.
+                            // console.log(data.length);
+
+                            if (data.length == 1) {
+                                var tableBody = document.getElementById("noteTable").querySelector("tbody");
+                                var rowToDelete = document.getElementById("emptyNoteRow");
+                                rowToDelete.remove();
+                            }
+
+                            // Create a new table row
+                            var newRow = document.createElement("tr");
+                            newRow.classList.add("text-center");
+
+                            // Create table cells for each item detail
+                            var noteCell = document.createElement("td");
+                            noteCell.textContent = data[data.length - 1]['note'];
+                            newRow.appendChild(noteCell);
+
+                            var deleteCell = document.createElement("td");
+                            var deleteButton = document.createElement("button");
+                            deleteButton.id = "btnDeleteNoteLine" + data[data.length - 1]['note_id'];
+                            deleteButton.type = "button";
+                            deleteButton.setAttribute("data-note-id", data[data.length - 1]['note_id']);
+                            deleteButton.classList.add("border-0", "bg-transparent");
+
+                            var deleteIcon = document.createElement("i");
+                            deleteIcon.className = "fa-solid fa-trash-can";
+
+                            deleteButton.appendChild(deleteIcon);
+                            deleteCell.appendChild(deleteButton);
+                            deleteButton.addEventListener("click", function () {
+                                var noteID = data[data.length - 1]['note_id'];
+                                var url = "{{ url_for('delete_proposal_note', note_id='NOTE_ID_REPLACE', project_id=project['project_id']) }}";
+                                url = url.replace("NOTE_ID_REPLACE", noteID);
+                                $.ajax({
+                                    type: "POST",
+                                    url: url,
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                    },
+                                    data: "", // serializes the form's elements.
+                                    success: function (data) {
+                                        // console.log(data)  // display the returned data in the console.
+
+                                        updateNoteTable(data);
+                                    }
+                                });
+
+                                e.preventDefault(); // block the traditional submission of the form.
+                            });
+                            newRow.appendChild(deleteCell);
+
+                            // Get the table body
+                            var tableBody = document.getElementById("noteTable").querySelector("tbody");
+
+                            // Append the new row to the table body
+                            tableBody.appendChild(newRow);
+
+                            // Reset fixture info fields
+                            var noteInput = document.getElementById("note");
+                            noteInput.value = "";
+                        }
+                    });
+                    e.preventDefault(); // block the traditional submission of the form.
+                });
+
+
+                // Inject our CSRF token into our AJAX request.
+                $.ajaxSetup({
+                    beforeSend: function (xhr, settings) {
+                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                        }
+                    }
+                })
+            });
+        </script>
+
+        <!-- <div class="text-center mt-4">
             <button class="btn btn-primary">Create Proposal</button>
-        </div>
+        </div> -->
     </div>
 </div>
 <div class="modal-footer">

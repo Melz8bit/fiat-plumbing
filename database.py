@@ -1452,6 +1452,75 @@ def add_proposal_installment(installment_data):
         return ""
 
 
+def get_proposal_notes(project_id):
+    try:
+        sqlQuery = (
+            "SELECT *"
+            + " FROM project_proposal_notes"
+            + " WHERE project_id = :project_id"
+            + " AND proposal_id = 0 ORDER BY note_id;"
+        )
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            notes = connection.execute(text(f"{sqlQuery}"), query_params)
+            try:
+                notes_dict = notes.mappings().all()
+            except:
+                notes_dict = ""
+
+        return notes_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return None
+
+
+def add_proposal_note(note_data):
+    try:
+        sqlQuery = (
+            "INSERT INTO project_proposal_notes (project_id, note)"
+            + " VALUES (:project_id, :note)"
+        )
+
+        query_params = {
+            "project_id": note_data["project_id"],
+            "note": note_data["note"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Note added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def delete_proposal_note(note_id):
+    try:
+        sqlQuery = "DELETE FROM project_proposal_notes WHERE note_id = :note_id;"
+
+        query_params = {
+            "note_id": int(note_id),
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Note deleted")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 ############## Misc. Queries ##############
 def get_city_state_county(zip_code):
     try:

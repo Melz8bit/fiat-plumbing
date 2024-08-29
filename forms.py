@@ -323,3 +323,13 @@ class ProposalInstallmentsForm(FlaskForm):
         "Installment Amount $",
         validators=[DataRequired()],
     )
+
+
+class ProposalNotesForm(FlaskForm):
+    project_id = HiddenField(
+        "Project ID",
+    )
+    note_id = HiddenField(
+        "Note ID",
+    )
+    note = StringField("Note")

@@ -44,6 +44,7 @@ from forms import (
     ApplyPaymentForm,
     ProposalFixturesForm,
     ProposalInstallmentsForm,
+    ProposalNotesForm,
 )
 from models import users
 
@@ -430,6 +431,7 @@ def project_view(project_id, new_project=False):
     plumbing_permit = database.get_plumbing_permit(project_id)
     proposal_fixtures = database.get_proposal_fixtures(project_id)
     proposal_installments = database.get_proposal_installments(project_id)
+    proposal_notes = database.get_proposal_notes(project_id)
 
     if new_project:
         flash("Project has been created")
@@ -444,6 +446,7 @@ def project_view(project_id, new_project=False):
     apply_payment_form = ApplyPaymentForm()
     proposal_fixtures_form = ProposalFixturesForm()
     proposal_installments_form = ProposalInstallmentsForm()
+    proposal_notes_form = ProposalNotesForm()
 
     # Variable Initialization
     document_type = None
@@ -619,19 +622,6 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{invoice_create_form.errors=}")
 
-    # payment = {
-    #     "project_id": "24-9999",
-    #     "check_number": "pmt2",
-    # }
-    # database.get_project_payment_id(payment)
-    # for payments in payment_info:
-    #     for payment in payment_info[payments]:
-    #         print(f"{payment=}")
-
-    # for pmts in installment_payments:
-    #     if pmts["check_number"] == "9090":
-    #         print(pmts)
-
     return render_template(
         "project.html",
         user=user,
@@ -653,6 +643,7 @@ def project_view(project_id, new_project=False):
         invoice_create_form=invoice_create_form,
         proposal_fixtures_form=proposal_fixtures_form,
         proposal_installments_form=proposal_installments_form,
+        proposal_notes_form=proposal_notes_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
         open_invoices=open_invoices,
@@ -664,6 +655,7 @@ def project_view(project_id, new_project=False):
         proposal_fixtures_total=fixtures_total(proposal_fixtures),
         proposal_installments=proposal_installments,
         proposal_installments_total=installments_total(proposal_installments),
+        proposal_notes=proposal_notes,
     )
 
 
@@ -805,7 +797,7 @@ def populate_city_state_county():
 
 
 @app.route("/addProposalFixture", methods=["POST"])
-def add_fixture():
+def add_proposal_fixture():
     # Decode the bytes to a string
     serialized_data = request.data.decode("utf-8")
 
@@ -831,7 +823,7 @@ def add_fixture():
 
 
 @app.route("/deleteProposalFixture/<fixture_id>/<project_id>", methods=["POST"])
-def delete_fixture(fixture_id, project_id):
+def delete_proposal_fixture(fixture_id, project_id):
     database.delete_proposal_fixture(fixture_id)
 
     return get_all_proposal_fixtures(project_id)
@@ -857,7 +849,7 @@ def get_all_proposal_fixtures(project_id):
 
 
 @app.route("/addProposalInstallment", methods=["POST"])
-def add_installment():
+def add_proposal_installment():
     # Decode the bytes to a string
     serialized_data = request.data.decode("utf-8")
 
@@ -929,6 +921,55 @@ def apply_payment(project_id):
 
     # print(f"{invoice_id=}")
     return jsonify("")
+
+
+@app.route("/addProposalNote", methods=["POST"])
+def add_proposal_note():
+    # Decode the bytes to a string
+    serialized_data = request.data.decode("utf-8")
+
+    # Parse the query string into a dictionary
+    parsed_data = urllib.parse.parse_qs(serialized_data)
+
+    # Convert the dictionary values to strings (if needed)
+    for key, value in parsed_data.items():
+        parsed_data[key] = value[0]
+
+    database.add_proposal_note(parsed_data)
+
+    notes_added = []
+    notes = database.get_proposal_notes(parsed_data["project_id"])
+
+    for note in notes:
+        notes_added.append(
+            {
+                "note_id": note["note_id"],
+                "note": note["note"],
+            }
+        )
+    return jsonify(notes_added)
+
+
+@app.route("/deleteProposalNote/<note_id>/<project_id>", methods=["POST"])
+def delete_proposal_note(note_id, project_id):
+    database.delete_proposal_note(note_id)
+
+    return get_all_proposal_notes(project_id)
+
+
+def get_all_proposal_notes(project_id):
+    notes_added = []
+    notes = database.get_proposal_notes(project_id)
+
+    for note in notes:
+        notes_added.append(
+            {
+                "note_id": note["note_id"],
+                "note": note["note"],
+            }
+        )
+
+    return jsonify(notes_added)
 
 
 @app.template_filter()
