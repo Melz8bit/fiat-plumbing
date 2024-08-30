@@ -295,7 +295,7 @@ class ProposalFixturesForm(FlaskForm):
         choices=get_fixtures(),
     )
     fixture_quantity = IntegerField(
-        "Fixture Amount",
+        "Quantity",
         validators=[DataRequired()],
     )
     fixture_cost = DecimalField(

@@ -542,16 +542,16 @@
             {{ proposal_installments_form.csrf_token() }}
             {{ proposal_installments_form.project_id(value=project['project_id']) }}
             <!-- Add Installment -->
-            <div class="row">
+            <div class="row mb-3">
                 <div class="col-2">
-                    <div class="input-group mb-3">
+                    <div class="input-group">
                         {{ proposal_installments_form.installment_number.label(class="input-group-text") }}
                         {{ proposal_installments_form.installment_number(class="form-control text-center w-25") }}
                     </div>
                 </div>
 
                 <div class="col">
-                    <div class="input-group mb-3">
+                    <div class="input-group">
                         {{ proposal_installments_form.installments.label(class="input-group-text")}}
                         <select class="form-select" name="installment_select" id="installment_select">
                             {% for option in proposal_installments_form.installments %}
@@ -565,18 +565,16 @@
                 </div>
 
                 <div class="col">
-                    <div class="input-group mb-3">
+                    <div class="input-group">
                         {{ proposal_installments_form.installment_amount.label(class="input-group-text") }}
                         {{ proposal_installments_form.installment_amount(class="form-control text-end",
                         placeholder="0",
                         text=0,
                         min=0) }}
-                        <!-- <span class="input-group-text">$</span>
-                        <input type="text" class="form-control" placeholder="0.00" aria-label="Installment Amount"> -->
                     </div>
                 </div>
 
-                <div class="col text-end">
+                <div class="col-2 text-end">
                     <button class="btn btn-primary" id="btnAddInstallment" type="button">Add Installment</button>
                 </div>
             </div>
@@ -723,11 +721,11 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         {{ proposal_notes_form.note.label(class="input-group-text") }}
-                        {{ proposal_notes_form.note(class="form-control text-center w-25") }}
+                        {{ proposal_notes_form.note(class="form-control text-center") }}
                     </div>
                 </div>
 
-                <div class="col text-end">
+                <div class="col-2 text-end">
                     <button class="btn btn-primary" id="btnAddNote" type="button">Add Note</button>
                 </div>
             </div>
@@ -754,7 +752,7 @@
                         {{ note['note'] }}
                         {{ proposal_notes_form.note_id(value=note['note_id']) }}
                     </td>
-                    <td>
+                    <td class="text-end">
                         <button id="btnDeleteNoteLine{{ note['note_id']|string }}" type="button"
                             class="border-0 bg-transparent" data-fixture-id="{{ note['note_id']|string }}">
                             <i class="fa-solid fa-trash-can"></i>
