@@ -719,6 +719,8 @@ def project_add(client_id=None):
     if client_id:
         client = database.get_client(client_id)
 
+    next_project_id = database.get_next_project_id()
+
     return render_template(
         "project_add.html",
         user=user,
@@ -731,6 +733,7 @@ def project_add(client_id=None):
         state=state,
         zip_code=zip_code,
         county=county,
+        next_project_id=next_project_id,
     )
 
 

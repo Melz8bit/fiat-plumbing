@@ -142,28 +142,48 @@ class ClientForm(FlaskForm):
     edit = SubmitField("Update Client")
 
 
+# Create new project
 class ProjectForm(FlaskForm):
     client_options = []
     for clients in get_all_clients():
         client_info = (clients["client_id"], clients["name"])
         client_options.append(client_info)
 
-    project_id = StringField("Project ID", validators=[DataRequired()])
-    name = StringField("Project Name", validators=[DataRequired()])
+    project_id = StringField(
+        "Project ID",
+        validators=[DataRequired()],
+        render_kw={"readonly": ""},
+    )
+    name = StringField(
+        "Project Name",
+        validators=[DataRequired()],
+    )
     client = SelectField(
         "Client",
         validators=[DataRequired()],
         choices=client_options,
     )
-    address = StringField("Address", validators=[DataRequired()])
-    city = StringField("City", validators=[DataRequired()])
+    address = StringField(
+        "Address",
+        validators=[DataRequired()],
+    )
+    city = StringField(
+        "City",
+        validators=[DataRequired()],
+    )
     state = SelectField(
         "State",
         validators=[DataRequired()],
         choices=STATE_OPTIONS,
     )
-    zip_code = StringField("Zip Code", validators=[DataRequired()])
-    county = StringField("County", validators=[DataRequired()])
+    zip_code = StringField(
+        "Zip Code",
+        validators=[DataRequired()],
+    )
+    county = StringField(
+        "County",
+        validators=[DataRequired()],
+    )
     submit = SubmitField("Add Project")
 
 

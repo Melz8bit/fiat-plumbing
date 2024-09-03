@@ -389,6 +389,33 @@ def get_client_projects(client_id):
         return ""
 
 
+def get_max_project_id():
+    try:
+        sqlQuery = f"""
+                SELECT MAX(project_id)
+                FROM projects
+                WHERE project_id != '24-9999';
+            """
+
+        with engine.connect() as connection:
+            max_id = connection.execute(text(f"{sqlQuery}"))
+            max_id = max_id.mappings().first()["max"]
+
+        return max_id
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_next_project_id():
+    current_max_id = get_max_project_id()
+    curr_year = str(datetime.now().strftime("%y"))
+    next_id = int(current_max_id.split("-")[1]) + 1
+    next_id_complete = curr_year + "-" + str(next_id)
+    return next_id_complete
+
+
 ############## Project Status Queries ##############
 def update_project_status(project_id, project_status, user_id):
     try:
