@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+
+    {% include 'bootstrap.html' %}
+    <style media="print">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 99%;
+            font-size: 10pt;
+        }
+
+        .new-page {
+            page-break-before: always;
+        }
+
+        body {
+            min-width: 100vw;
+            margin: 0;
+        }
+
+        .printArea {
+            min-width: 100%;
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin-bottom: 15px;
+        }
+
+        #formBody {
+            height: 9%;
+        }
+
+        #navBar {
+            display: none;
+        }
+
+        #print-icon {
+            display: none;
+        }
+    </style>
+
+    <style>
+        * {
+            font-family: Georgia;
+        }
+
+        #formBody {
+            font-size: 12pt;
+        }
+
+        li.no-bullets {
+            list-style-type: none;
+        }
+
+        .signature {
+            border: none;
+            border-bottom: 1px solid black;
+        }
+
+        .footer {
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin-bottom: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="formBody" class="container mx-20 printArea border-black">
+        <div class="text-center">
+            <!-- Header -->
+            <div class="row align-items-center text-start">
+                <div class="col">
+                    <img src="/static/logo.png" alt="Logo" class="d-inline-block align-text-top me-2 h-auto">
+                </div>
+            </div>
+            <div class="text-center">
+                <h3><strong>FIAT PLUMBING</strong></h3>
+                <h3><strong>AND GENERAL CONTRACTOR, INC.</strong></h3>
+                <h5>2727 SW 36 AVENUE</h5>
+                <h5>MIAMI, FLORIDA 33133</h5>
+                <h5>PHONE:(305) 446-6366 FAX:(305) 774-7033</h5>
+                <h5>afiat@aol.com or afiat59@gmail.com</h5>
+                <h5>24-9999</h5>
+            </div>
+        </div>
+
+        <div><strong>09/03/2024</strong></div>
+        <p></p>
+
+        <strong>
+            <!-- Client Info -->
+            <div>
+                <div class="row">
+                    <div class="col-1">To:</div>
+                    <div class="col">Opus Home Builders</div>
+                </div>
+                <div class="row">
+                    <div class="col-1"></div>
+                    <div class="col">PO Box 145024</div>
+                </div>
+                <div class="row">
+                    <div class="col-1"></div>
+                    <div class="col">Coral Gables, FL 33144</div>
+                </div>
+            </div>
+
+            <p></p>
+
+            <!-- Project Address -->
+            <div>
+                <div class="row">
+                    <div class="col-1">Job:</div>
+                    <div class="col">740 NE 49 Street</div>
+                </div>
+                <div class="row">
+                    <div class="col-1"></div>
+                    <div class="col">Miami Beach, FL 33140</div>
+                </div>
+            </div>
+        </strong>
+
+        <br>
+        <br>
+
+        <div>We, hereby, submit specification and estimates for the following:</div>
+        <br>
+
+        <!-- Bid Price -->
+        <ul class="mb-3 ms-4">
+            <li><strong><u>BID PRICE INCLUDES THE FOLLOWING:</u></strong></li>
+            <li class="no-bullets mt-2">Install plumbing as per plans dated 09/08/2021</li>
+        </ul>
+        <p></p>
+
+        <!-- Fixture Info -->
+        <ul class="mb-4 ms-4">
+            <li><strong><u>FIXTURE <em>(WHERE APPLICABLE)</em> TO BE AS FOLLOWS:</u></strong></li>
+            <li class="no-bullets mt-2">To be supplied by owner</li>
+        </ul>
+        <p></p>
+
+        <!-- Notes -->
+        <ul class="mb-3 ms-4">
+            <li class="no-bullets"><strong><u>NOTES:</u></strong></li>
+            <li>PRICE BASED ON BIDDING PLANES DATE 09/03/2024</li>
+            <li>LEAD ROOF STACKS BY OTHERS</li>
+            <li><strong>A/C CONDENSATE DRAINS ARE INCLUDED</strong></li>
+            <li>FIRE COLLARS, <em>WHERE APPLICABLE</em></li>
+            <li>FIRE STOPPING BY OTHER</li>
+            <li><strong>PERMIT FEES NOT INCLUDED IN PRICE</strong></li>
+            <li><strong>CONCRETE CUTTING AND CORE DRILLING ARE NOT INCLUDED</strong></li>
+        </ul>
+
+        <p class="new-page">
+            We, hereby, propose to furnish labor and materials - complete in accordance with the above specifications,
+            for the sum of <strong><u>EIGHTEEN THOUSAND FIVE HUNDRED DOLLARS ($18,500.00)</u></strong>
+        </p>
+
+        <!-- Installment Info -->
+        <div class="mt-2">
+            To be paid as follows:
+            <ul class="no-bullets">
+                <li>
+                    <strong>
+                        <div class="row">
+                            <div class="col-2">
+                                Payment 1:
+                            </div>
+                            <div class="col">
+                                $ 7,400.00 at drains
+                            </div>
+                        </div>
+                    </strong>
+                </li>
+                <li>
+                    <strong>
+                        <div class="row">
+                            <div class="col-2">
+                                Payment 2:
+                            </div>
+                            <div class="col">
+                                $ 7,400.00 at rough and tub and showers
+                            </div>
+                        </div>
+                    </strong>
+                </li>
+                <li>
+                    <strong>
+                        <div class="row">
+                            <div class="col-2">
+                                Payment 3:
+                            </div>
+                            <div class="col">
+                                $ 3,700.00 at final fixtures installation
+                            </div>
+                        </div>
+                    </strong>
+                </li>
+                </ol>
+        </div>
+
+        <p>
+            All material is guaranteed to be as specified. All work to be completed in a workmanlike manner according to
+            standards practices.
+            Any alteration or deviation from above specifications involving extra cost, will be executed only upon
+            written orders, and will become
+            an extra charge over and above the estimate. All agreements are contingent upon strikes, accidents or delays
+            beyond our control. This proposal
+            is subject to acceptance within <strong><u>30 days</u></strong> and is void thereafter at the option of the
+            undersigned.
+        </p>
+
+        <p>
+            If you should have any further questions, please feel free to contact me at (305)446-6366.
+        </p>
+
+        <input class="signature"><br>
+        Jorge A. Fiat<br>
+        President
+
+        <div class="mt-5">
+            <div class="text-center"><strong><u>ACCEPTANCE OF PROPOSAL</u></strong></div>
+            <p>The above prices, specification and condition are hereby accepted. You are authorized to do the work as
+                specified. Payment will be made as outlined above.
+            </p>
+            <div class="row">
+                <div class="col-2">ACCEPTED BY:</div>
+                <div class="col"><input class="signature"></div>
+                <div class=" col-2">DATE:</div>
+                <div class="col"><input class="signature"></div>
+            </div>
+        </div>
+
+    </div>
+
+
+</body>
+
+</html>

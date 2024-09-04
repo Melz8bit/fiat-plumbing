@@ -669,7 +669,7 @@
                             newRow.appendChild(instCat);
 
                             var instAmt = document.createElement("td");
-                            instAmt.textContent = data[data.length - 1]['installment_amount'];
+                            instAmt.textContent = dollarString.format(data[data.length - 1]['installment_amount']);
                             newRow.appendChild(instAmt);
 
                             // Get the table body
@@ -896,9 +896,31 @@
             });
         </script>
 
-        <!-- <div class="text-center mt-4">
-            <button class="btn btn-primary">Create Proposal</button>
-        </div> -->
+        <div id="createPDF" class="text-center mt-4">
+            <a href="{{ url_for('create_proposal_pdf', project_id=project['project_id'] )}}" class="btn btn-primary"
+                target=”_blank”>View PDF</a>
+            <!-- <button id="btnCreateProposalPDF" class="btn btn-primary">Create Proposal</button> -->
+            <!-- <script>
+                $(document).ready(function () {
+                    $("#createPDF").on("click", "button[id^='btnCreateProposalPDF']", function (e) {
+                        var url = "{{ url_for('create_proposal_pdf', project_id=project['project_id']) }}";
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            data: "", // serializes the form's elements.
+                            success: function (data) {
+                                // console.log(data)  // display the returned data in the console.
+                                // console.log(data.length);
+                            }
+                        });
+                    });
+                });
+            </script> -->
+        </div>
     </div>
 </div>
 <div class="modal-footer">

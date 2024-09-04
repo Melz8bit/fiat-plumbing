@@ -45,6 +45,7 @@ from forms import (
     ProposalFixturesForm,
     ProposalInstallmentsForm,
     ProposalNotesForm,
+    ProposalCreate,
 )
 from models import users
 
@@ -447,6 +448,7 @@ def project_view(project_id, new_project=False):
     proposal_fixtures_form = ProposalFixturesForm()
     proposal_installments_form = ProposalInstallmentsForm()
     proposal_notes_form = ProposalNotesForm()
+    proposal_create_form = ProposalCreate()
 
     # Variable Initialization
     document_type = None
@@ -644,6 +646,7 @@ def project_view(project_id, new_project=False):
         proposal_fixtures_form=proposal_fixtures_form,
         proposal_installments_form=proposal_installments_form,
         proposal_notes_form=proposal_notes_form,
+        proposal_create_form=proposal_create_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
         open_invoices=open_invoices,
@@ -772,6 +775,16 @@ def view_invoice(project_id, invoice_number):
         fiat_plumbing=FIAT_PLUMBING,
         invoice_total=invoice_total,
         installment_number=invoice_number,
+    )
+
+
+@app.route("/createProposalPDF/<project_id>")
+@login_required
+def create_proposal_pdf(project_id):
+    print("something")
+    print(project_id)
+    return render_template(
+        "proposal_print.html",
     )
 
 

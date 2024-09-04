@@ -353,3 +353,7 @@ class ProposalNotesForm(FlaskForm):
         "Note ID",
     )
     note = StringField("Note")
+
+
+class ProposalCreate(FlaskForm):
+    pass
