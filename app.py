@@ -23,6 +23,7 @@ from flask_login import (
     login_user,
     logout_user,
 )
+from num2words import num2words
 from sqlalchemy import null, select
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -781,10 +782,28 @@ def view_invoice(project_id, invoice_number):
 @app.route("/createProposalPDF/<project_id>")
 @login_required
 def create_proposal_pdf(project_id):
-    print("something")
-    print(project_id)
+    project_info = database.get_project(project_id)
+    client_info = database.get_project_client(project_id)
+    proposal_fixtures = database.get_proposal_fixtures(project_id)
+    proposal_installments = database.get_proposal_installments(project_id)
+    proposal_notes = database.get_proposal_notes(project_id)
+
+    proposal_total = 0
+    for fixture in proposal_fixtures:
+        proposal_total += fixture["total_per_fixture"]
+
+    proposal_total_words = num2words(proposal_total)
+    proposal_total_words = proposal_total_words.replace(",", "")
+
     return render_template(
         "proposal_print.html",
+        project_info=project_info,
+        client_info=client_info,
+        proposal_fixtures=proposal_fixtures,
+        proposal_installments=proposal_installments,
+        proposal_notes=proposal_notes,
+        proposal_total=proposal_total,
+        proposal_total_words=proposal_total_words,
     )
 
 

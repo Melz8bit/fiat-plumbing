@@ -55,6 +55,7 @@
     <style>
         * {
             font-family: Georgia;
+            color: black;
         }
 
         #formBody {
@@ -96,7 +97,7 @@
                 <h5>MIAMI, FLORIDA 33133</h5>
                 <h5>PHONE:(305) 446-6366 FAX:(305) 774-7033</h5>
                 <h5>afiat@aol.com or afiat59@gmail.com</h5>
-                <h5>24-9999</h5>
+                <h5>{{ project_info['project_id'] }}</h5>
             </div>
         </div>
 
@@ -108,15 +109,17 @@
             <div>
                 <div class="row">
                     <div class="col-1">To:</div>
-                    <div class="col">Opus Home Builders</div>
+                    <div class="col">{{ client_info['name'] }}</div>
                 </div>
                 <div class="row">
                     <div class="col-1"></div>
-                    <div class="col">PO Box 145024</div>
+                    <div class="col">{{ client_info['address'] }}</div>
                 </div>
                 <div class="row">
                     <div class="col-1"></div>
-                    <div class="col">Coral Gables, FL 33144</div>
+                    <div class="col">
+                        {{ client_info['city'] }}, {{ client_info['state'] }} {{ client_info['zip_code'] }}
+                    </div>
                 </div>
             </div>
 
@@ -126,11 +129,13 @@
             <div>
                 <div class="row">
                     <div class="col-1">Job:</div>
-                    <div class="col">740 NE 49 Street</div>
+                    <div class="col">{{ project_info['address'] }}</div>
                 </div>
                 <div class="row">
                     <div class="col-1"></div>
-                    <div class="col">Miami Beach, FL 33140</div>
+                    <div class="col">
+                        {{ project_info['city'] }}, {{ project_info['state'] }} {{ project_info['zip_code'] }}
+                    </div>
                 </div>
             </div>
         </strong>
@@ -165,54 +170,37 @@
             <li>FIRE STOPPING BY OTHER</li>
             <li><strong>PERMIT FEES NOT INCLUDED IN PRICE</strong></li>
             <li><strong>CONCRETE CUTTING AND CORE DRILLING ARE NOT INCLUDED</strong></li>
+            {% for proposal_note in proposal_notes %}
+            <li>{{ proposal_note['note'] | upper }}</li>
+            {% endfor %}
         </ul>
 
         <p class="new-page">
             We, hereby, propose to furnish labor and materials - complete in accordance with the above specifications,
-            for the sum of <strong><u>EIGHTEEN THOUSAND FIVE HUNDRED DOLLARS ($18,500.00)</u></strong>
+            for the sum of <strong><u>{{ proposal_total_words | upper}} DOLLARS ({{
+                    "${:,.2f}".format(proposal_total | float) }})</u></strong>
         </p>
 
         <!-- Installment Info -->
         <div class="mt-2">
             To be paid as follows:
             <ul class="no-bullets">
+                {% for proposal_installment in proposal_installments %}
                 <li>
                     <strong>
                         <div class="row">
                             <div class="col-2">
-                                Payment 1:
+                                Payment {{ proposal_installment['installment_number'] }}:
                             </div>
                             <div class="col">
-                                $ 7,400.00 at drains
+                                {{ "${:,.2f}".format(proposal_installment['installment_amount'] | float) }} at {{
+                                proposal_installment['installment_category'] }}
                             </div>
                         </div>
                     </strong>
                 </li>
-                <li>
-                    <strong>
-                        <div class="row">
-                            <div class="col-2">
-                                Payment 2:
-                            </div>
-                            <div class="col">
-                                $ 7,400.00 at rough and tub and showers
-                            </div>
-                        </div>
-                    </strong>
-                </li>
-                <li>
-                    <strong>
-                        <div class="row">
-                            <div class="col-2">
-                                Payment 3:
-                            </div>
-                            <div class="col">
-                                $ 3,700.00 at final fixtures installation
-                            </div>
-                        </div>
-                    </strong>
-                </li>
-                </ol>
+                {% endfor %}
+            </ul>
         </div>
 
         <p>

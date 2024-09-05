@@ -293,6 +293,11 @@ def update_client(client_info):
         return ""
 
 
+def get_project_client(project_id):
+    project = get_project(project_id)
+    return get_client(project['client_id'])
+
+
 ############## Project Queries ##############
 def get_all_projects():
     try:

@@ -117,6 +117,7 @@
 
             // Create table cells for each item detail
             var deleteCell = document.createElement("td");
+            deleteCell.classList.add("text-end");
             deleteCell.id = "emptyNoteRow"
             deleteCell.colSpan = "999";
             deleteCell.textContent = "Please add note(s)";
@@ -142,6 +143,7 @@
 
                 // Create delete button
                 var deleteCell = document.createElement("td");
+                deleteCell.classList.add("text-end");
                 var deleteButton = document.createElement("button");
                 deleteButton.id = "btnDeleteNoteLine" + data[i]['note_id'];
                 deleteButton.setAttribute("data-note-id", data[i]['note_id']);
@@ -721,7 +723,7 @@
                 <div class="col">
                     <div class="input-group mb-3">
                         {{ proposal_notes_form.note.label(class="input-group-text") }}
-                        {{ proposal_notes_form.note(class="form-control text-center") }}
+                        {{ proposal_notes_form.note(class="form-control") }}
                     </div>
                 </div>
 
@@ -836,6 +838,7 @@
                             newRow.appendChild(noteCell);
 
                             var deleteCell = document.createElement("td");
+                            deleteCell.classList.add("text-end");
                             var deleteButton = document.createElement("button");
                             deleteButton.id = "btnDeleteNoteLine" + data[data.length - 1]['note_id'];
                             deleteButton.type = "button";
