@@ -343,6 +343,11 @@ class ProposalInstallmentsForm(FlaskForm):
         "Installment Amount $",
         validators=[DataRequired()],
     )
+    installment_amount_remaining = DecimalField(
+        "Amount Remaining $",
+        validators=[DataRequired()],
+        render_kw={"readonly": ""},
+    )
 
 
 class ProposalNotesForm(FlaskForm):
@@ -353,7 +358,3 @@ class ProposalNotesForm(FlaskForm):
         "Note ID",
     )
     note = StringField("Note")
-
-
-class ProposalCreate(FlaskForm):
-    pass

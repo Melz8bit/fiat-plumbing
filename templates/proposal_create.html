@@ -105,6 +105,8 @@
         // console.log("Total: " + total_fixtures_cost);
 
         document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
+        var installmentAmountRemaining = document.getElementById("installment_amount_remaining");
+        installmentAmountRemaining.value = total_fixtures_cost.toFixed(2);
     }
 
     function updateNoteTable(data) {
@@ -511,6 +513,8 @@
                             // console.log("Total: " + total_fixtures_cost);
 
                             document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
+                            var installmentAmountRemaining = document.getElementById("installment_amount_remaining");
+                            installmentAmountRemaining.value = total_fixtures_cost.toFixed(2);
 
                             // Reset fixture info fields
                             var fixture_select = document.getElementById("fixture_select");
@@ -545,7 +549,7 @@
             {{ proposal_installments_form.project_id(value=project['project_id']) }}
             <!-- Add Installment -->
             <div class="row mb-3">
-                <div class="col-2">
+                <div class="col-1">
                     <div class="input-group">
                         {{ proposal_installments_form.installment_number.label(class="input-group-text") }}
                         {{ proposal_installments_form.installment_number(class="form-control text-center w-25") }}
@@ -576,8 +580,16 @@
                     </div>
                 </div>
 
-                <div class="col-2 text-end">
-                    <button class="btn btn-primary" id="btnAddInstallment" type="button">Add Installment</button>
+                <div class="col">
+                    <div class="input-group">
+                        {{ proposal_installments_form.installment_amount_remaining.label(class="input-group-text") }}
+                        {{ proposal_installments_form.installment_amount_remaining(class="form-control text-end",
+                        placeholder="0",text=0.00,step=0.01) }}
+                    </div>
+                </div>
+
+                <div class="col-1 text-end">
+                    <button class="btn btn-primary" id="btnAddInstallment" type="button">Add</button>
                 </div>
             </div>
 
@@ -628,6 +640,16 @@
         <script>
             $(document).ready(function () {
                 $("#btnAddInstallment").on("click", function (e) {
+                    var installmentAmountRemaining = document.getElementById("installment_amount_remaining");
+                    var installmentAmount = document.getElementById("installment_amount");
+                    if (installmentAmount.value > installmentAmountRemaining.value) {
+                        const toastLiveExample = document.getElementById('liveToast')
+                        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+                        var toastBody = document.getElementById('toast-body')
+                        toastBody.innerHTML = "Installment amount is more than the remaining amount."
+                        toastBootstrap.show()
+                        return;
+                    }
                     var url = "{{ url_for('add_proposal_installment') }}";
                     var data = $('#addInstallments').serializeArray();
                     var curr_install_number = document.getElementById("installment_number").value;
@@ -679,6 +701,8 @@
 
                             // Append the new row to the table body
                             tableBody.appendChild(newRow);
+
+                            installmentAmountRemaining.value -= data[data.length - 1]['installment_amount'].toFixed(2);
 
                             // Get overall total
                             for (var i = 0; i < data.length; i++) {
@@ -923,6 +947,19 @@
                     });
                 });
             </script> -->
+        </div>
+
+        <!-- Toast Message -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <strong class="ms-2 me-auto">Attention</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div id="toast-body" class="toast-body">
+                </div>
+            </div>
         </div>
     </div>
 </div>
