@@ -47,7 +47,7 @@
             display: none;
         }
 
-        #print-icon {
+        #finalizeButton {
             display: none;
         }
     </style>
@@ -78,6 +78,13 @@
             margin-bottom: 10px;
         }
     </style>
+
+    <!-- <input type="hidden" id="projectInfo" value="{{ project_info }}">
+    <input type="hidden" id="clientInfo" value="{{ client_info }}">
+    <input type="hidden" id="proposalNotes" value="{{ proposal_notes }}">
+    <input type="hidden" id="proposalTotal" value="{{ proposal_total }}">
+    <input type="hidden" id="proposalTotalWords" value="{{ proposal_total_words }}">
+    <input type="hidden" id="proposalInstallments" value="{{ proposal_installments }}"> -->
 
 </head>
 
@@ -193,7 +200,8 @@
                                 Payment {{ proposal_installment['installment_number'] }}:
                             </div>
                             <div class="col">
-                                {{ "${:,.2f}".format(proposal_installment['installment_amount'] | float) }} at {{
+                                {{ "${:,.2f}".format(proposal_installment['installment_amount'] | float ) }} at
+                                {{
                                 proposal_installment['installment_category'] }}
                             </div>
                         </div>
@@ -235,7 +243,48 @@
             </div>
         </div>
 
+        <div class="text-center my-3">
+            <button id="finalizeButton" class="btn btn-primary" onclick="window.print()">Create Proposal</button>
+            <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+            <script>
+                $(document).ready(function () {
+                    $("#finalizeButton").click(function () {
+                        console.log("hi");
+                        // var myData = {
+                        //     projectInfo: $("#projectInfo").val(),
+                        //     clientInfo: $("#clientInfo").val(),
+                        //     proposalNotes: $("#proposalNotes").val(),
+                        //     proposalTotal: parseFloat($("#proposalTotal").val()),
+                        //     proposalTotalWords: $("#proposalTotalWords").val(),
+                        //     proposalInstallments: $("#proposalInstallments").val(),
+                        // };
+
+                        // $.ajax({
+                        //     type: "POST",
+                        //     url: "/finalizeProposal", // Replace with your endpoint
+                        //     headers: {
+                        //         'Accept': 'application/json',
+                        //         'Content-Type': 'application/json'
+                        //     },
+                        //     data: JSON.stringify(myData),
+                        //     contentType: "application/json",
+                        //     success: function (response) {
+                        //         console.log(response); // For debugging
+                        //         // Handle the response from the server
+                        //         // Redirect to the PDF download link or show a success message
+                        //     },
+                        //     error: function (error) {
+                        //         console.error(error);
+                        //         // Handle errors
+                        //     }
+                        // });
+                    });
+                });
+            </script>
+        </div>
+
     </div>
+
 
 
 </body>

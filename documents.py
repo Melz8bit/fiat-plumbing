@@ -31,8 +31,8 @@ def upload_file(file_to_upload, upload_file_name, filetype):
         )
 
         return "File uploaded successfully"
-    except:
-        return "Something went wrong"
+    except Exception as e:
+        return f"Something went wrong - {e}"
 
 
 def download_file(doc_filename):

@@ -1,4 +1,5 @@
 import mimetypes
+import ast
 import json
 import os
 import urllib.parse
@@ -62,6 +63,7 @@ DAYS_UNTIL_DUE = 30
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
+app.jinja_env.filters["jsonify"] = jsonify
 
 engine = db_connect()
 
@@ -779,7 +781,14 @@ def view_invoice(project_id, invoice_number):
 @app.route("/createProposalPDF/<project_id>")
 @login_required
 def create_proposal_pdf(project_id):
-    project_info = database.get_project(project_id)
+    project_info_temp = database.get_project(project_id)
+    project_info = {}
+    project_info["project_id"] = project_info_temp["project_id"]
+    project_info["address"] = project_info_temp["address"]
+    project_info["city"] = project_info_temp["city"]
+    project_info["state"] = project_info_temp["state"]
+    project_info["zip_code"] = project_info_temp["zip_code"]
+
     client_info = database.get_project_client(project_id)
     proposal_fixtures = database.get_proposal_fixtures(project_id)
     proposal_installments = database.get_proposal_installments(project_id)
@@ -792,6 +801,14 @@ def create_proposal_pdf(project_id):
     proposal_total_words = num2words(proposal_total)
     proposal_total_words = proposal_total_words.replace(",", "")
 
+    # print(f"{type(project_info)=}")
+    # print(f"{type(client_info)=}")
+    # print(f"{type(proposal_fixtures)=}")
+    # print(f"{type(proposal_installments)=}")
+    # print(f"{type(proposal_notes)=}")
+    # print(f"{type(proposal_total)=}")
+    # print(f"{type(proposal_total_words)=}")
+
     return render_template(
         "proposal_print.html",
         project_info=project_info,
@@ -802,6 +819,35 @@ def create_proposal_pdf(project_id):
         proposal_total=proposal_total,
         proposal_total_words=proposal_total_words,
     )
+
+
+@app.route("/finalizeProposal", methods=["POST"])
+@login_required
+def finalize_proposal():
+    data_string = request.data.decode("utf-8")
+    data = json.loads(data_string)
+
+    # Access data from the dictionary
+    project_info = update_proposal_data("project", data["projectInfo"])
+    client_info = update_proposal_data("client", data["clientInfo"])
+    proposal_notes = update_proposal_data("notes", data["proposalNotes"])
+    proposal_total = data["proposalTotal"]
+    proposal_total_words = data["proposalTotalWords"]
+    proposal_installments = update_proposal_data(
+        "installments", data["proposalInstallments"]
+    )
+
+    html_content = render_template(
+        "proposal_print.html",
+        project_info=project_info,
+        client_info=client_info,
+        proposal_installments=proposal_installments,
+        proposal_notes=proposal_notes,
+        proposal_total=proposal_total,
+        proposal_total_words=proposal_total_words,
+    )
+
+    return "PDF generated successfully"
 
 
 ############## Helper Methods ##############
@@ -819,6 +865,34 @@ def fixtures_total(fixtures):
 def installments_total(installments):
     total = sum(installment["installment_amount"] for installment in installments)
     return total
+
+
+def update_proposal_data(data_type, proposal_data) -> list:
+    if data_type == "client" or data_type == "project":
+        # remove the curly braces from the string
+        string = proposal_data.strip("{}")
+
+        # split the string into key-value pairs
+        pairs = string.split(", ")
+
+        # use a dictionary comprehension to create
+        # the dictionary, converting the values to
+        # integers and removing the quotes from the keys
+        fixed_list = {
+            key[1:-1]: value[1:-1]
+            for key, value in (pair.split(": ") for pair in pairs)
+        }
+
+        return fixed_list
+
+    proposal_data = proposal_data.replace("}, {", "}}, {{")[1:-1]
+    temp = list(proposal_data.split("}, {"))
+    fixed_list = []
+    for x in temp:
+        x = x.replace("'", '"')
+        fixed_list.append(json.loads(x))
+
+    return fixed_list
 
 
 ############## Misc. ##############

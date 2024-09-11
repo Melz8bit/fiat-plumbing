@@ -140,7 +140,7 @@ def get_client(client_id):
 
         with engine.connect() as connection:
             client = connection.execute(text(f"{sqlQuery}"), queryParams)
-            client_dict = client.mappings().all()[0]
+            client_dict = dict(client.mappings().all()[0])
 
         return client_dict
 
@@ -295,7 +295,7 @@ def update_client(client_info):
 
 def get_project_client(project_id):
     project = get_project(project_id)
-    return get_client(project['client_id'])
+    return get_client(project["client_id"])
 
 
 ############## Project Queries ##############
@@ -335,7 +335,7 @@ def get_project(project_id):
 
         with engine.connect() as connection:
             project = connection.execute(text(f"{sqlQuery}"), query_params)
-            project_dict = project.mappings().all()[0]
+            project_dict = dict(project.mappings().all()[0])
 
         return project_dict
 
