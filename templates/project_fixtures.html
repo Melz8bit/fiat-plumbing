@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        /* #fixtureTable>tbody>tr>td {
+            background-color: white;
+        }
+
+        #fixtureTable>tbody>tr:nth-child(4n+1)>td,
+        #fixtureTable>tbody>tr:nth-child(4n+2)>td {
+            background-color: #F9F9F9;
+        } */
+    </style>
+</head>
+
+<body>
+    <!-- Fixtures -->
+    <div>
+        <table class="table table-striped" id="fixtureTable">
+            <thead>
+                <tr class="text-center">
+                    <th>Abbr.</th>
+                    <th class="text-start">Name</th>
+                    <th>Quantity</th>
+                    <th>Cost Per</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if fixtures|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="100%">
+                        No fixtures have been added to a proposal
+                    </td>
+                </tr>
+                {% else %}
+                {% for fixture in fixtures %}
+                <tr class="text-center">
+                    <td>{{ fixture['fixture_abbreviation'] }}</td>
+                    <td class="text-start">{{ fixture['fixture_name'] }}</td>
+                    <td>{{ fixture['quantity'] }}</td>
+                    <td>{{ "${:,.2f}".format(fixture['cost_per_fixture']) }}</td>
+                    <td>{{ "${:,.2f}".format(fixture['total_per_fixture']) }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+
+            <tfoot>
+                <td></td>
+                <td></td>
+                <td></td>
+                <th class="text-end">Project Total:</th>
+                <td class="text-center">{{ "${:,.2f}".format(fixtures_total) }}</td>
+            </tfoot>
+        </table>
+
+    </div>
+
+</body>
+
+</html>

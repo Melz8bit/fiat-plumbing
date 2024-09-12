@@ -79,8 +79,8 @@
         }
     </style>
 
-    <!-- <input type="hidden" id="projectInfo" value="{{ project_info }}">
-    <input type="hidden" id="clientInfo" value="{{ client_info }}">
+    <input type="hidden" id="projectInfo" value="{{ project_info }}">
+    <!-- <input type="hidden" id="clientInfo" value="{{ client_info }}">
     <input type="hidden" id="proposalNotes" value="{{ proposal_notes }}">
     <input type="hidden" id="proposalTotal" value="{{ proposal_total }}">
     <input type="hidden" id="proposalTotalWords" value="{{ proposal_total_words }}">
@@ -108,7 +108,7 @@
             </div>
         </div>
 
-        <div><strong>09/03/2024</strong></div>
+        <div><strong>{{ today_date | get_today_date }}</strong></div>
         <p></p>
 
         <strong>
@@ -249,35 +249,32 @@
             <script>
                 $(document).ready(function () {
                     $("#finalizeButton").click(function () {
-                        console.log("hi");
-                        // var myData = {
-                        //     projectInfo: $("#projectInfo").val(),
-                        //     clientInfo: $("#clientInfo").val(),
-                        //     proposalNotes: $("#proposalNotes").val(),
-                        //     proposalTotal: parseFloat($("#proposalTotal").val()),
-                        //     proposalTotalWords: $("#proposalTotalWords").val(),
-                        //     proposalInstallments: $("#proposalInstallments").val(),
-                        // };
+                        var myData = {
+                            projectInfo: $("#projectInfo").val(),
+                            //     clientInfo: $("#clientInfo").val(),
+                            //     proposalNotes: $("#proposalNotes").val(),
+                            //     proposalTotal: parseFloat($("#proposalTotal").val()),
+                            //     proposalTotalWords: $("#proposalTotalWords").val(),
+                            //     proposalInstallments: $("#proposalInstallments").val(),
+                        };
 
-                        // $.ajax({
-                        //     type: "POST",
-                        //     url: "/finalizeProposal", // Replace with your endpoint
-                        //     headers: {
-                        //         'Accept': 'application/json',
-                        //         'Content-Type': 'application/json'
-                        //     },
-                        //     data: JSON.stringify(myData),
-                        //     contentType: "application/json",
-                        //     success: function (response) {
-                        //         console.log(response); // For debugging
-                        //         // Handle the response from the server
-                        //         // Redirect to the PDF download link or show a success message
-                        //     },
-                        //     error: function (error) {
-                        //         console.error(error);
-                        //         // Handle errors
-                        //     }
-                        // });
+                        $.ajax({
+                            type: "POST",
+                            url: "/finalizeProposal", // Replace with your endpoint
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            data: JSON.stringify(myData),
+                            contentType: "application/json",
+                            success: function (response) {
+                                window.location = response;
+                            },
+                            error: function (error) {
+                                // console.error(error);
+                                // Handle errors
+                            }
+                        });
                     });
                 });
             </script>

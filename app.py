@@ -435,6 +435,7 @@ def project_view(project_id, new_project=False):
     proposal_fixtures = database.get_proposal_fixtures(project_id)
     proposal_installments = database.get_proposal_installments(project_id)
     proposal_notes = database.get_proposal_notes(project_id)
+    fixtures = database.get_project_fixtures(project_id)
 
     if new_project:
         flash("Project has been created")
@@ -659,6 +660,8 @@ def project_view(project_id, new_project=False):
         proposal_installments=proposal_installments,
         proposal_installments_total=installments_total(proposal_installments),
         proposal_notes=proposal_notes,
+        fixtures=fixtures,
+        fixtures_total=fixtures_total(fixtures),
     )
 
 
@@ -829,25 +832,18 @@ def finalize_proposal():
 
     # Access data from the dictionary
     project_info = update_proposal_data("project", data["projectInfo"])
-    client_info = update_proposal_data("client", data["clientInfo"])
-    proposal_notes = update_proposal_data("notes", data["proposalNotes"])
-    proposal_total = data["proposalTotal"]
-    proposal_total_words = data["proposalTotalWords"]
-    proposal_installments = update_proposal_data(
-        "installments", data["proposalInstallments"]
-    )
+    project_id = project_info["project_id"]
 
-    html_content = render_template(
-        "proposal_print.html",
-        project_info=project_info,
-        client_info=client_info,
-        proposal_installments=proposal_installments,
-        proposal_notes=proposal_notes,
-        proposal_total=proposal_total,
-        proposal_total_words=proposal_total_words,
-    )
+    # Create proposal in database
+    proposal_id = database.create_proposal(project_id)
 
-    return "PDF generated successfully"
+    # Update proposal items with proposal ID
+    database.update_proposal_items_id(project_id, proposal_id)
+
+    return url_for(
+        "project_view",
+        project_id=project_id,
+    )
 
 
 ############## Helper Methods ##############
@@ -1094,6 +1090,11 @@ def format_currency(value):
 @app.template_filter()
 def calculate_due_date(value):
     return (datetime.now() + timedelta(days=DAYS_UNTIL_DUE)).strftime("%m/%d/%Y")
+
+
+@app.template_filter()
+def get_today_date(value):
+    return datetime.now().date().strftime("%m/%d/%Y")
 
 
 if __name__ == "__main__":

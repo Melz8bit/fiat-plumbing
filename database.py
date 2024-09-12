@@ -1335,6 +1335,34 @@ def get_fixtures():
         return ""
 
 
+def get_project_fixtures(project_id):
+    try:
+        query_params = {
+            "project_id": project_id,
+        }
+
+        sqlQuery = (
+            "SELECT project_proposal_fixtures.*, matrix_fixtures.fixture_name AS fixture_name"
+            + " FROM project_proposal_fixtures"
+            + " INNER JOIN matrix_fixtures ON project_proposal_fixtures.fixture_abbreviation = matrix_fixtures.fixture_abbreviation"
+            + " WHERE project_id = :project_id"
+            + " ORDER BY fixture_id;"
+        )
+
+        with engine.connect() as connection:
+            fixtures = connection.execute(text(f"{sqlQuery}"), query_params)
+            try:
+                fixtures_dict = fixtures.mappings().all()
+            except:
+                fixtures_dict = ""
+
+        return fixtures_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return None
+
+
 def get_proposal_fixtures(project_id):
     try:
         sqlQuery = (
@@ -1547,6 +1575,88 @@ def delete_proposal_note(note_id):
             connection.commit()
 
         print("Note deleted")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def create_proposal(project_id):
+    try:
+        sqlQuery = "INSERT INTO project_proposal (project_id)" + " VALUES (:project_id)"
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Proposal created")
+
+        sqlQuery = (
+            "SELECT MAX(proposal_id)"
+            + " FROM project_proposal"
+            + " WHERE project_id = :project_id;"
+        )
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            proposal_id = connection.execute(text(f"{sqlQuery}"), query_params)
+            proposal_id = proposal_id.first()[0]
+
+        return proposal_id
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def update_proposal_items_id(project_id, proposal_id):
+    try:
+        query_params = {
+            "project_id": project_id,
+            "proposal_id": proposal_id,
+        }
+
+        # Update fixture table
+        sqlQuery = (
+            "UPDATE project_proposal_fixtures"
+            + " SET proposal_id = :proposal_id"
+            + " WHERE project_id = :project_id AND proposal_id = 0;"
+        )
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        # Update installments table
+        sqlQuery = (
+            "UPDATE project_proposal_installments"
+            + " SET proposal_id = :proposal_id"
+            + " WHERE project_id = :project_id AND proposal_id = 0;"
+        )
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        # Update notes table
+        sqlQuery = (
+            "UPDATE project_proposal_notes"
+            + " SET proposal_id = :proposal_id"
+            + " WHERE project_id = :project_id AND proposal_id = 0;"
+        )
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Proposal items updated")
 
     except Exception as e:
         print("Database Error:", e)
