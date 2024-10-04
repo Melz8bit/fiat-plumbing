@@ -158,6 +158,7 @@ def get_client_poc(client_id):
 
         with engine.connect() as connection:
             poc = connection.execute(text(f"{sqlQuery}"), query_params)
+
             poc_dict = poc.mappings().all()[0]
 
         return poc_dict
@@ -173,6 +174,7 @@ def get_all_clients():
             + " FROM clients"
             + " LEFT JOIN projects ON clients.client_id = projects.client_id"
             + " GROUP BY clients.client_id"
+            + " ORDER BY name"
         )
 
         with engine.connect() as connection:

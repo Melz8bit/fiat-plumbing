@@ -144,10 +144,10 @@ class ClientForm(FlaskForm):
 
 # Create new project
 class ProjectForm(FlaskForm):
-    client_options = []
-    for clients in get_all_clients():
-        client_info = (clients["client_id"], clients["name"])
-        client_options.append(client_info)
+    # client_options = []
+    # for clients in get_all_clients():
+    #     client_info = (clients["client_id"], clients["name"])
+    #     client_options.append(client_info)
 
     project_id = StringField(
         "Project ID",
@@ -161,7 +161,7 @@ class ProjectForm(FlaskForm):
     client = SelectField(
         "Client",
         validators=[DataRequired()],
-        choices=client_options,
+        # choices=client_options,
     )
     address = StringField(
         "Address",
@@ -185,6 +185,15 @@ class ProjectForm(FlaskForm):
         validators=[DataRequired()],
     )
     submit = SubmitField("Add Project")
+
+    @classmethod
+    def new(cls):
+        # Instantiate the form
+        form = cls()
+
+        # Update the choices for the agency field
+        form.agency.choices = get_all_clients()
+        return form
 
 
 class MasterPermitForm(FlaskForm):

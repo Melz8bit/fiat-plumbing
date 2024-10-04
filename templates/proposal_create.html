@@ -642,7 +642,7 @@
                 $("#btnAddInstallment").on("click", function (e) {
                     var installmentAmountRemaining = document.getElementById("installment_amount_remaining");
                     var installmentAmount = document.getElementById("installment_amount");
-                    if (installmentAmount.value > installmentAmountRemaining.value) {
+                    if (parseFloat(installmentAmount.value) > parseFloat(installmentAmountRemaining.value)) {
                         const toastLiveExample = document.getElementById('liveToast')
                         const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
                         var toastBody = document.getElementById('toast-body')
@@ -939,8 +939,8 @@
         </div>
     </div>
 </div>
-<div class="modal-footer">
-    <div id="createPDF" class="text-center mt-4">
+<div class="modal-footer text-center">
+    <div id="createPDF" class="mt-4">
         <a href="{{ url_for('create_proposal_pdf', project_id=project['project_id'] )}}" class="btn btn-primary">View
             PDF</a>
         <!-- <button id="btnCreateProposalPDF" class="btn btn-primary">Create Proposal</button> -->

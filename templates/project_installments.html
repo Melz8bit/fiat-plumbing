@@ -61,7 +61,11 @@
             </tfoot>
         </table>
 
+        {% if project_total > 0 %}
         {% set project_progress = (payments_total / project_total) * 100 %}
+        {% else %}
+        {% set project_progress = 0 %}
+        {% endif %}
         <table class="table table-striped">
             <thead class="text-center">
                 <th>Total Received</th>
@@ -81,8 +85,9 @@
                 <td colspan="100%">
                     <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="25"
                         aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar" style="width: {{ project_progress }}%">{{
-                            "{:,.2f}".format(project_progress) }}%</div>
+                        <div class="progress-bar" style="width: {{ project_progress }}%">
+                            {{ "{:,.2f}".format(project_progress) }}%
+                        </div>
                     </div>
                 </td>
             </tfoot>

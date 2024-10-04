@@ -682,6 +682,14 @@ def project_add(client_id=None):
 
     form = ProjectForm()
 
+    # Populate the form with an updated list of clients
+    clients = database.get_all_clients()
+    client_options = []
+    for client_option in clients:
+        client_info = (client_option["client_id"], client_option["name"])
+        client_options.append(client_info)
+    form.client.choices = client_options
+
     if form.validate_on_submit():
         project_id = form.project_id.data
         form.project_id.data = ""
