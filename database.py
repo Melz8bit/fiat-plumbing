@@ -1583,7 +1583,7 @@ def delete_proposal_note(note_id):
         return ""
 
 
-def create_proposal(project_id):
+def create_proposal(project_id, user_id):
     try:
         sqlQuery = "INSERT INTO project_proposal (project_id)" + " VALUES (:project_id)"
 
@@ -1610,6 +1610,8 @@ def create_proposal(project_id):
         with engine.connect() as connection:
             proposal_id = connection.execute(text(f"{sqlQuery}"), query_params)
             proposal_id = proposal_id.first()[0]
+
+        insert_note(project_id, "Proposal created", user_id)
 
         return proposal_id
 

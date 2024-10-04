@@ -812,14 +812,6 @@ def create_proposal_pdf(project_id):
     proposal_total_words = num2words(proposal_total)
     proposal_total_words = proposal_total_words.replace(",", "")
 
-    # print(f"{type(project_info)=}")
-    # print(f"{type(client_info)=}")
-    # print(f"{type(proposal_fixtures)=}")
-    # print(f"{type(proposal_installments)=}")
-    # print(f"{type(proposal_notes)=}")
-    # print(f"{type(proposal_total)=}")
-    # print(f"{type(proposal_total_words)=}")
-
     return render_template(
         "proposal_print.html",
         project_info=project_info,
@@ -843,7 +835,7 @@ def finalize_proposal():
     project_id = project_info["project_id"]
 
     # Create proposal in database
-    proposal_id = database.create_proposal(project_id)
+    proposal_id = database.create_proposal(project_id, session["user_id"])
 
     # Update proposal items with proposal ID
     database.update_proposal_items_id(project_id, proposal_id)
