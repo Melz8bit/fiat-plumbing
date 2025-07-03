@@ -198,6 +198,10 @@
                     type="button" role="tab" aria-controls="payments-tab-pane" aria-selected="false">Payments</button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="permits-tab" data-bs-toggle="tab" data-bs-target="#permits-tab-pane"
+                    type="button" role="tab" aria-controls="permits-tab-pane" aria-selected="false">Permits</button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="inspections-tab" data-bs-toggle="tab"
                     data-bs-target="#inspections-tab-pane" type="button" role="tab" aria-controls="inspections-tab-pane"
                     aria-selected="false">Inspections</button>
@@ -250,6 +254,23 @@
                 </div>
             </div>
 
+            <!-- Permits -->
+            <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
+                <div class="ratio ratio-16x9">
+                    <h4 class="w-100 text-center mt-4">Coming Soon</h4>
+                    <!-- {# {% include 'project_permits.html' %}#} -->
+                </div>
+            </div>
+
+            <!-- Inspections -->
+            <div class="tab-pane fade" id="inspections-tab-pane" role="tabpanel" aria-labelledby="inspections-tab"
+                tabindex="0">
+                <div class="ratio ratio-16x9">
+                    <h4 class="w-100 text-center mt-4">Coming Soon</h4>
+                    <!-- {# {% include 'project_inspections.html' %}#} -->
+                </div>
+            </div>
+
             <!-- Documents -->
             <div class="tab-pane fade" id="documents-tab-pane" role="tabpanel" aria-labelledby="documents-tab"
                 tabindex="0">
@@ -259,11 +280,11 @@
             </div>
 
             <!-- Permits -->
-            <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
+            <!-- <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
                 <div class="ratio ratio-16x9">
                     <h3>Coming Soon</h3>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
     {% include 'flash_message.html' %}
