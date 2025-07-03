@@ -388,10 +388,10 @@ def search():
 
     search_criteria = request.args["search_criteria"]
 
-    search_by = request.args["search_by"].lower()
+    search_by = request.args["search_by"]
 
-    if not search_by:
-        search_by = "project number"
+    # if not search_by:
+    #     search_by = "project address"
 
     results = database.search(search_by, search_criteria)
 

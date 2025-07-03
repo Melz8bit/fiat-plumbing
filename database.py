@@ -1279,14 +1279,21 @@ def get_document_types():
 
 ############## Search Queries ##############
 def search(search_by, search_criteria):
+    if not search_by:
+        search_by = "project address"
+
+    search_by = search_by.lower().strip()
+
+    print(f"{search_by=}")
+    print(f"{search_criteria=}")
     try:
-        # Default search is project number
+        # Default search is project address
         sqlQuery = (
             "SELECT projects.*, clients.name"
             + " FROM projects"
             + " INNER JOIN clients"
             + " ON projects.client_id = clients.client_id"
-            + " WHERE project_id = :search_criteria;"
+            + " WHERE projects.address LIKE '%'||:search_criteria||'%';"
         )
 
         if search_by == "client name":
@@ -1296,6 +1303,15 @@ def search(search_by, search_criteria):
                 + " INNER JOIN clients"
                 + " ON projects.client_id = clients.client_id"
                 + " WHERE clients.name LIKE '%'||:search_criteria||'%';"
+            )
+
+        if search_by == "project number":
+            sqlQuery = (
+                "SELECT projects.*, clients.name"
+                + " FROM projects"
+                + " INNER JOIN clients"
+                + " ON projects.client_id = clients.client_id"
+                + " WHERE project_id = :search_criteria;"
             )
 
         query_params = {
