@@ -1,0 +1,91 @@
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="addPermitModalHeader">Add Permit</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1">City/County</span>
+                <select class="form-select" name="document_type" id="document_type">
+                    <!-- TODO: Grab display values from the database -->
+                    <option value="">Something</option>
+                    <option value="">Else</option>
+                    <option value="">Another</option>
+                    <option value="">One other</option>
+                </select>
+                <button class="btn btn-primary">Go</button>
+            </div>
+
+            <div class="row">
+                <!-- Permit Number -->
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Permit #</span>
+                        <input type="text" class="form-control" aria-label="Permit Number">
+                    </div>
+                </div>
+
+                <!-- Permit Type -->
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Type</span>
+                        <select class="form-select" name="document_type" id="document_type">
+                            <option value="">Plumbing</option>
+                            <option value="">Master</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Status Selection -->
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Status</span>
+                        <select class="form-select" name="document_type" id="cityCountySelect">
+                            <!-- TODO: Grab display values from the database -->
+                            <option value="">Something</option>
+                            <option value="">Else</option>
+                            <option value="">Another</option>
+                            <option value="">One other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Status Date -->
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Status Date</span>
+                        <input id="statusDate" type="date" class="form-control" placeholder="Today"
+                            aria-label="Status Date">
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <span class="input-group-text">Notes</span>
+                <textarea class="form-control" aria-label="Permit Notes" style="resize:none;"></textarea>
+            </div>
+
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get today's date
+    const today = new Date();
+
+    // Format the date as yyyy-mm-dd (required for input type="date")
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Add leading zero if needed
+    const day = today.getDate().toString().padStart(2, '0'); // Add leading zero if needed
+    const formattedDate = `${year}-${month}-${day}`;
+
+    // Set the value of the input field
+    document.getElementById('statusDate').value = formattedDate; 
+</script>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Permits -->
+    <div>
+        <!-- Button trigger modal -->
+        <div class="text-end mt-2">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPermitModal">
+                Add Permit
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="addPermitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                aria-labelledby="addPermitModalHeader" aria-hidden="true">
+                {% include 'permits_modal.html' %}
+            </div>
+        </div>
+
+        <table class="table table-striped mt-2">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th class="text-center">Permit #</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Status Date</th>
+                    <th class="text-center">Follow-Up Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+
+            </tbody>
+        </table>
+    </div>
+
+</body>
+
+</html>
