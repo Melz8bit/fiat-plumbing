@@ -1683,6 +1683,82 @@ def update_proposal_items_id(project_id, proposal_id):
         return ""
 
 
+############## Permit Queries ##############
+def get_permit_add_information():
+    try:
+        sqlQuery = (
+            "SELECT city_county, website, follow_up_days"
+            + " FROM matrix_permits_request"
+            + " ORDER BY city_county;"
+        )
+
+        with engine.connect() as connection:
+            permit_req_info = connection.execute(text(f"{sqlQuery}"))
+            permit_req_info_list = [x.document_type for x in permit_req_info]
+
+        return permit_req_info_list
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_project_permits(project_id):
+    try:
+        query_params = {
+            "project_id": project_id,
+        }
+
+        sqlQuery = (
+            "SELECT *"
+            + " FROM project_permits"
+            + " WHERE project_id = :project_id"
+            + " ORDER BY created_at DESC;"
+        )
+
+        with engine.connect() as connection:
+            permits = connection.execute(text(f"{sqlQuery}"), query_params)
+            try:
+                permits_dict = permits.mappings().all()
+            except:
+                permits_dict = ""
+
+        return permits_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return None
+
+
+def add_permit(permit_info):
+    try:
+        sqlQuery = (
+            "INSERT INTO project_permits (project_id, permit_number, type, status, status_date, follow_up_date, user_id, notes)"
+            + " VALUES (:project_id, :permit_number, :type, :status, :status_date, :follow_up_date, :user_id, :notes)"
+        )
+
+        query_params = {
+            "project_id": permit_info["project_id"],
+            "permit_number": permit_info["permit_number"],
+            "type": permit_info["typer"],
+            "status": permit_info["status"],
+            "status_date": permit_info["status_date"],
+            "follow_up_date": permit_info["follow_up_date"],
+            "user_id": permit_info["user_id"],
+            "notes": permit_info["notes"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Permit added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 ############## Misc. Queries ##############
 def get_city_state_county(zip_code):
     try:
