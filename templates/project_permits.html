@@ -30,7 +30,8 @@
             <thead>
                 <tr>
                     <th>Type</th>
-                    <th class="text-center">Permit #</th>
+                    <th>Permit #</th>
+                    <th>City/County</th>
                     <th class="text-center">Status</th>
                     <th class="text-center">Status Date</th>
                     <th class="text-center">Follow-Up Date</th>
@@ -38,8 +39,24 @@
             </thead>
 
             <tbody>
-
-
+                {% if permits|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="100%">
+                        No permits have been attached
+                    </td>
+                </tr>
+                {% else %}
+                {% for permit in permits %}
+                <tr>
+                    <td>{{ permit['type'] }}</td>
+                    <td>{{ permit['permit_number'] }}</td>
+                    <td>{{ permit['city_county'] }}</td>
+                    <td class="text-center">{{ permit['status'] }}</td>
+                    <td class="text-center">{{ permit['status_date'].strftime('%m/%d/%Y') }}</td>
+                    <td class="text-center">{{ permit['follow_up_date'].strftime('%m/%d/%Y') }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>

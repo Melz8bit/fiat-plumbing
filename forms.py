@@ -25,6 +25,7 @@ from database import (
     get_project_statuses,
     get_fixtures,
     get_installment_categories,
+    get_permit_add_information,
 )
 
 STATE_OPTIONS = [
@@ -370,13 +371,6 @@ class ProposalNotesForm(FlaskForm):
 
 
 class PermitsAddForm(FlaskForm):
-    # project_id = HiddenField(
-    #     "Project ID",
-    # )
-    # user_id = HiddenField(
-    #     "User ID",
-    #     validators=[DataRequired()],
-    # )
     permit_number = StringField(
         "Permit #",
     )
@@ -398,5 +392,10 @@ class PermitsAddForm(FlaskForm):
     note = TextAreaField(
         "Note",
         render_kw={"style": "resize:none"},
+    )
+    city_county = SelectField(
+        "City/County",
+        validators=[DataRequired()],
+        choices=get_permit_add_information(),
     )
     submit = SubmitField("Submit")
