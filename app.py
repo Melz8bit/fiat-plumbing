@@ -437,6 +437,7 @@ def project_view(project_id, new_project=False):
     proposal_installments = database.get_proposal_installments(project_id)
     proposal_notes = database.get_proposal_notes(project_id)
     fixtures = database.get_project_fixtures(project_id)
+    permits = database.get_project_permits(project_id)
 
     if new_project:
         flash("Project has been created")
@@ -597,6 +598,25 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{apply_payment_form.errors=}")
 
+    if permit_add_form.validate_on_submit():
+        permit_info = {
+            "project_id": project_id,
+            "permit_number": permit_add_form.permit_number.data,
+            "type": permit_add_form.permit_type.data,
+            "status": permit_add_form.permit_status.data,
+            "status_date": permit_add_form.permit_status_date.data,
+            "follow_up_date": None,
+            # "follow_up_date": permit_add_form.follow_up_date.data,
+            "user_id": session["user_id"],
+            "note": permit_add_form.note.data,
+        }
+
+        database.add_permit(permit_info)
+
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{permit_add_form.errors=}")
+
     if invoice_create_form.validate_on_submit():
         selected_installments = request.form.getlist("installment_select")
 
@@ -665,6 +685,7 @@ def project_view(project_id, new_project=False):
         proposal_notes=proposal_notes,
         fixtures=fixtures,
         fixtures_total=fixtures_total(fixtures),
+        permits=permits,
     )
 
 
@@ -1060,6 +1081,33 @@ def delete_proposal_note(note_id, project_id):
     database.delete_proposal_note(note_id)
 
     return get_all_proposal_notes(project_id)
+
+
+@app.route("/addPermit", methods=["POST"])
+def add_permit():
+    # Decode the bytes to a string
+    serialized_data = request.data.decode("utf-8")
+
+    # Parse the query string into a dictionary
+    parsed_data = urllib.parse.parse_qs(serialized_data)
+
+    # Convert the dictionary values to strings (if needed)
+    for key, value in parsed_data.items():
+        parsed_data[key] = value[0]
+
+    database.add_proposal_note(parsed_data)
+
+    notes_added = []
+    notes = database.get_proposal_notes(parsed_data["project_id"])
+
+    for note in notes:
+        notes_added.append(
+            {
+                "note_id": note["note_id"],
+                "note": note["note"],
+            }
+        )
+    return jsonify(notes_added)
 
 
 def get_all_proposal_notes(project_id):

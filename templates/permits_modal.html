@@ -4,12 +4,12 @@
             <h5 class="modal-title" id="addPermitModalHeader">Add Permit</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form>
+        <form id="permitAddForm" method="POST" enctype="multipart/form-data">
             {{ permit_add_form.hidden_tag() }}
             <div class="modal-body">
                 <div class="input-group mb-3">
                     <span class="input-group-text" id="basic-addon1">City/County</span>
-                    <select class="form-select" name="document_type" id="document_type">
+                    <select class="form-select" name="permit_city_county" id="permit_city_county">
                         <!-- TODO: Grab display values from the database -->
                         <option value="">Something</option>
                         <option value="">Else</option>
@@ -34,10 +34,14 @@
                     <div class="col">
                         <div class="input-group mb-3">
                             <!-- <span class="input-group-text">Type</span> -->
-                            {{ permit_add_form.permit_types.label(class="input-group-text") }}
-                            <select class="form-select" name="document_type" id="document_type">
-                                <option value="">Plumbing</option>
-                                <option value="">Master</option>
+                            {{ permit_add_form.permit_type.label(class="input-group-text") }}
+                            <select class="form-select" name="permit_type" id="permit_type">
+                                {% for option in permit_add_form.permit_type %}
+                                {% if loop.first %}
+                                <option selected disabled value="">Select Type</option>
+                                {% endif %}
+                                {{ option }}
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -49,7 +53,7 @@
                         <div class="input-group mb-3">
                             <!-- <span class="input-group-text">Status</span> -->
                             {{ permit_add_form.permit_status.label(class="input-group-text") }}
-                            <select class="form-select" name="document_type" id="cityCountySelect">
+                            <select class="form-select" name="permit_status" id="permit_status">
                                 {% for option in permit_add_form.permit_status %}
                                 {% if loop.first %}
                                 <option selected disabled value="">Select Status</option>

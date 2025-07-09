@@ -1733,19 +1733,19 @@ def get_project_permits(project_id):
 def add_permit(permit_info):
     try:
         sqlQuery = (
-            "INSERT INTO project_permits (project_id, permit_number, type, status, status_date, follow_up_date, user_id, notes)"
-            + " VALUES (:project_id, :permit_number, :type, :status, :status_date, :follow_up_date, :user_id, :notes)"
+            "INSERT INTO project_permits (project_id, permit_number, type, status, status_date, follow_up_date, user_id, note)"
+            + " VALUES (:project_id, :permit_number, :type, :status, :status_date, :follow_up_date, :user_id, :note)"
         )
 
         query_params = {
             "project_id": permit_info["project_id"],
             "permit_number": permit_info["permit_number"],
-            "type": permit_info["typer"],
+            "type": permit_info["type"],
             "status": permit_info["status"],
             "status_date": permit_info["status_date"],
             "follow_up_date": permit_info["follow_up_date"],
             "user_id": permit_info["user_id"],
-            "notes": permit_info["notes"],
+            "note": permit_info["note"],
         }
 
         with engine.connect() as connection:
