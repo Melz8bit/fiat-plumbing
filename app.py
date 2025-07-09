@@ -1083,33 +1083,6 @@ def delete_proposal_note(note_id, project_id):
     return get_all_proposal_notes(project_id)
 
 
-@app.route("/addPermit", methods=["POST"])
-def add_permit():
-    # Decode the bytes to a string
-    serialized_data = request.data.decode("utf-8")
-
-    # Parse the query string into a dictionary
-    parsed_data = urllib.parse.parse_qs(serialized_data)
-
-    # Convert the dictionary values to strings (if needed)
-    for key, value in parsed_data.items():
-        parsed_data[key] = value[0]
-
-    database.add_proposal_note(parsed_data)
-
-    notes_added = []
-    notes = database.get_proposal_notes(parsed_data["project_id"])
-
-    for note in notes:
-        notes_added.append(
-            {
-                "note_id": note["note_id"],
-                "note": note["note"],
-            }
-        )
-    return jsonify(notes_added)
-
-
 def get_all_proposal_notes(project_id):
     notes_added = []
     notes = database.get_proposal_notes(project_id)
