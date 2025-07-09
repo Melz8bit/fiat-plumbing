@@ -367,3 +367,33 @@ class ProposalNotesForm(FlaskForm):
         "Note ID",
     )
     note = StringField("Note")
+
+
+class PermitsAddForm(FlaskForm):
+    project_id = HiddenField(
+        "Project ID",
+    )
+    user_id = HiddenField(
+        "User ID",
+        validators=[DataRequired()],
+    )
+    permit_number = StringField(
+        "Permit #",
+    )
+    permit_types = SelectField(
+        "Type",
+        validators=[DataRequired()],
+        choices=["Plumbing", "Master"],
+    )
+    permit_status = SelectField(
+        "Status",
+        validators=[DataRequired()],
+        choices=["Requested", "Pending", "Approved", "Rejected"],
+    )
+    permit_status_date = DateField(
+        "Status Date",
+        validators=[DataRequired()],
+        default=datetime.date.today(),
+    )
+    note = TextAreaField("Note")
+    submit = SubmitField("Submit")

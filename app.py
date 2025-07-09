@@ -47,6 +47,7 @@ from forms import (
     ProposalFixturesForm,
     ProposalInstallmentsForm,
     ProposalNotesForm,
+    PermitsAddForm,
 )
 from models import users
 
@@ -451,6 +452,7 @@ def project_view(project_id, new_project=False):
     proposal_fixtures_form = ProposalFixturesForm()
     proposal_installments_form = ProposalInstallmentsForm()
     proposal_notes_form = ProposalNotesForm()
+    permit_add_form = PermitsAddForm()
 
     # Variable Initialization
     document_type = None
@@ -648,6 +650,7 @@ def project_view(project_id, new_project=False):
         proposal_fixtures_form=proposal_fixtures_form,
         proposal_installments_form=proposal_installments_form,
         proposal_notes_form=proposal_notes_form,
+        permit_add_form=permit_add_form,
         payment_info=payment_info,
         payments_received_total=payments_received_total,
         open_invoices=open_invoices,
