@@ -1694,9 +1694,18 @@ def get_permit_add_information():
 
         with engine.connect() as connection:
             permit_req_info = connection.execute(text(f"{sqlQuery}"))
-            permit_req_info_list = [x.document_type for x in permit_req_info]
 
-        return permit_req_info_list
+            try:
+                permit_req_info_mappings = permit_req_info.mappings().all()
+            except:
+                permit_req_info_mappings = ""
+
+            # permit_req_info_list = []
+            # for row in permit_req_info_mappings:
+            #     row = dict(row)
+            #     permit_req_info_list.append(row)
+
+        return permit_req_info
 
     except Exception as e:
         print("Database Error:", e)

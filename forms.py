@@ -18,6 +18,7 @@ from wtforms import (
 )
 from flask_wtf.file import FileField, FileRequired
 from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
+from wtforms_sqlalchemy.fields import QuerySelectField
 
 from database import (
     get_all_clients,
@@ -393,9 +394,16 @@ class PermitsAddForm(FlaskForm):
         "Note",
         render_kw={"style": "resize:none"},
     )
-    city_county = SelectField(
+    # city_county = SelectField(
+    #     "City/County",
+    #     validators=[DataRequired()],
+    #     choices=list(get_permit_add_information()),
+    # )
+    city_county = QuerySelectField(
         "City/County",
-        validators=[DataRequired()],
-        choices=get_permit_add_information(),
+        query_factory=get_permit_add_information,  # Function to retrieve choices
+        get_label="city_county",  # Attribute to use for displaying options
+        allow_blank=True,
+        blank_text="-- Select an option --",
     )
     submit = SubmitField("Submit")

@@ -8,14 +8,23 @@
             {{ permit_add_form.hidden_tag() }}
             <div class="modal-body">
                 <div class="input-group mb-3">
-                    <span class="input-group-text" id="basic-addon1">City/County</span>
+                    <!-- <span class="input-group-text" id="basic-addon1">City/County</span>
                     <select class="form-select" name="permit_city_county" id="permit_city_county">
-                        <!-- TODO: Grab display values from the database -->
                         <option value="">Something</option>
                         <option value="">Else</option>
                         <option value="">Another</option>
                         <option value="">One other</option>
-                    </select>
+                    </select> -->
+                    {{ permit_add_form.city_county.label(class="input-group-text") }}
+                    {{ permit_add_form.city_county(class="form-select") }}
+                    <!-- <select class="form-select" name="city_county" id="city_county">
+                        {% for option in permit_add_form.city_county %}
+                        {% if loop.first %}
+                        <option selected disabled value="">Select City/County</option>
+                        {% endif %}
+                        {{ option }}
+                        {% endfor %}
+                    </select> -->
                     <button class="btn btn-primary" type="button">Go</button>
                 </div>
 
