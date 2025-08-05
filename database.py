@@ -1687,9 +1687,7 @@ def update_proposal_items_id(project_id, proposal_id):
 def get_permit_add_information():
     try:
         sqlQuery = (
-            "SELECT city_county, website, follow_up_days"
-            + " FROM matrix_permits_request"
-            + " ORDER BY city_county;"
+            "SELECT *" + " FROM matrix_permits_request" + " ORDER BY city_county;"
         )
 
         with engine.connect() as connection:
@@ -1700,12 +1698,14 @@ def get_permit_add_information():
             except:
                 permit_req_info_mappings = ""
 
+            print(f"{type(permit_req_info_mappings)=}")
+
             # permit_req_info_list = []
             # for row in permit_req_info_mappings:
             #     row = dict(row)
             #     permit_req_info_list.append(row)
 
-        return permit_req_info
+        return permit_req_info_mappings
 
     except Exception as e:
         print("Database Error:", e)

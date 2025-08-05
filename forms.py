@@ -394,16 +394,12 @@ class PermitsAddForm(FlaskForm):
         "Note",
         render_kw={"style": "resize:none"},
     )
-    # city_county = SelectField(
-    #     "City/County",
-    #     validators=[DataRequired()],
-    #     choices=list(get_permit_add_information()),
-    # )
     city_county = QuerySelectField(
         "City/County",
         query_factory=get_permit_add_information,  # Function to retrieve choices
         get_label="city_county",  # Attribute to use for displaying options
         allow_blank=True,
         blank_text="-- Select an option --",
+        get_pk=lambda x: x.id,
     )
     submit = SubmitField("Submit")
