@@ -1712,8 +1712,10 @@ def get_project_permits(project_id):
         }
 
         sqlQuery = (
-            "SELECT *"
+            "SELECT project_permits.*, matrix_permits_request.city_county"
             + " FROM project_permits"
+            + " LEFT JOIN matrix_permits_request"
+            + " ON project_permits.city_county_id = matrix_permits_request.id"
             + " WHERE project_id = :project_id"
             + " ORDER BY created_at DESC;"
         )
