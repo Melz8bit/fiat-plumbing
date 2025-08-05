@@ -478,6 +478,11 @@ def project_view(project_id, new_project=False):
     for payment in project_payments:
         payments_total += payment["payment_amount"]
 
+    # Create a dictionary mapping the city/county ID to its website URL
+    permit_websites = {
+        str(item.id): item.website for item in database.get_permit_add_information()
+    }
+
     if invoices:
         for invoice in invoices:
             payment = database.get_invoice_payments(invoice["invoice_id"])
@@ -687,6 +692,7 @@ def project_view(project_id, new_project=False):
         fixtures=fixtures,
         fixtures_total=fixtures_total(fixtures),
         permits=permits,
+        permit_websites=permit_websites,
     )
 
 
