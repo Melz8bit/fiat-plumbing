@@ -9,7 +9,7 @@
             <div class="modal-body">
                 <!-- Permit City/County -->
                 <div class="input-group mb-3">
-                    <select class="form-select" name="city_county" id="city_county">
+                    <select class="form-select" name="city_county" id="city_county" required>
                         {% for option in permit_add_form.city_county %}
                         {% if loop.first %}
                         <option selected disabled value="">Select City/County</option>
@@ -27,7 +27,7 @@
                             <!-- <span class="input-group-text">Permit #</span> -->
                             <!-- <input type="text" class="form-control" aria-label="Permit Number"> -->
                             {{ permit_add_form.permit_number.label(class="input-group-text") }}
-                            {{ permit_add_form.permit_number(class="form-control") }}
+                            {{ permit_add_form.permit_number(class="form-control", required=True) }}
                         </div>
                     </div>
 
@@ -36,7 +36,7 @@
                         <div class="input-group mb-3">
                             <!-- <span class="input-group-text">Type</span> -->
                             {{ permit_add_form.permit_type.label(class="input-group-text") }}
-                            <select class="form-select" name="permit_type" id="permit_type">
+                            <select class="form-select" name="permit_type" id="permit_type" required>
                                 {% for option in permit_add_form.permit_type %}
                                 {% if loop.first %}
                                 <option selected disabled value="">Select Type</option>
@@ -54,7 +54,7 @@
                         <div class="input-group mb-3">
                             <!-- <span class="input-group-text">Status</span> -->
                             {{ permit_add_form.permit_status.label(class="input-group-text") }}
-                            <select class="form-select" name="permit_status" id="permit_status">
+                            <select class="form-select" name="permit_status" id="permit_status" required>
                                 {% for option in permit_add_form.permit_status %}
                                 {% if loop.first %}
                                 <option selected disabled value="">Select Status</option>

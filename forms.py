@@ -398,8 +398,8 @@ class PermitsAddForm(FlaskForm):
         "City/County",
         query_factory=get_permit_add_information,  # Function to retrieve choices
         get_label="city_county",  # Attribute to use for displaying options
-        allow_blank=True,
-        blank_text="-- Select an option --",
+        allow_blank=False,
+        blank_text="-- Select City/County --",
         get_pk=lambda x: x.id,
     )
     submit = SubmitField("Submit")
