@@ -605,10 +605,11 @@ def project_view(project_id, new_project=False):
             "type": permit_add_form.permit_type.data,
             "status": permit_add_form.permit_status.data,
             "status_date": permit_add_form.permit_status_date.data,
-            "follow_up_date": None,
+            # "follow_up_date": None,
             # "follow_up_date": permit_add_form.follow_up_date.data,
             "user_id": session["user_id"],
             "note": permit_add_form.note.data,
+            "city_county_id": permit_add_form.city_county.data["id"],
         }
 
         database.add_permit(permit_info)

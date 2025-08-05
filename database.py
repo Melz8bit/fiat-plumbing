@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 import MySQLdb
 from dotenv import load_dotenv
@@ -1698,13 +1698,6 @@ def get_permit_add_information():
             except:
                 permit_req_info_mappings = ""
 
-            print(f"{type(permit_req_info_mappings)=}")
-
-            # permit_req_info_list = []
-            # for row in permit_req_info_mappings:
-            #     row = dict(row)
-            #     permit_req_info_list.append(row)
-
         return permit_req_info_mappings
 
     except Exception as e:
@@ -1742,8 +1735,8 @@ def get_project_permits(project_id):
 def add_permit(permit_info):
     try:
         sqlQuery = (
-            "INSERT INTO project_permits (project_id, permit_number, type, status, status_date, follow_up_date, user_id, note)"
-            + " VALUES (:project_id, :permit_number, :type, :status, :status_date, :follow_up_date, :user_id, :note)"
+            "INSERT INTO project_permits (project_id, permit_number, type, status, status_date, follow_up_date, user_id, note, city_county_id)"
+            + " VALUES (:project_id, :permit_number, :type, :status, :status_date, :follow_up_date, :user_id, :note, :city_county_id)"
         )
 
         query_params = {
@@ -1752,9 +1745,12 @@ def add_permit(permit_info):
             "type": permit_info["type"],
             "status": permit_info["status"],
             "status_date": permit_info["status_date"],
-            "follow_up_date": permit_info["follow_up_date"],
+            "follow_up_date": permit_follow_up_date(
+                permit_info["status_date"], permit_info["city_county_id"]
+            ),
             "user_id": permit_info["user_id"],
             "note": permit_info["note"],
+            "city_county_id": permit_info["city_county_id"],
         }
 
         with engine.connect() as connection:
@@ -1762,6 +1758,33 @@ def add_permit(permit_info):
             connection.commit()
 
         print("Permit added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def permit_follow_up_date(status_date, city_county_id):
+    try:
+        sqlQuery = (
+            "SELECT follow_up_days"
+            + " FROM matrix_permits_request"
+            + " WHERE id = :id;"
+        )
+
+        query_params = {
+            "id": city_county_id,
+        }
+
+        with engine.connect() as connection:
+            follow_up_days = connection.execute(
+                text(f"{sqlQuery}"),
+                query_params,
+            ).first()
+
+            follow_up_date = status_date + timedelta(days=follow_up_days[0])
+
+        return follow_up_date
 
     except Exception as e:
         print("Database Error:", e)
