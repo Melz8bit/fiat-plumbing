@@ -35,6 +35,7 @@
                     <th class="text-center">Status</th>
                     <th class="text-center">Status Date</th>
                     <th class="text-center">Follow-Up Date</th>
+                    <th></th>
                 </tr>
             </thead>
 
@@ -51,10 +52,51 @@
                     <td>{{ permit['type'] }}</td>
                     <td>{{ permit['permit_number'] }}</td>
                     <td>{{ permit['city_county'] }}</td>
-                    <td class="text-center">{{ permit['status'] }}</td>
+                    <td class="text-center">
+                        <div id="lblPermitStatus{{ permit['id'] }}">
+                            {{ permit['status'] }}
+                        </div>
+
+                        <select id="selectPermitStatus{{ permit['id'] }}" class="form-select form-select-sm d-none"
+                            name="permit_status">
+                            {% for option in permit_add_form.permit_status %}
+                            {% if loop.first %}
+                            <option selected disabled value="">Select Status</option>
+                            {% endif %}
+                            {{ option }}
+                            {% endfor %}
+                        </select>
+                    </td>
                     <td class="text-center">{{ permit['status_date'].strftime('%m/%d/%Y') }}</td>
                     <td class="text-center">{{ permit['follow_up_date'].strftime('%m/%d/%Y') }}</td>
+                    <td>
+                        <div class="d-flex justify-content-around">
+                            <button id="btnUpdateSavePermit{{ permit['id'] }}" class="btn btn-primary btn-sm"
+                                onclick="updatePermit({{ permit['id'] }})" type="button">Update</button>
+                            <script>
+                                function updatePermit(permitID) {
+                                    const btnUpdateSavePermit = document.getElementById("btnUpdateSavePermit" + permitID);
+                                    const lblPermitStatus = document.getElementById("lblPermitStatus" + permitID);
+                                    const selectPermitStatus = document.getElementById("selectPermitStatus" + permitID);
+
+                                    if (btnUpdateSavePermit.innerText == "Update") {
+                                        btnUpdateSavePermit.innerText = "Save";
+                                        lblPermitStatus.classList.add("d-none");
+                                        selectPermitStatus.classList.remove("d-none");
+                                    }
+                                    else {
+                                        btnUpdateSavePermit.innerText = "Update";
+                                        lblPermitStatus.classList.remove("d-none");
+                                        selectPermitStatus.classList.add("d-none");
+                                        console.log(selectPermitStatus.value);
+                                        selectPermitStatus.value = '';
+                                    }
+                                }
+                            </script>
+                        </div>
+                    </td>
                 </tr>
+
                 {% endfor %}
                 {% endif %}
             </tbody>
