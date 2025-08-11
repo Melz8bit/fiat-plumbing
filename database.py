@@ -1734,6 +1734,35 @@ def get_project_permits(project_id):
         return None
 
 
+def get_permit_by_id(permit_id):
+    try:
+        query_params = {
+            "permit_id": permit_id,
+        }
+
+        sqlQuery = (
+            "SELECT project_permits.*, matrix_permits_request.city_county"
+            + " FROM project_permits"
+            + " LEFT JOIN matrix_permits_request"
+            + " ON project_permits.city_county_id = matrix_permits_request.id"
+            + " WHERE project_permits.id = :permit_id"
+            + " ORDER BY created_at DESC;"
+        )
+
+        with engine.connect() as connection:
+            permits = connection.execute(text(f"{sqlQuery}"), query_params)
+            try:
+                permits_dict = permits.mappings().first()
+            except:
+                permits_dict = ""
+
+        return permits_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return None
+
+
 def add_permit(permit_info):
     try:
         sqlQuery = (
@@ -1760,6 +1789,45 @@ def add_permit(permit_info):
             connection.commit()
 
         print("Permit added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def update_permit(permit_id, status):
+    try:
+        sqlQuery = "SELECT city_county_id FROM project_permits WHERE id = :permit_id"
+
+        query_params = {
+            "permit_id": permit_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            city_county_id = result.mappings().first()
+            connection.commit()
+
+        sqlQuery = (
+            "UPDATE project_permits "
+            + " SET status = :status, status_date = :status_date, follow_up_date = :follow_up_date"
+            + " WHERE id = :permit_id"
+        )
+
+        query_params = {
+            "status": status,
+            "status_date": date.today(),
+            "follow_up_date": permit_follow_up_date(
+                date.today(), city_county_id["city_county_id"]
+            ),
+            "permit_id": permit_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Permit updated")
 
     except Exception as e:
         print("Database Error:", e)

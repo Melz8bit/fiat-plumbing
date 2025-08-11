@@ -439,6 +439,8 @@ def project_view(project_id, new_project=False):
     fixtures = database.get_project_fixtures(project_id)
     permits = database.get_project_permits(project_id)
 
+    session["project_id"] = project_id
+
     if new_project:
         flash("Project has been created")
 
@@ -875,6 +877,39 @@ def finalize_proposal():
         "project_view",
         project_id=project_id,
     )
+
+
+@app.route("/project/permits/update-permit-status", methods=["POST"])
+@login_required
+def update_permit_status():
+    if request.is_json:
+        data = request.get_json()
+        permit_id = data.get("permit_id")
+        new_status = data.get("new_status")
+
+        if not permit_id or not new_status:
+            return jsonify({"error": "Missing permit ID or status"}), 400
+
+        try:
+            # Find the permit by ID
+            permit = database.get_permit_by_id(permit_id)
+            if permit:
+                # Update the status on the database
+                database.update_permit(permit_id, new_status)
+                return (
+                    jsonify(
+                        {
+                            "success": True,
+                            "message": "Permit status updated successfully",
+                        }
+                    ),
+                    200,
+                )
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+        return jsonify({"error": "Invalid request"}), 400
 
 
 ############## Helper Methods ##############
