@@ -895,7 +895,7 @@ def update_permit_status():
             permit = database.get_permit_by_id(permit_id)
             if permit:
                 # Update the status on the database
-                database.update_permit(permit_id, new_status)
+                database.update_permit(permit_id, new_status, session["user_id"])
                 return (
                     jsonify(
                         {

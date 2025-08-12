@@ -1795,7 +1795,7 @@ def add_permit(permit_info):
         return ""
 
 
-def update_permit(permit_id, status):
+def update_permit(permit_id, status, user_id):
     try:
         sqlQuery = "SELECT city_county_id FROM project_permits WHERE id = :permit_id"
 
@@ -1810,13 +1810,14 @@ def update_permit(permit_id, status):
 
         sqlQuery = (
             "UPDATE project_permits "
-            + " SET status = :status, status_date = :status_date, follow_up_date = :follow_up_date"
+            + " SET status = :status, status_date = :status_date, follow_up_date = :follow_up_date, user_id = :user_id"
             + " WHERE id = :permit_id"
         )
 
         query_params = {
             "status": status,
             "status_date": date.today(),
+            "user_id": user_id,
             "follow_up_date": permit_follow_up_date(
                 date.today(), city_county_id["city_county_id"]
             ),
