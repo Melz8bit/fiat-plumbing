@@ -199,11 +199,11 @@ class ProjectForm(FlaskForm):
 
 
 class ProjectNotesForm(FlaskForm):
-    note = TextAreaField(
+    project_note = TextAreaField(
         "Note",
         render_kw={"style": "resize:none"},
     )
-    submit = SubmitField("Submit")
+    project_note_submit = SubmitField("Submit")
 
 
 class MasterPermitForm(FlaskForm):
@@ -398,7 +398,7 @@ class PermitsAddForm(FlaskForm):
         validators=[DataRequired()],
         default=datetime.date.today(),
     )
-    note = TextAreaField(
+    permit_note = TextAreaField(
         "Note",
         render_kw={"style": "resize:none"},
     )
@@ -410,4 +410,4 @@ class PermitsAddForm(FlaskForm):
         blank_text="Select City/County",
         get_pk=lambda x: x.id,
     )
-    submit = SubmitField("Submit")
+    permit_add_submit = SubmitField("Submit")

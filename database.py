@@ -572,7 +572,7 @@ def get_notes(project_id):
         return ""
 
 
-def add_note(note_info):
+def add_project_note(note_info):
     try:
         sqlQuery = (
             "INSERT INTO project_notes (project_id, comment, comment_date, user_id)"
@@ -1781,7 +1781,7 @@ def add_permit(permit_info):
                 permit_info["status_date"], permit_info["city_county_id"]
             ),
             "user_id": permit_info["user_id"],
-            "note": permit_info["note"],
+            "note": permit_info["project_note"],
             "city_county_id": permit_info["city_county_id"],
         }
 

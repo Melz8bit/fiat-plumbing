@@ -11,24 +11,17 @@
         {{ message }}
     </div>
 </div>
+
 <script>
-    // const toastExample = document.querySelector('.toast')
-    // const toast = new bootstrap.Toast(toastExample)
-    // toast.show()
-
-
-
-    const toastTrigger = document.getElementById('liveToastBtn')
-    const toastLiveExample = document.getElementById('liveToast')
-
-    if (toastTrigger) {
-        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
-        toastTrigger.addEventListener('click', () => {
-            toastBootstrap.show()
-        })
-    }
-
-
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        const toastList = toastElList.map(function (toastEl) {
+            const toast = new bootstrap.Toast(toastEl, {
+                // You can add options here, like autohide: true
+            });
+            toast.show();
+        });
+    });
 </script>
 {% endfor %}
 {% endif %}

@@ -54,12 +54,12 @@
                     {{ project_notes_form.hidden_tag() }}
 
                     <div class="input-group mb-3">
-                        {{ project_notes_form.note.label(class="input-group-text") }}
-                        {{ project_notes_form.note(class="form-control", required=True) }}
+                        {{ project_notes_form.project_note.label(class="input-group-text") }}
+                        {{ project_notes_form.project_note(class="form-control", required=True) }}
                     </div>
 
                     <div class="text-end">
-                        {{ project_notes_form.submit(class="btn btn-primary") }}
+                        {{ project_notes_form.project_note_submit(class="btn btn-primary") }}
                     </div>
                 </form>
             </div>
