@@ -550,7 +550,8 @@ def get_notes(project_id):
             + " FROM project_notes"
             + " INNER JOIN users"
             + " ON project_notes.user_id = users.user_id"
-            + " WHERE project_notes.project_id = :project_id;"
+            + " WHERE project_notes.project_id = :project_id"
+            + " ORDER BY project_notes.comment_date DESC;"
         )
 
         query_params = {
@@ -571,7 +572,7 @@ def get_notes(project_id):
         return ""
 
 
-def insert_note(project_id, note, user_id):
+def add_note(note_info):
     try:
         sqlQuery = (
             "INSERT INTO project_notes (project_id, comment, comment_date, user_id)"
@@ -579,17 +580,17 @@ def insert_note(project_id, note, user_id):
         )
 
         query_params = {
-            "project_id": project_id,
-            "comment": note,
+            "project_id": note_info["project_id"],
+            "comment": note_info["comment"],
             "comment_date": datetime.today(),
-            "user_id": user_id,
+            "user_id": note_info["user_id"],
         }
 
         with engine.connect() as connection:
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
 
-        print("Comment added")
+        print("Note added")
 
     except Exception as e:
         print("Database Error:", e)

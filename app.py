@@ -37,6 +37,7 @@ from forms import (
     LoginForm,
     SignUpForm,
     ProjectForm,
+    ProjectNotesForm,
     MasterPermitForm,
     DocumentUploadForm,
     ProjectStatusForm,
@@ -446,6 +447,7 @@ def project_view(project_id, new_project=False):
 
     # Form Initialization
     master_form = MasterPermitForm()
+    project_notes_form = ProjectNotesForm()
     document_form = DocumentUploadForm()
     project_status_form = ProjectStatusForm()
     invoice_status_form = InvoiceStatusUpdateForm()
@@ -510,6 +512,19 @@ def project_view(project_id, new_project=False):
         return redirect(url_for("project_view", project_id=project["project_id"]))
     else:
         print(f"{master_form.errors=}")
+
+    if project_notes_form.validate_on_submit():
+        note = project_notes_form.note.data
+        note_info = {
+            "project_id": project["project_id"],
+            "comment": note,
+            "user_id": session["user_id"],
+        }
+        database.add_note(note_info)
+        flash("Note successfully added")
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{project_notes_form.errors=}")
 
     if project_status_form.validate_on_submit():
         project_status = project_status_form.project_status.data
@@ -669,6 +684,7 @@ def project_view(project_id, new_project=False):
         master_permit=master_permit,
         plumbing_permit=plumbing_permit,
         master_form=master_form,
+        project_notes_form=project_notes_form,
         document_form=document_form,
         project_status_form=project_status_form,
         invoice_status_form=invoice_status_form,

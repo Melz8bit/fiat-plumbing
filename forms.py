@@ -198,6 +198,14 @@ class ProjectForm(FlaskForm):
         return form
 
 
+class ProjectNotesForm(FlaskForm):
+    note = TextAreaField(
+        "Note",
+        render_kw={"style": "resize:none"},
+    )
+    submit = SubmitField("Submit")
+
+
 class MasterPermitForm(FlaskForm):
     master_permit = StringField("Master Permit", validators=[DataRequired()])
     add = SubmitField("Add")

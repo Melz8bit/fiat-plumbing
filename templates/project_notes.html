@@ -40,6 +40,32 @@
                 {% endif %}
             </tbody>
         </table>
+
+        <!-- Add Comment/Note -->
+        <p class="d-inline-flex gap-1">
+            <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                Add Comment/Note
+            </button>
+        </p>
+        <div class="collapse" id="collapseExample">
+            <div class="card card-body">
+                <form id="projectNotesForm" method="POST" enctype="multipart/form-data">
+                    {{ project_notes_form.hidden_tag() }}
+
+                    <div class="input-group mb-3">
+                        {{ project_notes_form.note.label(class="input-group-text") }}
+                        {{ project_notes_form.note(class="form-control", required=True) }}
+                    </div>
+
+                    <div class="text-end">
+                        {{ project_notes_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
     </div>
 
 </body>
