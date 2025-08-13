@@ -75,7 +75,7 @@
                                 aria-controls="collapseInvoiceInfo{{ invoice['invoice_number'] }}">
                                 View Information
                             </button>
-                            <a href="{{ url_for('view_invoice', project_id=project['project_id'], invoice_number=invoice['invoice_number'] )}}"
+                            <a href="{{ url_for('view_invoice', project_id=project_id, invoice_number=invoice['invoice_number'] )}}"
                                 class="btn btn-primary btn-sm d-flex align-items-center" target=”_blank”>Print</a>
                         </div>
                     </td>
@@ -273,7 +273,7 @@
                                     {{ invoice_status_form.installment_number(value=invoice['installment_number']) }}
                                     {{ invoice_status_form.invoice_id(value=invoice['invoice_id']) }}
                                     {{ invoice_status_form.installment_amount(value=invoice['installment_amount']) }}
-                                    {{ invoice_status_form.update(class="btn btn-outline-primary") }}
+                                    {{ invoice_status_form.invoice_status_update(class="btn btn-outline-primary") }}
                                 </div>
                             </div>
                         </form>

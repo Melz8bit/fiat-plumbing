@@ -78,7 +78,7 @@
                                 {% endif %}
                                 {% endfor %}
                             </select>
-                            {{ project_status_form.update(class="btn btn-outline-primary")}}
+                            {{ project_status_form.project_status_update_submit(class="btn btn-outline-primary")}}
                         </div>
                     </form>
                 </div>
@@ -173,26 +173,36 @@
         <!-- Submenu Nav -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
+                <!-- <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-tab-pane"
+                    type="button" role="tab" aria-controls="notes-tab-pane" aria-selected="true">Notes</button> -->
                 <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-tab-pane"
-                    type="button" role="tab" aria-controls="notes-tab-pane" aria-selected="true">Notes</button>
+                    type="button" role="tab" aria-controls="notes-tab-pane" aria-selected="true"
+                    data-url="{{ url_for('get_project_notes', project_id=project['project_id']) }}">Notes</button>
             </li>
             <li class="nav-item" role="presentation">
+                <!-- <button class="nav-link" id="fixtures-tab" data-bs-toggle="tab" data-bs-target="#fixtures-tab-pane"
+                    type="button" role="tab" aria-controls="fixtures-tab-pane" aria-selected="false">Fixtures</button> -->
                 <button class="nav-link" id="fixtures-tab" data-bs-toggle="tab" data-bs-target="#fixtures-tab-pane"
-                    type="button" role="tab" aria-controls="fixtures-tab-pane" aria-selected="false">Fixtures</button>
+                    type="button" role="tab" aria-controls="fixtures-tab-pane" aria-selected="false"
+                    data-url="{{ url_for('get_project_fixtures', project_id=project['project_id']) }}">Fixtures</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="installments-tab" data-bs-toggle="tab"
                     data-bs-target="#installments-tab-pane" type="button" role="tab"
-                    aria-controls="installments-tab-pane" aria-selected="false">Installments</button>
+                    aria-controls="installments-tab-pane" aria-selected="false"
+                    data-url="{{ url_for('get_project_installments', project_id=project['project_id']) }}">Installments</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="invoices-tab" data-bs-toggle="tab" data-bs-target="#invoices-tab-pane"
-                    type="button" role="tab" aria-controls="invoices-tab-pane" aria-selected="false">Invoices</button>
+                    type="button" role="tab" aria-controls="invoices-tab-pane" aria-selected="false"
+                    data-url="{{ url_for('get_project_invoices', project_id=project['project_id']) }}">Invoices</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments-tab-pane"
-                    type="button" role="tab" aria-controls="payments-tab-pane" aria-selected="false">Payments</button>
+                    type="button" role="tab" aria-controls="payments-tab-pane" aria-selected="false"
+                    data-url="{{ url_for('get_project_payments', project_id=project['project_id']) }}">Payments</button>
             </li>
+            <!-- 
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="permits-tab" data-bs-toggle="tab" data-bs-target="#permits-tab-pane"
                     type="button" role="tab" aria-controls="permits-tab-pane" aria-selected="false">Permits</button>
@@ -205,7 +215,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane"
                     type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="false">Documents</button>
-            </li>
+            </li> -->
         </ul>
 
         <!-- Subsections -->
@@ -221,66 +231,49 @@
             <!-- Fixtures -->
             <div class="tab-pane fade" id="fixtures-tab-pane" role="tabpanel" aria-labelledby="fixtures-tab"
                 tabindex="0">
-                <div class="ratio ratio-16x9">
-                    {% include 'project_fixtures.html' %}
-                </div>
             </div>
 
             <!-- Installments -->
             <div class="tab-pane fade" id="installments-tab-pane" role="tabpanel" aria-labelledby="installments-tab"
                 tabindex="0">
-                <div class="ratio ratio-16x9">
-                    {% include 'project_installments.html' %}
-                </div>
             </div>
 
             <!-- Invoices -->
             <div class="tab-pane fade" id="invoices-tab-pane" role="tabpanel" aria-labelledby="invoices-tab"
                 tabindex="0">
-                <div class="ratio ratio-16x9">
-                    {% include 'project_invoices.html' %}
-                </div>
             </div>
 
             <!-- Payments -->
             <div class="tab-pane fade" id="payments-tab-pane" role="tabpanel" aria-labelledby="payments-tab"
                 tabindex="0">
-                <div class="ratio ratio-16x9">
-                    {% include 'project_payments.html' %}
-                </div>
             </div>
-
-            <!-- Permits -->
-            <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
-                <div class="ratio ratio-16x9">
-                    {% include 'project_permits.html' %}
-                </div>
-            </div>
-
-            <!-- Inspections -->
-            <div class="tab-pane fade" id="inspections-tab-pane" role="tabpanel" aria-labelledby="inspections-tab"
-                tabindex="0">
-                <div class="ratio ratio-16x9">
-                    <h4 class="w-100 text-center mt-4">Coming Soon</h4>
-                    <!-- {# {% include 'project_inspections.html' %}#} -->
-                </div>
-            </div>
-
-            <!-- Documents -->
-            <div class="tab-pane fade" id="documents-tab-pane" role="tabpanel" aria-labelledby="documents-tab"
-                tabindex="0">
-                <div class="ratio ratio-16x9">
-                    {% include 'project_documents.html' %}
-                </div>
-            </div>
-
-            <!-- Permits -->
-            <!-- <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
-                <div class="ratio ratio-16x9">
-                    <h3>Coming Soon</h3>
-                </div>
-            </div> -->
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const tabEl = document.getElementById('myTab');
+                tabEl.addEventListener('show.bs.tab', function (event) {
+                    const url = event.target.getAttribute('data-url');
+                    const target = event.target.getAttribute('data-bs-target');
+                    const contentPane = document.querySelector(target);
+
+                    if (url && contentPane && contentPane.innerHTML.trim() === '') {
+                        // Add a loading spinner
+                        contentPane.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+                        fetch(url)
+                            .then(response => response.text())
+                            .then(html => {
+                                contentPane.innerHTML = html;
+                            })
+                            .catch(error => {
+                                console.error('Error loading tab content:', error);
+                                contentPane.innerHTML = '<p class="text-center text-danger mt-5">Failed to load content.</p>';
+                            });
+                    }
+                });
+            });
+        </script>
     </div>
     {% include 'flash_message.html' %}
 </body>

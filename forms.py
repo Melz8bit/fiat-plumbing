@@ -87,7 +87,7 @@ STATE_OPTIONS = [
 class LoginForm(FlaskForm):
     email = EmailField("Email", validators=[InputRequired()])
     password = PasswordField("Password", validators=[InputRequired()])
-    submit = SubmitField("Login")
+    login_submit = SubmitField("Login")
 
 
 class SignUpForm(FlaskForm):
@@ -121,7 +121,7 @@ class SignUpForm(FlaskForm):
             EqualTo("password", message="Passwords must match"),
         ],
     )
-    sign_up = SubmitField("Sign Up")
+    sign_up_submit = SubmitField("Sign Up")
 
 
 class ClientForm(FlaskForm):
@@ -140,8 +140,8 @@ class ClientForm(FlaskForm):
     poc_name = StringField("Name")
     poc_phone_number = StringField("Phone Number")
     poc_email = EmailField("Email")
-    submit = SubmitField("Create Client")
-    edit = SubmitField("Update Client")
+    client_submit = SubmitField("Create Client")
+    client_edit_submit = SubmitField("Update Client")
 
 
 # Create new project
@@ -186,7 +186,7 @@ class ProjectForm(FlaskForm):
         "County",
         validators=[DataRequired()],
     )
-    submit = SubmitField("Add Project")
+    project_add_submit = SubmitField("Add Project")
 
     @classmethod
     def new(cls):
@@ -224,7 +224,7 @@ class DocumentUploadForm(FlaskForm):
     )
     upload_file = FileField(validators=[FileRequired()])
     comment = StringField("Comment")
-    upload = SubmitField("Upload")
+    upload_document_submit = SubmitField("Upload")
 
 
 class ProjectStatusForm(FlaskForm):
@@ -233,7 +233,7 @@ class ProjectStatusForm(FlaskForm):
         validators=[DataRequired()],
         choices=get_project_statuses(),
     )
-    update = SubmitField("Update")
+    project_status_update_submit = SubmitField("Update")
 
 
 class InvoicePaymentForm(FlaskForm):
@@ -266,7 +266,7 @@ class InvoiceStatusUpdateForm(FlaskForm):
     installment_amount = HiddenField()
     invoice_id = HiddenField()
     payment_details = FormField(InvoicePaymentForm)
-    update = SubmitField("Apply")
+    invoice_status_update = SubmitField("Apply")
 
 
 class InvoiceCreateForm(FlaskForm):
@@ -274,7 +274,7 @@ class InvoiceCreateForm(FlaskForm):
     installment_number = HiddenField()
     billed_percentage = DecimalField()
     billed_amount = DecimalField("$", render_kw={"readonly": True})
-    create = SubmitField("Create")
+    invoice_create_submit = SubmitField("Create")
 
 
 class ApplyPaymentForm(FlaskForm):
@@ -318,7 +318,7 @@ class ApplyPaymentForm(FlaskForm):
 
     payment_note = TextAreaField("Note")
     # invoice_select = BooleanField()
-    apply_payment = SubmitField("Submit")
+    apply_payment_submit = SubmitField("Submit")
 
 
 class ProposalFixturesForm(FlaskForm):

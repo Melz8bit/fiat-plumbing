@@ -100,7 +100,8 @@
                             <script>
                                 $(document).ready(function () {
                                     $("#btnApplyPayment").on("click", function (e) {
-                                        var url = "{{ url_for('apply_payment', project_id=project['project_id']) }}";
+                                        console.log("hi");
+                                        var url = "{{ url_for('apply_payment_ajax', project_id=project_id) }}";
                                         $.ajax({
                                             type: "POST",
                                             url: url,
@@ -154,7 +155,7 @@
                                                 xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
                                             }
                                         }
-                                    })
+                                    });
                                 });
                             </script>
                             {% endif %}
@@ -174,18 +175,18 @@
             </div>
             <div class="modal-footer">
                 <div class="row">
-                    {{ apply_payment_form.apply_payment(class="btn btn-primary") }}
+                    {{ apply_payment_form.apply_payment_submit(class="btn btn-primary") }}
                     {{ apply_payment_form.payment_applied(id="payment_applied") }}
                     <script>
                         $(document).ready(function () {
-                            $("#apply_payment").on("click", function (e) {
-                                // document.getElementById("apply_payment").value = "Processing...";
+                            $("#apply_payment_submit").on("click", function (e) {
+                                // document.getElementById("apply_payment_submit").value = "Processing...";
                                 setTimeout(function () {
-                                    $("#apply_payment").prop("disabled", true).val("Processing...");
+                                    $("#apply_payment_submit").prop("disabled", true).val("Processing...");
                                 }, 100);
 
                                 // setTimeout(function () {
-                                //     $("#apply_payment").prop("disabled", false).val("Try again?");
+                                //     $("#apply_payment_submit").prop("disabled", false).val("Try again?");
                                 // }, 15000);
                             });
                         });

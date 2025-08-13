@@ -543,7 +543,7 @@ def insert_master_permit(project_id, permit_number):
 
 
 ############## Notes Queries ##############
-def get_notes(project_id):
+def get_project_notes(project_id):
     try:
         sqlQuery = (
             "SELECT project_notes.*, users.first_name, users.last_name"
@@ -598,7 +598,7 @@ def add_project_note(note_info):
 
 
 ############## Invoices/Installment Queries ##############
-def get_invoices(project_id):
+def get_project_invoices(project_id):
     try:
         sqlQuery = (
             "SELECT *"
@@ -1125,7 +1125,7 @@ def create_invoice(selected_invoices, project_id):
         return ""
 
 
-def get_installments(project_id):
+def get_project_installments(project_id):
     try:
         sqlQuery = (
             "SELECT *"
