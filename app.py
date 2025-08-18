@@ -757,7 +757,7 @@ def project_view(project_id, new_project=False):
 
     if (
         apply_payment_form.validate_on_submit()
-        and apply_payment_form.apply_payment_submit.data
+        and apply_payment_form.apply_payment.data
     ):
         apply_payment(apply_payment_form)
     else:
@@ -948,6 +948,7 @@ def get_project_payments(project_id):
     # print(f"{open_invoices=}")
     return render_template(
         "project_payments.html",
+        project_id=project_id,
         payments=payments,
         open_invoices=open_invoices,
         project_payments=project_payments,
@@ -1008,6 +1009,50 @@ def apply_payment(form):
 
     flash("Payment applied")
     return redirect(url_for("project_view", project_id=session["project_id"]))
+
+
+@app.route("/apply_payment/<project_id>", methods=["GET", "POST"])
+def apply_payment_ajax(project_id):
+    print(project_id)
+    payment_form = ApplyPaymentForm()
+
+    payment_applied_info = []
+
+    payment_remaining = float(ApplyPaymentForm().data["payment_amount"])
+    open_invoices = database.get_open_invoices(project_id)
+
+    for invoice in open_invoices:
+        payment_dict = None
+        # print(f"{invoice['payment_remaining']=}")
+        # print(f"{invoice['payment_received']=}")
+        if payment_remaining < invoice["payment_remaining"]:
+            payment_dict = {
+                "invoice_id": invoice["invoice_id"],
+                "invoice_status": "Partial Payment",
+                "amount_remaining": invoice["payment_remaining"] - payment_remaining,
+                "amount_received": payment_remaining,
+            }
+            payment_remaining = 0
+
+        if payment_remaining >= invoice["payment_remaining"]:
+            payment_dict = {
+                "invoice_id": invoice["invoice_id"],
+                "invoice_status": "Paid",
+                "amount_received": invoice["payment_remaining"],
+                "amount_remaining": 0,
+            }
+
+            payment_remaining -= invoice["payment_remaining"]
+
+        print(f"{payment_dict=}")
+        payment_applied_info.append(payment_dict)
+
+        if payment_remaining == 0:
+            # print(payment_applied_info)
+            return jsonify(payment_applied_info)
+
+    # print(f"{invoice_id=}")
+    return jsonify("")
 
 
 @app.route("/project/<project_id>/permits")
@@ -1383,50 +1428,6 @@ def add_proposal_installment():
             }
         )
     return jsonify(installments_added)
-
-
-@app.route("/applyPayment/<project_id>", methods=["GET", "POST"])
-def apply_payment_ajax(project_id):
-    print("hi apply_payment_ajax")
-    payment_form = ApplyPaymentForm()
-
-    payment_applied_info = []
-
-    payment_remaining = float(ApplyPaymentForm().data["payment_amount"])
-    open_invoices = database.get_open_invoices(project_id)
-
-    for invoice in open_invoices:
-        payment_dict = None
-        # print(f"{invoice['payment_remaining']=}")
-        # print(f"{invoice['payment_received']=}")
-        if payment_remaining < invoice["payment_remaining"]:
-            payment_dict = {
-                "invoice_id": invoice["invoice_id"],
-                "invoice_status": "Partial Payment",
-                "amount_remaining": invoice["payment_remaining"] - payment_remaining,
-                "amount_received": payment_remaining,
-            }
-            payment_remaining = 0
-
-        if payment_remaining >= invoice["payment_remaining"]:
-            payment_dict = {
-                "invoice_id": invoice["invoice_id"],
-                "invoice_status": "Paid",
-                "amount_received": invoice["payment_remaining"],
-                "amount_remaining": 0,
-            }
-
-            payment_remaining -= invoice["payment_remaining"]
-
-        # print(f"{payment_dict=}")
-        payment_applied_info.append(payment_dict)
-
-        if payment_remaining == 0:
-            # print(payment_applied_info)
-            return jsonify(payment_applied_info)
-
-    # print(f"{invoice_id=}")
-    return jsonify("")
 
 
 @app.route("/addProposalNote", methods=["POST"])

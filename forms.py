@@ -318,7 +318,7 @@ class ApplyPaymentForm(FlaskForm):
 
     payment_note = TextAreaField("Note")
     # invoice_select = BooleanField()
-    apply_payment_submit = SubmitField("Submit")
+    apply_payment = SubmitField("Submit")
 
 
 class ProposalFixturesForm(FlaskForm):

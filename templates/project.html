@@ -276,6 +276,93 @@
         </script>
     </div>
     {% include 'flash_message.html' %}
+
+    <script>
+        // console.log("Global script loaded!");
+        // $(document).on("click", "#btnApplyPayment", function () {
+        //     console.log(">>> Apply Payment Clicked!");
+        // });
+
+        // console.log("Script loaded!");
+
+        // $(document).on("click", "#btnApplyPayment", function () {
+        //     console.log(">>> Apply Payment Clicked!");
+        // });
+
+        $(document).ready(function () {
+            // Inject our CSRF token into our AJAX request.
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                    }
+                }
+            });
+
+            // $(document).on("click", function (e) {
+            //     console.log("Clicked element:", e.target);
+            // });
+        });
+
+        // Delegated binding: listens for clicks on #btnApplyPayment, even if added later
+        $(document).on("click", "#btnApplyPayment", function (e) {
+            // console.log("Apply button clicked!");
+            e.preventDefault(); // prevent form submission
+
+            var url = "{{ url_for('apply_payment_ajax', project_id=project['project_id']) }}";
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $('#applyPayment').serialize(), // serializes the form's elements
+                success: function (data) {
+                    // console.log("Response:", data);
+
+                    let dollarString = new Intl.NumberFormat("en-US", {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2,
+                    });
+
+                    var payment_applied = document.getElementById("payment_applied");
+
+                    for (var i = 0; i < data.length; i++) {
+                        var invoice_id = data[i]["invoice_id"];
+                        var amount_applied = document.getElementById("txtInvoiceApplyPayment" + invoice_id);
+                        var amount_applied_hidden = document.getElementById("invoiceApplyPayment" + invoice_id);
+                        var amount_remaining = document.getElementById("txtInvoiceAmountRemaining" + invoice_id);
+                        var amount_remaining_hidden = document.getElementById("invoiceAmountRemaining" + invoice_id);
+                        var status = document.getElementById("txtInvoiceStatus" + invoice_id);
+                        var status_hidden = document.getElementById("invoiceStatus" + invoice_id);
+
+                        // Reset values to zero
+                        amount_applied.value = "$0.00";
+                        amount_applied_hidden.value = 0.00;
+                        amount_remaining.value = "$0.00";
+                        amount_remaining_hidden.value = 0.00;
+                        status.value = "";
+                        status_hidden.value = "";
+
+                        // Apply response values
+                        amount_applied.value = dollarString.format(data[i]["amount_received"]);
+                        amount_applied_hidden.value = parseFloat(data[i]["amount_received"]);
+                        amount_remaining.value = dollarString.format(data[i]["amount_remaining"]);
+                        amount_remaining_hidden.value = parseFloat(data[i]["amount_remaining"]);
+                        status.value = data[i]["invoice_status"];
+                        status_hidden.value = data[i]["invoice_status"];
+                    }
+
+                    payment_applied.value = true;
+                }
+            });
+        });
+
+        $(document).on("click", "#apply_payment", function (e) {
+            setTimeout(function () {
+                $("#apply_payment").prop("disabled", true).val("Processing...");
+            }, 100);
+        });
+    </script>
 </body>
 
 </html>
