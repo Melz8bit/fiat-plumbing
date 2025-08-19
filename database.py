@@ -1789,11 +1789,11 @@ def add_permit(permit_info):
 
         print("Permit added")
 
-        return True
+        return "Permit successfully added"
 
     except Exception as e:
         print("Database Error:", e)
-        return False
+        return "Error: Unable to add permit"
 
 
 def update_permit(permit_id, status, user_id):

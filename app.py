@@ -814,9 +814,9 @@ def project_note_add(form, project_id):
         "comment": note,
         "user_id": session["user_id"],
     }
-    database.add_project_note(note_info)
+    is_note_created = database.add_project_note(note_info)
     session["active_tab"] = "notes"
-    flash("Note successfully added")
+    flash(is_note_created)
     return redirect(url_for("project_view", project_id=project_id))
 
 
@@ -941,8 +941,11 @@ def project_invoice_create(selected_installments, billed_invoice_amount):
             )
         )
 
-    database.create_invoice(selected_invoices, session["project_id"])
+    is_invoice_created = database.create_invoice(
+        selected_invoices, session["project_id"]
+    )
     session["active_tab"] = "invoices"
+    flash(is_invoice_created)
     return redirect(url_for("project_view", project_id=session["project_id"]))
 
 
@@ -1101,20 +1104,14 @@ def add_project_permit(permit_add_form):
         "city_county_id": permit_add_form.city_county.data["id"],
     }
 
-    if database.add_permit(permit_info):
-        session["active_tab"] = "permits"
-        flash("Permit successfully added")
-        return redirect(
-            url_for(
-                "project_view",
-                project_id=session["project_id"],
-                # tab="permits",
-            )
-        )
+    is_permit_added = database.add_permit(permit_info)
 
-    flash("Error: Unable to add permit")
+    flash(is_permit_added)
+    session["active_tab"] = "permits"
+    return redirect(url_for("project_view", project_id=session["project_id"]))
 
 
+# Documents
 @app.route("/project/<project_id>/documents")
 @login_required
 def get_project_documents(project_id):
