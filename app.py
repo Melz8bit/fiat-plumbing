@@ -741,7 +741,7 @@ def project_view(project_id, new_project=False):
         project_notes_form.validate_on_submit()
         and project_notes_form.project_note_submit.data
     ):
-        project_note_add(project_notes_form, project_id)
+        return project_note_add(project_notes_form, project_id)
     else:
         print(f"{project_notes_form.errors=}")
 
@@ -815,6 +815,7 @@ def project_note_add(form, project_id):
         "user_id": session["user_id"],
     }
     database.add_project_note(note_info)
+    session["active_tab"] = "notes"
     flash("Note successfully added")
     return redirect(url_for("project_view", project_id=project_id))
 
