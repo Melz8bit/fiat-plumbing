@@ -202,11 +202,12 @@
                     type="button" role="tab" aria-controls="payments-tab-pane" aria-selected="false"
                     data-url="{{ url_for('get_project_payments', project_id=project['project_id']) }}">Payments</button>
             </li>
-            <!-- 
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="permits-tab" data-bs-toggle="tab" data-bs-target="#permits-tab-pane"
-                    type="button" role="tab" aria-controls="permits-tab-pane" aria-selected="false">Permits</button>
+                    type="button" role="tab" aria-controls="permits-tab-pane" aria-selected="false"
+                    data-url="{{ url_for('get_project_permits', project_id=project['project_id']) }}">Permits</button>
             </li>
+            <!-- 
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="inspections-tab" data-bs-toggle="tab"
                     data-bs-target="#inspections-tab-pane" type="button" role="tab" aria-controls="inspections-tab-pane"
@@ -247,6 +248,10 @@
             <div class="tab-pane fade" id="payments-tab-pane" role="tabpanel" aria-labelledby="payments-tab"
                 tabindex="0">
             </div>
+
+            <!-- Permits -->
+            <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
+            </div>
         </div>
 
         <script>
@@ -278,16 +283,17 @@
     {% include 'flash_message.html' %}
 
     <script>
-        // console.log("Global script loaded!");
-        // $(document).on("click", "#btnApplyPayment", function () {
-        //     console.log(">>> Apply Payment Clicked!");
-        // });
-
-        // console.log("Script loaded!");
-
-        // $(document).on("click", "#btnApplyPayment", function () {
-        //     console.log(">>> Apply Payment Clicked!");
-        // });
+        // Load tab on submission
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const activeTab = params.get("tab");
+            if (activeTab) {
+                const tabButton = document.querySelector(`#${activeTab}-tab`);
+                if (tabButton) {
+                    new bootstrap.Tab(tabButton).show();
+                }
+            }
+        });
 
         $(document).ready(function () {
             // Inject our CSRF token into our AJAX request.
@@ -362,6 +368,43 @@
                 $("#apply_payment").prop("disabled", true).val("Processing...");
             }, 100);
         });
+
+        //  Permits Add
+        document.addEventListener("DOMContentLoaded", function () {
+            // Delegate change event for city/county select inside the modal
+            document.addEventListener("change", function (e) {
+                if (e.target && e.target.id === "city_county") {
+                    const cityCountySelect = e.target;
+                    const goLink = document.getElementById("goLink");
+
+                    if (!goLink) return;
+
+                    const selectedOption = cityCountySelect.options[cityCountySelect.selectedIndex];
+                    const websiteUrl = selectedOption ? selectedOption.getAttribute("data-website") : null;
+
+                    if (websiteUrl) {
+                        goLink.href = websiteUrl;
+                        goLink.classList.remove("disabled");
+                        goLink.removeAttribute("disabled");
+                    } else {
+                        goLink.href = "#";
+                        goLink.classList.add("disabled");
+                        goLink.setAttribute("disabled", "true");
+                    }
+                }
+            });
+
+            // Delegate click event for the Go button inside the modal
+            document.addEventListener("click", function (e) {
+                if (e.target && e.target.id === "goLink") {
+                    if (e.target.classList.contains("disabled")) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        });
+
+
     </script>
 </body>
 

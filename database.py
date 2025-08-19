@@ -1781,7 +1781,7 @@ def add_permit(permit_info):
                 permit_info["status_date"], permit_info["city_county_id"]
             ),
             "user_id": permit_info["user_id"],
-            "note": permit_info["project_note"],
+            "note": permit_info["note"],
             "city_county_id": permit_info["city_county_id"],
         }
 
@@ -1791,9 +1791,11 @@ def add_permit(permit_info):
 
         print("Permit added")
 
+        return True
+
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return False
 
 
 def update_permit(permit_id, status, user_id):

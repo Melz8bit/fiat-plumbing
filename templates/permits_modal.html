@@ -22,35 +22,6 @@
                     </select>
                     <a class="btn btn-primary" id="goLink" href="#" target="_blank" disabled>Go</a>
                 </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const permitWebsites = {{ permit_websites | tojson
-                    }};
-                    const cityCountySelect = document.getElementById('city_county');
-                    const goLink = document.getElementById('goLink');
-
-                    function updateGoButton() {
-                        const selectedId = cityCountySelect.value;
-                        const websiteUrl = permitWebsites[selectedId];
-
-                        if (websiteUrl) {
-                            // Set the link's href and remove the "disabled" class
-                            goLink.href = websiteUrl;
-                            goLink.classList.remove('disabled');
-                        } else {
-                            // If no valid URL, set to a non-functional link and add the "disabled" class
-                            goLink.href = '#';
-                            goLink.classList.add('disabled');
-                        }
-                    }
-
-                    // Listen for changes on the select field
-                    cityCountySelect.addEventListener('change', updateGoButton);
-
-                    // Call the function on page load to handle initial state (e.g., if a value is pre-selected)
-                    updateGoButton();
-    });
-                </script>
 
                 <div class="row">
                     <!-- Permit Number -->

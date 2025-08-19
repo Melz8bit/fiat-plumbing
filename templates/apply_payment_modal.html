@@ -118,20 +118,6 @@
                 <div class="row">
                     {{ apply_payment_form.apply_payment(class="btn btn-primary") }}
                     {{ apply_payment_form.payment_applied(id="payment_applied") }}
-                    <script>
-                        $(document).ready(function () {
-                            $("#apply_payment").on("click", function (e) {
-                                // document.getElementById("apply_payment").value = "Processing...";
-                                setTimeout(function () {
-                                    $("#apply_payment").prop("disabled", true).val("Processing...");
-                                }, 100);
-
-                                // setTimeout(function () {
-                                //     $("#apply_payment").prop("disabled", false).val("Try again?");
-                                // }, 15000);
-                            });
-                        });
-                    </script>
                 </div>
             </div>
         </form>

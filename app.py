@@ -419,9 +419,6 @@ def projects_list():
     )
 
 
-@app.route("/project/<project_id>", methods=["GET", "POST"])
-@app.route("/project/<project_id>/<new_project>", methods=["GET", "POST"])
-@login_required
 # def project_view(project_id, new_project=False):
 #     user = database.get_user(session["user_id"])
 #     project = database.get_project(project_id)
@@ -713,11 +710,16 @@ def projects_list():
 #         permits=permits,
 #         permit_websites=permit_websites,
 #     )
+@app.route("/project/<project_id>", methods=["GET", "POST"])
+@app.route("/project/<project_id>/<new_project>", methods=["GET", "POST"])
+@login_required
 def project_view(project_id, new_project=False):
     user = database.get_user(session["user_id"])
     project = database.get_project(project_id)
     client = database.get_client(project["client_id"])
     session["project_id"] = project_id
+
+    tab = request.args.get("tab", None)
 
     if new_project:
         flash("Project has been created")
@@ -734,8 +736,9 @@ def project_view(project_id, new_project=False):
     apply_payment_form = ApplyPaymentForm()
     project_status_form = ProjectStatusForm()
     invoice_create_form = InvoiceCreateForm()
+    permit_add_form = PermitsAddForm()
 
-    # TODO: handle form submissions, but you may need to update them for AJAX)
+    # Add Project Note
     if (
         project_notes_form.validate_on_submit()
         and project_notes_form.project_note_submit.data
@@ -744,6 +747,7 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{project_notes_form.errors=}")
 
+    # Create invoice
     if (
         invoice_create_form.validate_on_submit()
         and invoice_create_form.invoice_create_submit.data
@@ -755,6 +759,7 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{invoice_create_form.errors=}")
 
+    # Apply payment
     if (
         apply_payment_form.validate_on_submit()
         and apply_payment_form.apply_payment.data
@@ -762,6 +767,12 @@ def project_view(project_id, new_project=False):
         apply_payment(apply_payment_form)
     else:
         print(f"{apply_payment_form.errors=}")
+
+    # Add Permit
+    if permit_add_form.validate_on_submit() and permit_add_form.permit_add_submit.data:
+        return add_project_permit(permit_add_form)
+    else:
+        print(f"{permit_add_form.errors=}")
 
     return render_template(
         "project.html",
@@ -884,7 +895,7 @@ def get_project_invoice_items(invoices):
     if invoices:
         for invoice in invoices:
             payment = database.get_invoice_payments(invoice["invoice_id"])
-            print(f"{payment=}")
+
             if payment:
                 payment_info[invoice["invoice_id"]] = payment
                 payments_received_total[invoice["invoice_id"]] = (
@@ -1055,16 +1066,51 @@ def apply_payment_ajax(project_id):
     return jsonify("")
 
 
+# Permits
 @app.route("/project/<project_id>/permits")
 @login_required
 def get_project_permits(project_id):
     permits = database.get_project_permits(project_id)
     permit_add_form = PermitsAddForm()
+
+    # Create a dictionary mapping the city/county ID to its website URL
+    permit_websites = {
+        str(item.id): item.website for item in database.get_permit_add_information()
+    }
+
     return render_template(
         "project_permits.html",
         permits=permits,
         permit_add_form=permit_add_form,
+        permit_websites=permit_websites,
     )
+
+
+def add_project_permit(permit_add_form):
+    permit_info = {
+        "project_id": session["project_id"],
+        "permit_number": permit_add_form.permit_number.data,
+        "type": permit_add_form.permit_type.data,
+        "status": permit_add_form.permit_status.data,
+        "status_date": permit_add_form.permit_status_date.data,
+        # "follow_up_date": None,
+        # "follow_up_date": permit_add_form.follow_up_date.data,
+        "user_id": session["user_id"],
+        "note": permit_add_form.permit_note.data,
+        "city_county_id": permit_add_form.city_county.data["id"],
+    }
+
+    if database.add_permit(permit_info):
+        flash("Permit successfully added")
+        return redirect(
+            url_for(
+                "project_view",
+                project_id=session["project_id"],  # route parameter
+                tab="permits",  # query parameter
+            )
+        )
+
+    flash("Error: Unable to add permit")
 
 
 @app.route("/project/<project_id>/documents")
