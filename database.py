@@ -1093,8 +1093,6 @@ def create_invoice(selected_invoices, project_id):
         for item in invoice_items:
             invoice_total += item["item_amount"]
 
-        print(f"{invoice_items=}")
-
     except Exception as e:
         print("Database Error:", e)
 

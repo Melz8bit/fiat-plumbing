@@ -16,6 +16,8 @@
 <body>
     {% include 'nav.html' %}
 
+    <p>DEBUG: active_tab={{ tab }}</p>
+
     <div class="container pt-4">
         <div class="row d-flex align-items-center mb-4">
             <div class="col">
@@ -283,18 +285,6 @@
     {% include 'flash_message.html' %}
 
     <script>
-        // Load tab on submission
-        document.addEventListener("DOMContentLoaded", function () {
-            const params = new URLSearchParams(window.location.search);
-            const activeTab = params.get("tab");
-            if (activeTab) {
-                const tabButton = document.querySelector(`#${activeTab}-tab`);
-                if (tabButton) {
-                    new bootstrap.Tab(tabButton).show();
-                }
-            }
-        });
-
         $(document).ready(function () {
             // Inject our CSRF token into our AJAX request.
             $.ajaxSetup({
@@ -403,8 +393,20 @@
                 }
             });
         });
+    </script>
 
-
+    <script>
+        // Load tab on submission
+        document.addEventListener("DOMContentLoaded", function () {
+            const activeTab = "{{ tab }}";
+            if (activeTab) {
+                const tabButton = document.getElementById(activeTab + "-tab");
+                if (tabButton) {
+                    const tabInstance = new bootstrap.Tab(tabButton);
+                    tabInstance.show();
+                }
+            }
+        });
     </script>
 </body>
 

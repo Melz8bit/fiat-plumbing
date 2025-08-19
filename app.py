@@ -719,8 +719,6 @@ def project_view(project_id, new_project=False):
     client = database.get_client(project["client_id"])
     session["project_id"] = project_id
 
-    tab = request.args.get("tab", None)
-
     if new_project:
         flash("Project has been created")
 
@@ -752,7 +750,7 @@ def project_view(project_id, new_project=False):
         invoice_create_form.validate_on_submit()
         and invoice_create_form.invoice_create_submit.data
     ):
-        project_invoice_create(
+        return project_invoice_create(
             request.form.getlist("installment_select"),
             request.form.getlist("billed_amount"),
         )
@@ -764,7 +762,7 @@ def project_view(project_id, new_project=False):
         apply_payment_form.validate_on_submit()
         and apply_payment_form.apply_payment.data
     ):
-        apply_payment(apply_payment_form)
+        return apply_payment(apply_payment_form)
     else:
         print(f"{apply_payment_form.errors=}")
 
@@ -774,8 +772,10 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{permit_add_form.errors=}")
 
+    tab = session.pop("active_tab", None)
     return render_template(
         "project.html",
+        tab=tab,
         user=user,
         project=project,
         client=client,
@@ -941,7 +941,7 @@ def project_invoice_create(selected_installments, billed_invoice_amount):
         )
 
     database.create_invoice(selected_invoices, session["project_id"])
-
+    session["active_tab"] = "invoices"
     return redirect(url_for("project_view", project_id=session["project_id"]))
 
 
@@ -1013,11 +1013,11 @@ def apply_payment(form):
                 "project_id": session["project_id"],
                 "check_number": check_number,
             }
-            print(f"{payment=}")
             database.apply_payment(payment)
 
     # database.insert_payment(payment_information)
 
+    session["active_tab"] = "payments"
     flash("Payment applied")
     return redirect(url_for("project_view", project_id=session["project_id"]))
 
@@ -1101,12 +1101,13 @@ def add_project_permit(permit_add_form):
     }
 
     if database.add_permit(permit_info):
+        session["active_tab"] = "permits"
         flash("Permit successfully added")
         return redirect(
             url_for(
                 "project_view",
-                project_id=session["project_id"],  # route parameter
-                tab="permits",  # query parameter
+                project_id=session["project_id"],
+                # tab="permits",
             )
         )
 
