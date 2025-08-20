@@ -735,6 +735,7 @@ def project_view(project_id, new_project=False):
     project_status_form = ProjectStatusForm()
     invoice_create_form = InvoiceCreateForm()
     permit_add_form = PermitsAddForm()
+    document_upload_form = DocumentUploadForm()
 
     # Add Project Note
     if (
@@ -772,6 +773,15 @@ def project_view(project_id, new_project=False):
     else:
         print(f"{permit_add_form.errors=}")
 
+    # Upload Document
+    if (
+        document_upload_form.validate_on_submit()
+        and document_upload_form.upload_document_submit.data
+    ):
+        return upload_project_document(document_upload_form)
+    else:
+        print(f"{document_upload_form.errors=}")
+
     tab = session.pop("active_tab", None)
     return render_template(
         "project.html",
@@ -789,6 +799,7 @@ def project_view(project_id, new_project=False):
         proposal_installments=proposal_installments,
         proposal_installments_total=installments_total(proposal_installments),
         project_status_form=project_status_form,
+        # permit_add_form=permit_add_form,
     )
 
 
@@ -1118,10 +1129,40 @@ def get_project_documents(project_id):
     documents = database.get_project_docs(project_id)
     document_form = DocumentUploadForm()
     return render_template(
-        "project_permits.html",
+        "project_documents.html",
         documents=documents,
         document_form=document_form,
     )
+
+
+def upload_project_document(document_upload_form):
+    document_type = document_upload_form.document_type.data
+    document_upload_form.document_type.data = ""
+    comment = document_upload_form.comment.data
+    document_upload_form.comment.data = ""
+    filename = document_upload_form.upload_file.data
+    document_upload_form.upload_file.data = ""
+
+    upload_file_type = filename.filename.split(".")[-1]
+    upload_file_name = f"{session['project_id']}-{document_type}-{datetime.now().strftime('%Y%m%d%H%M%S')}.{upload_file_type}"
+
+    is_document_uploaded = upload_file(
+        filename,
+        upload_file_name,
+        filename.mimetype,
+    )
+
+    database.upload_document(
+        session["project_id"],
+        document_type,
+        comment,
+        session["user_id"],
+        upload_file_name,
+    )
+
+    session["active_tab"] = "documents"
+    flash(is_document_uploaded)
+    return redirect(url_for("project_view", project_id=session["project_id"]))
 
 
 @app.route("/project/add", methods=["GET", "POST"])

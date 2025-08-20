@@ -207,6 +207,11 @@
                     type="button" role="tab" aria-controls="permits-tab-pane" aria-selected="false"
                     data-url="{{ url_for('get_project_permits', project_id=project['project_id']) }}">Permits</button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane"
+                    type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="false"
+                    data-url="{{ url_for('get_project_documents', project_id=project['project_id']) }}">Documents</button>
+            </li>
             <!-- 
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="inspections-tab" data-bs-toggle="tab"
@@ -251,6 +256,11 @@
 
             <!-- Permits -->
             <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
+            </div>
+
+            <!-- Documents -->
+            <div class="tab-pane fade" id="documents-tab-pane" role="tabpanel" aria-labelledby="documents-tab"
+                tabindex="0">
             </div>
         </div>
 

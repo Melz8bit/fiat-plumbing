@@ -591,10 +591,11 @@ def add_project_note(note_info):
             connection.commit()
 
         print("Note added")
+        return "Note added successfully"
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return "Error: Unable to add note"
 
 
 ############## Invoices/Installment Queries ##############
@@ -1118,9 +1119,11 @@ def create_invoice(selected_invoices, project_id):
 
         print("Invoice created")
 
+        return "Invoice created successfully"
+
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return "Error: Unable to create invoice"
 
 
 def get_project_installments(project_id):
@@ -1246,10 +1249,11 @@ def upload_document(project_id, document_type, comment, user_id, filename):
             connection.commit()
 
         print("Document uploaded")
+        return "Document uploaded successfully"
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return "Error: Document was not uploaded"
 
     #     # insert_note(
     #     #     project_id, f"{document_type} has been uploaded (Auto Note)", user_id
