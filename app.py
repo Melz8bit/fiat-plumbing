@@ -26,12 +26,13 @@ from flask_login import (
 )
 from num2words import num2words
 from sqlalchemy import null, select
+from weasyprint import HTML
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 import database
 from database import db_connect
-from documents import upload_file, download_file
+from documents import upload_file, download_file, upload_proposal
 from forms import (
     ClientForm,
     LoginForm,
@@ -1135,6 +1136,12 @@ def get_project_documents(project_id):
     )
 
 
+# @app.route("/finalizeProposal/<project_id>", methods=["POST"])
+# @login_required
+# def finalize_proposal(project_id):
+#     pass
+
+
 def upload_project_document(document_upload_form):
     document_type = document_upload_form.document_type.data
     document_upload_form.document_type.data = ""
@@ -1165,6 +1172,129 @@ def upload_project_document(document_upload_form):
     return redirect(url_for("project_view", project_id=session["project_id"]))
 
 
+# Project Proposal
+@app.route("/createProposalPDF/<project_id>")
+@login_required
+def create_proposal_pdf(project_id):
+    project_info_temp = database.get_project(project_id)
+    project_info = {}
+    project_info["project_id"] = project_info_temp["project_id"]
+    project_info["address"] = project_info_temp["address"]
+    project_info["city"] = project_info_temp["city"]
+    project_info["state"] = project_info_temp["state"]
+    project_info["zip_code"] = project_info_temp["zip_code"]
+
+    client_info = database.get_project_client(project_id)
+    proposal_fixtures = database.get_proposal_fixtures(project_id)
+    proposal_installments = database.get_proposal_installments(project_id)
+    proposal_notes = database.get_proposal_notes(project_id)
+
+    proposal_total = 0
+    for fixture in proposal_fixtures:
+        proposal_total += fixture["total_per_fixture"]
+
+    proposal_total_words = num2words(proposal_total)
+    proposal_total_words = proposal_total_words.replace(",", "")
+
+    return render_template(
+        "proposal_print.html",
+        project_info=project_info,
+        client_info=client_info,
+        proposal_fixtures=proposal_fixtures,
+        proposal_installments=proposal_installments,
+        proposal_notes=proposal_notes,
+        proposal_total=proposal_total,
+        proposal_total_words=proposal_total_words,
+    )
+
+
+@app.route("/finalizeProposal", methods=["POST"])
+@login_required
+def finalize_proposal():
+    data_string = request.data.decode("utf-8")
+    data = json.loads(data_string)
+
+    # Access data from the dictionary
+    project_info = update_proposal_data("project", data["projectInfo"])
+    project_id = project_info["project_id"]
+
+    # Create proposal in database
+    proposal_id = database.create_proposal(project_id, session["user_id"])
+
+    # Get proposal data again for rendering
+    client_info = database.get_project_client(project_id)
+    proposal_fixtures = database.get_proposal_fixtures(project_id)
+    proposal_installments = database.get_proposal_installments(project_id)
+    proposal_notes = database.get_proposal_notes(project_id)
+
+    proposal_total = sum(f["total_per_fixture"] for f in proposal_fixtures)
+    proposal_total_words = num2words(proposal_total)
+    proposal_total_words = proposal_total_words.replace(",", "")
+
+    # Render same template → HTML string
+    html_str = render_template(
+        "proposal_print.html",
+        project_info=project_info,
+        client_info=client_info,
+        proposal_fixtures=proposal_fixtures,
+        proposal_installments=proposal_installments,
+        proposal_notes=proposal_notes,
+        proposal_total=proposal_total,
+        proposal_total_words=proposal_total_words,
+    )
+
+    # Convert HTML to PDF in memory
+    pdf_bytes = HTML(
+        string=html_str,
+        base_url=request.host_url,
+    ).write_pdf()
+    print(f"{type(pdf_bytes)=}")
+    print(f"{type(pdf_bytes)=}")
+
+    # upload_file_type = filename.filename.split(".")[-1]
+    upload_file_name = f"{session['project_id']}-Proposal-{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+
+    try:
+        # Add document to S3 bucket
+        is_document_uploaded = upload_proposal(
+            pdf_bytes,
+            project_id,
+            upload_file_name,
+        )
+    except Exception as e:
+        flash("Error: Unable to upload the proposal to documents")
+        return render_template(
+            "proposal_print.html",
+            project_info=project_info,
+            client_info=client_info,
+            proposal_fixtures=proposal_fixtures,
+            proposal_installments=proposal_installments,
+            proposal_notes=proposal_notes,
+            proposal_total=proposal_total,
+            proposal_total_words=proposal_total_words,
+        )
+
+    # Add information to documents table
+    database.upload_document(
+        session["project_id"],
+        "Proposal",
+        "",
+        session["user_id"],
+        upload_file_name,
+    )
+
+    # Update proposal items with proposal ID
+    database.update_proposal_items_id(project_id, proposal_id)
+
+    flash(is_document_uploaded)
+
+    return url_for(
+        "project_view",
+        project_id=project_id,
+    )
+
+
+# Project Add
 @app.route("/project/add", methods=["GET", "POST"])
 @app.route("/project/add/<client_id>", methods=["GET", "POST"])
 @login_required
@@ -1286,63 +1416,6 @@ def view_invoice(project_id, invoice_number):
         fiat_plumbing=FIAT_PLUMBING,
         invoice_total=invoice_total,
         installment_number=invoice_number,
-    )
-
-
-@app.route("/createProposalPDF/<project_id>")
-@login_required
-def create_proposal_pdf(project_id):
-    project_info_temp = database.get_project(project_id)
-    project_info = {}
-    project_info["project_id"] = project_info_temp["project_id"]
-    project_info["address"] = project_info_temp["address"]
-    project_info["city"] = project_info_temp["city"]
-    project_info["state"] = project_info_temp["state"]
-    project_info["zip_code"] = project_info_temp["zip_code"]
-
-    client_info = database.get_project_client(project_id)
-    proposal_fixtures = database.get_proposal_fixtures(project_id)
-    proposal_installments = database.get_proposal_installments(project_id)
-    proposal_notes = database.get_proposal_notes(project_id)
-
-    proposal_total = 0
-    for fixture in proposal_fixtures:
-        proposal_total += fixture["total_per_fixture"]
-
-    proposal_total_words = num2words(proposal_total)
-    proposal_total_words = proposal_total_words.replace(",", "")
-
-    return render_template(
-        "proposal_print.html",
-        project_info=project_info,
-        client_info=client_info,
-        proposal_fixtures=proposal_fixtures,
-        proposal_installments=proposal_installments,
-        proposal_notes=proposal_notes,
-        proposal_total=proposal_total,
-        proposal_total_words=proposal_total_words,
-    )
-
-
-@app.route("/finalizeProposal", methods=["POST"])
-@login_required
-def finalize_proposal():
-    data_string = request.data.decode("utf-8")
-    data = json.loads(data_string)
-
-    # Access data from the dictionary
-    project_info = update_proposal_data("project", data["projectInfo"])
-    project_id = project_info["project_id"]
-
-    # Create proposal in database
-    proposal_id = database.create_proposal(project_id, session["user_id"])
-
-    # Update proposal items with proposal ID
-    database.update_proposal_items_id(project_id, proposal_id)
-
-    return url_for(
-        "project_view",
-        project_id=project_id,
     )
 
 

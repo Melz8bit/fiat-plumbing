@@ -12,19 +12,30 @@
             box-sizing: border-box;
         }
 
-        html,
+        /* html,
         body {
             height: 99%;
             font-size: 10pt;
+        } */
+
+        /* body {
+            min-width: 100vw;
+            margin: 0;
+        } */
+
+        body {
+            font-size: 10pt;
+            height: auto;
+            min-width: auto;
         }
 
         .new-page {
             page-break-before: always;
         }
 
-        body {
-            min-width: 100vw;
-            margin: 0;
+        input[type="hidden"] {
+            border: none;
+            display: none !important;
         }
 
         .printArea {
@@ -40,7 +51,8 @@
         }
 
         #formBody {
-            height: 9%;
+            /* height: 9%; */
+            height: auto;
         }
 
         #navBar {
@@ -94,7 +106,8 @@
             <!-- Header -->
             <div class="row align-items-center text-start">
                 <div class="col">
-                    <img src="/static/logo.png" alt="Logo" class="d-inline-block align-text-top me-2 h-auto">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"
+                        class="d-inline-block align-text-top me-2 h-auto">
                 </div>
             </div>
             <div class="text-center">
@@ -182,30 +195,35 @@
             {% endfor %}
         </ul>
 
-        <p class="new-page">
-            We, hereby, propose to furnish labor and materials - complete in accordance with the above specifications,
-            for the sum of <strong><u>{{ proposal_total_words | upper}} DOLLARS ({{
-                    "${:,.2f}".format(proposal_total | float) }})</u></strong>
-        </p>
+        <div class="new-page">
+            <p>
+                We, hereby, propose to furnish labor and materials - complete in accordance with the above
+                specifications,
+                for the sum of <strong><u>{{ proposal_total_words | upper}} DOLLARS ({{
+                        "${:,.2f}".format(proposal_total | float) }})</u></strong>
+            </p>
+        </div>
 
         <!-- Installment Info -->
         <div class="mt-2">
             To be paid as follows:
-            <ul class="no-bullets">
+            <ul class="">
                 {% for proposal_installment in proposal_installments %}
                 <li>
-                    <strong>
-                        <div class="row">
-                            <div class="col-2">
+                    <div class="row">
+                        <div class="col-3">
+                            <strong>
                                 Payment {{ proposal_installment['installment_number'] }}:
-                            </div>
-                            <div class="col">
+                            </strong>
+                        </div>
+                        <div class="col">
+                            <strong>
                                 {{ "${:,.2f}".format(proposal_installment['installment_amount'] | float ) }} at
                                 {{
                                 proposal_installment['installment_category'] }}
-                            </div>
+                            </strong>
                         </div>
-                    </strong>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
@@ -235,16 +253,17 @@
             <p>The above prices, specification and condition are hereby accepted. You are authorized to do the work as
                 specified. Payment will be made as outlined above.
             </p>
-            <div class="row">
-                <div class="col-2">ACCEPTED BY:</div>
-                <div class="col"><input class="signature"></div>
-                <div class=" col-2">DATE:</div>
-                <div class="col"><input class="signature"></div>
+            <div class="row gx-0">
+                <div class="col-3 w-auto">ACCEPTED BY:</div>
+                <div class="col-2 d-flex w-50 me-1"><input class="signature"></div>
+                <div class="col-3 w-auto">DATE:</div>
+                <div class="col-1 d-flex me-0" style="width: 20%;"><input class="signature"></div>
             </div>
         </div>
 
         <div class="text-center my-3">
-            <button id="finalizeButton" class="btn btn-primary" onclick="window.print()">Create Proposal</button>
+            <button id="finalizeButton" class="btn btn-primary" type="submit">Create Proposal</button>
+            <!-- <button id="finalizeButton" class="btn btn-primary" onclick="window.print()">Create Proposal</button> -->
             <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
             <script>
                 $(document).ready(function () {

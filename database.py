@@ -1630,7 +1630,14 @@ def create_proposal(project_id, user_id):
             proposal_id = connection.execute(text(f"{sqlQuery}"), query_params)
             proposal_id = proposal_id.first()[0]
 
-        insert_note(project_id, "Proposal created", user_id)
+        note_info = {
+            "project_id": project_id,
+            "comment": "Proposal created",
+            "comment_date": datetime.today(),
+            "user_id": user_id,
+        }
+
+        add_project_note(note_info)
 
         return proposal_id
 
