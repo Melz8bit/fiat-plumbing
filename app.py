@@ -113,6 +113,8 @@ def login():
             else:
                 flash("Incorrect username or password")
 
+        print("here")
+
         return render_template(
             "login.html",
             login_form=login_form,
