@@ -74,13 +74,18 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+
 ############## Login/Logout ##############
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    flash("Your session has expired, please log in again.")
+    return redirect(url_for("login"))
 
 
 @login_manager.user_loader
 def load_user(user_id):
     user = users.Users(database.get_user(user_id))
-    return user
+    return user or None
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -102,7 +107,7 @@ def login():
                 if check_password_hash(user_db_password, password):
                     user_dict = database.get_user_from_email(email)
                     user = users.Users(user_dict)
-                    login_user(user, remember=True)
+                    login_user(user, remember=False)
 
                     session["user_id"] = user_dict["user_id"]
 
@@ -721,6 +726,8 @@ def project_view(project_id, new_project=False):
     project = database.get_project(project_id)
     client = database.get_client(project["client_id"])
     session["project_id"] = project_id
+
+    print(f"{login_user.user=}")
 
     if new_project:
         flash("Project has been created")
