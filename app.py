@@ -727,8 +727,6 @@ def project_view(project_id, new_project=False):
     client = database.get_client(project["client_id"])
     session["project_id"] = project_id
 
-    print(f"{login_user.user=}")
-
     if new_project:
         flash("Project has been created")
 
