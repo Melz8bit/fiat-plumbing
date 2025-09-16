@@ -1505,6 +1505,13 @@ def update_proposal_data(data_type, proposal_data) -> list:
     return fixed_list
 
 
+############## Admin ##############
+@login_required
+@app.route("/admin", methods=["GET"])
+def admin_page():
+    pass
+
+
 ############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
 def populate_city_state_county():
