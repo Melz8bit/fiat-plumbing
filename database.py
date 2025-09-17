@@ -1874,6 +1874,35 @@ def permit_follow_up_date(status_date, city_county_id):
         return ""
 
 
+############## Admin Queries ##############
+def add_city_county_permit(city_county_info):
+    try:
+        print(f"{city_county_info=}")
+
+        sqlQuery = (
+            "INSERT INTO matrix_permits_request (city_county, website, follow_up_days)"
+            + " VALUES (:city_county, :website, :follow_up_days)"
+        )
+
+        query_params = {
+            "city_county": city_county_info["city_county"],
+            "website": city_county_info["website"],
+            "follow_up_days": city_county_info["follow_up_days"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("City/County added")
+
+        return "City/County successfully added"
+
+    except Exception as e:
+        print("Database Error:", e)
+        return "Error: Unable to add city/county"
+
+
 ############## Misc. Queries ##############
 def get_city_state_county(zip_code):
     try:

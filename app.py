@@ -50,6 +50,7 @@ from forms import (
     ProposalInstallmentsForm,
     ProposalNotesForm,
     PermitsAddForm,
+    CityCountyAddNewForm,
 )
 from models import users
 
@@ -1507,9 +1508,39 @@ def update_proposal_data(data_type, proposal_data) -> list:
 
 ############## Admin ##############
 @login_required
-@app.route("/admin", methods=["GET"])
+@app.route("/admin", methods=["GET", "POST"])
 def admin_page():
-    pass
+    user = database.get_user(session["user_id"])
+    city_county_add_form = CityCountyAddNewForm()
+    permit_locations = database.get_permit_add_information()
+
+    if (
+        city_county_add_form.validate_on_submit
+        and city_county_add_form.city_county_submit.data
+    ):
+        return admin_city_county_add(city_county_add_form)
+
+    return render_template(
+        "admin.html",
+        user=user,
+        city_county_add_form=city_county_add_form,
+        permit_locations=permit_locations,
+    )
+
+
+def admin_city_county_add(city_county_add_form):
+    city_county_info = {
+        "city_county": city_county_add_form.city_county.data,
+        "website": city_county_add_form.website.data,
+        "follow_up_days": city_county_add_form.follow_up_days.data,
+    }
+
+    is_added_message = database.add_city_county_permit(city_county_info)
+
+    print(is_added_message)
+
+    flash(is_added_message)
+    return redirect(url_for("admin_page"))
 
 
 ############## Misc. ##############

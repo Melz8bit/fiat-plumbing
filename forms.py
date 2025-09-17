@@ -17,7 +17,13 @@ from wtforms import (
     IntegerField,
 )
 from flask_wtf.file import FileField, FileRequired
-from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
+from wtforms.validators import (
+    DataRequired,
+    InputRequired,
+    ValidationError,
+    EqualTo,
+    NumberRange,
+)
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from database import (
@@ -411,3 +417,17 @@ class PermitsAddForm(FlaskForm):
         get_pk=lambda x: x.id,
     )
     permit_add_submit = SubmitField("Submit")
+
+
+class CityCountyAddNewForm(FlaskForm):
+    city_county = StringField(
+        "City/County Name",
+    )
+    website = StringField(
+        "Website",
+    )
+    follow_up_days = IntegerField(
+        "Follow-Up Days",
+        [NumberRange(min=0)],
+    )
+    city_county_submit = SubmitField("Add New")

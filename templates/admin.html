@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style>
+    .projectRow:hover {
+        cursor: pointer;
+    }
+</style>
+
+<head>
+    <title>Fiat Plumbing - Admin</title>
+
+    {% include 'bootstrap.html' %}
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        .disabled-link {
+            pointer-events: none;
+            cursor: default;
+            /* Change cursor to indicate no action */
+            opacity: 0.5;
+            /* Optional: visually dim the link */
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'nav.html' %}
+    <div class="container pt-4">
+        <h2>Admin</h2>
+        <hr class="mb-4" />
+
+        <div class="card w-100">
+            <div class="card-body">
+                <h5 class="card-title mb-3">City/County Permit Information</h5>
+                <!-- <h6 class="card-subtitle mb-2 text-body-secondary">Something</h6> -->
+                <p class="d-inline-flex gap-1">
+                    <a class="card-link" id="lnkAddPermitInfo" data-bs-toggle="collapse" href="#collapsePermitInfo"
+                        role="button" aria-expanded="false" aria-controls="collapsePermitInfo"
+                        onclick="addNewPermitInfo()">
+                        Add New
+                    </a>
+                    <!-- <a class="card-link" id="lnkEditPermitInfo" data-bs-toggle="collapse" href="#collapsePermitInfo"
+                        role="button" aria-expanded="false" aria-controls="collapsePermitInfo"
+                        onclick="editExistingPermitInfo()">
+                        Edit Existing
+                    </a> -->
+                    <script>
+                        function addNewPermitInfo() {
+                            const lnkAddPermitInfo = document.getElementById("lnkAddPermitInfo");
+
+                            if (lnkAddPermitInfo.getAttribute('aria-expanded') == "true") {
+                                console.log(true);
+                                lnkAddPermitInfo.innerText = "Hide";
+                            }
+                            else {
+                                console.log(false);
+                                lnkAddPermitInfo.innerText = "Add New";
+                            }
+
+                            // const collapseDiv = document.getElementById("collapsePermitInfo");
+                            // collapseDiv.innerText = "new!";
+
+                            // // Disable Edit link
+                            // const lnkEditPermitInfo = document.getElementById("lnkEditPermitInfo");
+                            // lnkEditPermitInfo.classList.add('disabled-link');
+                        }
+
+                        // function editExistingPermitInfo() {
+                        //     const collapseDiv = document.getElementById("collapsePermitInfo");
+                        //     collapseDiv.innerText = "hh";
+
+                        //     // // Disable Add link
+                        //     // const lnkAddPermitInfo = document.getElementById("lnkAddPermitInfo");
+                        //     // lnkAddPermitInfo.classList.add('disabled-link');
+                        // }
+                    </script>
+                </p>
+                <div class="collapse" id="collapsePermitInfo">
+                    <div class="card card-body">
+                        <div>
+                            <form id="cityCountyAddNewForm" method="POST" enctype="multipart/form-data">
+                                {{ city_county_add_form.hidden_tag() }}
+
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <div class="input-group mb-3">
+                                            {{ city_county_add_form.city_county.label(class="input-group-text") }}
+                                            {{ city_county_add_form.city_county(class="form-control", required=True)
+                                            }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-3">
+                                        <div class="input-group mb-3">
+                                            {{ city_county_add_form.follow_up_days.label(class="input-group-text") }}
+                                            {{ city_county_add_form.follow_up_days(class="form-control", required=True)
+                                            }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            {{ city_county_add_form.website.label(class="input-group-text") }}
+                                            {{ city_county_add_form.website(class="form-control", required=True)
+                                            }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-2 text-center">
+                                        {{ city_county_add_form.city_county_submit(class="btn btn-primary")}}
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table table-hover">
+                    <thead>
+                        <tr class="">
+                            <th scope="col">City/County</th>
+                            <th scope="col">Website</th>
+                            <th scope="col text-center">Follow-Up Days</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for permit_location in permit_locations %}
+                        <tr id="{{permit_location['id']}}" class="" onclick=rowClick(id)>
+                            <td scope="row">{{ permit_location['city_county'] }}</td>
+                            <td>{{ permit_location['website'] }}</td>
+                            <td class="text-center">{{ permit_location['follow_up_days'] }}</td>
+                            <td><a href="#" class="card-link">Edit</a></td>
+                        </tr>
+                        <!-- <script>
+                            function rowClick(project_id) {
+                                window.location = "/project/" + project_id;
+                            }
+                        </script> -->
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+    </div>
+
+
+</body>
+
+</html>
