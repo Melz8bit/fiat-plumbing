@@ -1357,7 +1357,12 @@ def project_add(client_id=None):
         }
 
         database.create_project(project_info)
-        database.insert_note(project_id, f"Project Created", session["user_id"])
+        note_info = {
+            "project_id": project_id,
+            "comment": f"Project Created",
+            "user_id": session["user_id"],
+        }
+        database.add_project_note(note_info)
 
         return redirect(
             url_for(
