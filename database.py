@@ -1877,8 +1877,6 @@ def permit_follow_up_date(status_date, city_county_id):
 ############## Admin Queries ##############
 def add_city_county_permit(city_county_info):
     try:
-        print(f"{city_county_info=}")
-
         sqlQuery = (
             "INSERT INTO matrix_permits_request (city_county, website, follow_up_days)"
             + " VALUES (:city_county, :website, :follow_up_days)"

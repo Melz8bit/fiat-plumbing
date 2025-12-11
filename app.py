@@ -1537,8 +1537,6 @@ def admin_city_county_add(city_county_add_form):
 
     is_added_message = database.add_city_county_permit(city_county_info)
 
-    print(is_added_message)
-
     flash(is_added_message)
     return redirect(url_for("admin_page"))
 
