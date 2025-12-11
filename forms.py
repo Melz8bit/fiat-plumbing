@@ -154,7 +154,7 @@ class ProjectForm(FlaskForm):
     project_id = StringField(
         "Project ID",
         validators=[DataRequired()],
-        render_kw={"readonly": ""},
+        # render_kw={"readonly": ""},
     )
     name = StringField(
         "Project Name",
