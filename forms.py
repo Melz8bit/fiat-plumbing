@@ -157,7 +157,7 @@ class ProjectForm(FlaskForm):
         # render_kw={"readonly": ""},
     )
     name = StringField(
-        "Project Name",
+        "Job Name",
         validators=[DataRequired()],
     )
     client = SelectField(

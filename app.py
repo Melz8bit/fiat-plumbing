@@ -1186,6 +1186,7 @@ def create_proposal_pdf(project_id):
     project_info_temp = database.get_project(project_id)
     project_info = {}
     project_info["project_id"] = project_info_temp["project_id"]
+    project_info["name"] = project_info_temp["name"]
     project_info["address"] = project_info_temp["address"]
     project_info["city"] = project_info_temp["city"]
     project_info["state"] = project_info_temp["state"]

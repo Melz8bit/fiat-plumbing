@@ -149,7 +149,11 @@
             <div>
                 <div class="row">
                     <div class="col-1">Job:</div>
-                    <div class="col">{{ project_info['address'] }}</div>
+                    <div class="col">{{ project_info['name'] | title }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-1"></div>
+                    <div class="col">{{ project_info['address'] | title }}</div>
                 </div>
                 <div class="row">
                     <div class="col-1"></div>
@@ -183,7 +187,7 @@
         <!-- Notes -->
         <ul class="mb-3 ms-4">
             <li class="no-bullets"><strong><u>NOTES:</u></strong></li>
-            <li>PRICE BASED ON BIDDING PLANES DATE 09/03/2024</li>
+            <li>PRICE BASED ON BIDDING PLANS DATE 09/03/2024</li>
             <li>LEAD ROOF STACKS BY OTHERS</li>
             <li><strong>A/C CONDENSATE DRAINS ARE INCLUDED</strong></li>
             <li>FIRE COLLARS, <em>WHERE APPLICABLE</em></li>
