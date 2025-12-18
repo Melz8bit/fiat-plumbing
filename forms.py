@@ -341,6 +341,9 @@ class ProposalFixturesForm(FlaskForm):
         "Cost (Per Fixture) $",
         validators=[DataRequired()],
     )
+    fixture_is_cost = BooleanField(
+        "Cost?",
+    )
 
 
 class ProposalInstallmentsForm(FlaskForm):

@@ -268,9 +268,9 @@
             {{ proposal_fixtures_form.csrf_token() }}
             {{ proposal_fixtures_form.project_id(value=project['project_id']) }}
             <!-- Add Fixture -->
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
+            <div class="row mb-3">
+                <div class="col-4">
+                    <div class="input-group">
                         {{ proposal_fixtures_form.fixtures.label(class="input-group-text")}}
                         <select class="form-select" name="fixture_select" id="fixture_select">
                             {% for option in proposal_fixtures_form.fixtures %}
@@ -282,8 +282,8 @@
                         </select>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="input-group mb-3">
+                <div class="col-2">
+                    <div class="input-group">
                         {{ proposal_fixtures_form.fixture_quantity.label(class="input-group-text") }}
                         {{ proposal_fixtures_form.fixture_quantity(class="form-control text-end", placeholder="0",
                         text=0,
@@ -291,8 +291,8 @@
                     </div>
                 </div>
 
-                <div class="col">
-                    <div class="input-group mb-3">
+                <div class="col-3">
+                    <div class="input-group">
                         {{ proposal_fixtures_form.fixture_cost.label(class="input-group-text") }}
                         {{ proposal_fixtures_form.fixture_cost(class="form-control text-end", placeholder="0.00",
                         text=0.00,
@@ -302,8 +302,26 @@
                     </div>
                 </div>
 
-                <div class="col-2 text-end">
-                    <button class="btn btn-primary" id="btnAddFixture" type="button">Add Fixture</button>
+                <!-- <div class="col">
+                    <div class="input-group">
+                        <div class="input-group-text">
+                            {{ proposal_fixtures_form.fixture_is_cost(class="form-check-input mt-0", type="checkbox") }}
+                        </div>
+                        {{ proposal_fixtures_form.fixture_is_cost.label(class="form-control") }}
+                    </div>
+                </div> -->
+
+                <div class="col d-flex justify-content-evenly align-items-center">
+                    <div class="form-check">
+                        {{ proposal_fixtures_form.fixture_is_cost(class="form-check-input", type="checkbox") }}
+                        <label class="form-check-label" for="fixture_is_cost">
+                            Cost?
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-2 d-flex align-items-center justify-content-end">
+                    <button class="btn btn-primary btn-sm" id="btnAddFixture" type="button">Add Fixture</button>
                 </div>
             </div>
         </form>
@@ -315,6 +333,7 @@
                     <th class="text-center">Name</th>
                     <th class="text-center">Quantity</th>
                     <th class="text-center">Amount</th>
+                    <th class="text-center">Is Cost?</th>
                     <th class="text-center">Total</th>
                     <th></th>
                 </tr>
@@ -345,6 +364,9 @@
                     </td>
                     <td id="lblFixtureTotal{{ fixture['fixture_id']|string }}">
                         {{ "${:,.2f}".format(fixture['total_per_fixture']) }}
+                    </td>
+                    <td id="lblFixtureiScOST{{ fixture['fixture_id']|string }}">
+                        Temp
                     </td>
                     <td>
                         <button id="btnDeleteFixtureLine{{ fixture['fixture_id']|string }}" type="button"
@@ -395,6 +417,7 @@
             </tbody>
             <tfoot>
                 <tr class="text-center">
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
