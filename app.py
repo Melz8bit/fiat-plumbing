@@ -1538,7 +1538,7 @@ def add_proposal_fixture():
 
     # Get values for returning
     fixture_abbreviation = str(parsed_data["fixture_select"]).split(" - ")[0]
-    fixture_name = str(parsed_data["fixture_select"]).split(" - ")[1]
+    # fixture_name = str(parsed_data["fixture_select"]).split(" - ")[1]
 
     # Convert to correct format and data types
     parsed_data["fixture_select"] = fixture_abbreviation
@@ -1548,13 +1548,6 @@ def add_proposal_fixture():
     database.add_proposal_fixture(parsed_data)
 
     return get_all_proposal_fixtures(parsed_data["project_id"])
-
-
-@app.route("/deleteProposalFixture/<fixture_id>/<project_id>", methods=["POST"])
-def delete_proposal_fixture(fixture_id, project_id):
-    database.delete_proposal_fixture(fixture_id)
-
-    return get_all_proposal_fixtures(project_id)
 
 
 def get_all_proposal_fixtures(project_id):
@@ -1569,11 +1562,18 @@ def get_all_proposal_fixtures(project_id):
                 "fixture_abbreviation": fixture["fixture_abbreviation"],
                 "fixture_quantity": fixture["quantity"],
                 "fixture_cost": fixture["cost_per_fixture"],
+                "fixture_is_cost": fixture["is_cost"],
                 "fixture_total": fixture["total_per_fixture"],
             }
         )
 
     return jsonify(fixtures_added)
+
+
+@app.route("/deleteProposalFixture/<fixture_id>/<project_id>", methods=["POST"])
+def delete_proposal_fixture(fixture_id, project_id):
+    database.delete_proposal_fixture(fixture_id)
+    return get_all_proposal_fixtures(project_id)
 
 
 @app.route("/addProposalInstallment", methods=["POST"])

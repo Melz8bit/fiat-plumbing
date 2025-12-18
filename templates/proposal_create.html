@@ -53,6 +53,14 @@
                 costCell.textContent = dollarString.format(data[i]['fixture_cost']);
                 newRow.appendChild(costCell);
 
+                var isCostCell = document.createElement("td");
+                var chkIsCost = document.createElement("input");
+                chkIsCost.type = "checkbox";
+                chkIsCost.checked = data[data.length - 1]['fixture_is_cost'];
+                chkIsCost.disabled = true;
+                isCostCell.append(chkIsCost);
+                newRow.appendChild(isCostCell);
+
                 var totalCell = document.createElement("td");
                 totalCell.textContent = dollarString.format(data[i]['fixture_total']);
                 newRow.appendChild(totalCell);
@@ -69,7 +77,7 @@
                 deleteButton.appendChild(deleteIcon);
                 deleteCell.appendChild(deleteButton);
                 deleteButton.addEventListener("click", function () {
-                    var fixtureID = data[data.length - 1]['fixture_id'];
+                    var fixtureID = data[i]['fixture_id'];
                     var url = "{{ url_for('delete_proposal_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
                     url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
                     $.ajax({
@@ -157,7 +165,7 @@
                 deleteButton.appendChild(deleteIcon);
                 deleteCell.appendChild(deleteButton);
                 deleteButton.addEventListener("click", function () {
-                    var noteID = data[data.length - 1]['note_id'];
+                    var noteID = data[i]['note_id'];
                     var url = "{{ url_for('delete_proposal_note', note_id='NOTE_ID_REPLACE', project_id=project['project_id']) }}";
                     url = url.replace("NOTE_ID_REPLACE", noteID);
                     $.ajax({
@@ -354,11 +362,11 @@
                     <td id="lblFixtureCost{{ fixture['fixture_id']|string }}">
                         {{ "${:,.2f}".format(fixture['cost_per_fixture']) }}
                     </td>
+                    <td id="lblFixtureIsCost{{ fixture['fixture_id']|string }}">
+                        {{ fixture['fixture_is_cost'] }}
+                    </td>
                     <td id="lblFixtureTotal{{ fixture['fixture_id']|string }}">
                         {{ "${:,.2f}".format(fixture['total_per_fixture']) }}
-                    </td>
-                    <td id="lblFixtureiScOST{{ fixture['fixture_id']|string }}">
-                        Temp
                     </td>
                     <td>
                         <button id="btnDeleteFixtureLine{{ fixture['fixture_id']|string }}" type="button"
@@ -453,10 +461,11 @@
                             let dollarString = new Intl.NumberFormat("en-US", formatting_options);
                             var total_fixtures_cost = 0;
 
-                            // fixture_id = data[data.length - 1]['fixture_abbreviation'];
+                            fixture_id = data[data.length - 1]['fixture_id'];
 
                             // Create a new table row
                             var newRow = document.createElement("tr");
+                            newRow.setAttribute("id", "fixtureLineItem" + fixture_id);
                             newRow.classList.add("text-center");
 
                             // Create table cells for each item detail
@@ -475,6 +484,14 @@
                             var costCell = document.createElement("td");
                             costCell.textContent = dollarString.format(data[data.length - 1]['fixture_cost']);
                             newRow.appendChild(costCell);
+
+                            var isCostCell = document.createElement("td");
+                            var chkIsCost = document.createElement("input");
+                            chkIsCost.type = "checkbox";
+                            chkIsCost.checked = data[data.length - 1]['fixture_is_cost'];
+                            chkIsCost.disabled = true;
+                            isCostCell.append(chkIsCost);
+                            newRow.appendChild(isCostCell);
 
                             var totalCell = document.createElement("td");
                             totalCell.textContent = dollarString.format(data[data.length - 1]['fixture_total']);
