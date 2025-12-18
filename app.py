@@ -1530,6 +1530,12 @@ def add_proposal_fixture():
     for key, value in parsed_data.items():
         parsed_data[key] = value[0]
 
+    # Convert is_cost value to true/false
+    if "fixture_is_cost" in parsed_data:
+        parsed_data["fixture_is_cost"] = True
+    else:
+        parsed_data["fixture_is_cost"] = False
+
     # Get values for returning
     fixture_abbreviation = str(parsed_data["fixture_select"]).split(" - ")[0]
     fixture_name = str(parsed_data["fixture_select"]).split(" - ")[1]

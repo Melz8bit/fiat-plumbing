@@ -1423,8 +1423,8 @@ def add_proposal_fixture(fixture_data):
     total_per_fixture = fixture_data["fixture_quantity"] * fixture_data["fixture_cost"]
     try:
         sqlQuery = (
-            "INSERT INTO project_proposal_fixtures (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture)"
-            + " VALUES (:project_id, :fixture_abbreviation, :quantity, :cost_per_fixture, :total_per_fixture)"
+            "INSERT INTO project_proposal_fixtures (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost)"
+            + " VALUES (:project_id, :fixture_abbreviation, :quantity, :cost_per_fixture, :total_per_fixture, :is_cost)"
         )
 
         query_params = {
@@ -1433,6 +1433,7 @@ def add_proposal_fixture(fixture_data):
             "quantity": fixture_data["fixture_quantity"],
             "cost_per_fixture": fixture_data["fixture_cost"],
             "total_per_fixture": total_per_fixture,
+            "is_cost": fixture_data["fixture_is_cost"],
         }
 
         with engine.connect() as connection:
