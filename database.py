@@ -301,13 +301,25 @@ def get_project_client(project_id):
 
 
 ############## Project Queries ##############
-def get_all_projects():
+def get_all_projects(user_role):
+    print(user_role)
     try:
         sqlQuery = f"""
                 SELECT projects.*, clients.name as client_name
                 FROM projects
                 INNER JOIN clients
-                ON projects.client_id = clients.client_id;
+                ON projects.client_id = clients.client_id
+                WHERE projects.is_test = FALSE
+                ORDER BY projects.project_id;
+            """
+
+        if user_role == "developer":
+            sqlQuery = f"""
+                SELECT projects.*, clients.name as client_name
+                FROM projects
+                INNER JOIN clients
+                ON projects.client_id = clients.client_id
+                ORDER BY projects.project_id;
             """
 
         with engine.connect() as connection:

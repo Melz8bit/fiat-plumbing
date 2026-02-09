@@ -190,7 +190,7 @@ def logout():
 def main():
     user = database.get_user(session["user_id"])
     clients = database.get_all_clients()
-    projects = database.get_all_projects()
+    projects = database.get_all_projects(user.role)
 
     return render_template(
         "home.html",
