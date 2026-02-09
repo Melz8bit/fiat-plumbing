@@ -1160,13 +1160,13 @@ def upload_project_document(document_upload_form):
     upload_file_type = filename.filename.split(".")[-1]
     upload_file_name = f"{session['project_id']}-{document_type}-{datetime.now().strftime('%Y%m%d%H%M%S')}.{upload_file_type}"
 
-    is_document_uploaded = upload_file(
-        filename,
-        upload_file_name,
-        filename.mimetype,
-    )
+    # is_document_uploaded = upload_file(
+    #     filename,
+    #     upload_file_name,
+    #     filename.mimetype,
+    # )
 
-    database.upload_document(
+    is_document_uploaded = database.upload_document(
         session["project_id"],
         document_type,
         comment,
@@ -1331,11 +1331,11 @@ def project_add(client_id=None):
     if form.validate_on_submit():
         project_id = form.project_id.data
         form.project_id.data = ""
-        name = form.name.data
+        name = form.name.data.title()
         form.name.data = ""
         client = int(form.client.data)
         form.client.data = ""
-        address = form.address.data
+        address = form.address.data.title()
         form.address.data = ""
         city = form.city.data
         form.city.data = ""

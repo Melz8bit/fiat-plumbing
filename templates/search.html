@@ -4,10 +4,13 @@
     <input id="searchBy" type="text" name="search_by" style="display:none;">
     <ul class="dropdown-menu">
         <li><a id="projectAddress" class="dropdown-item" href="#" onclick="changeSearchBy('projectAddress')">Project
-                Address</a> </li>
+                Address</a></li>
         <li><a id="projectNumber" class="dropdown-item" href="#" onclick="changeSearchBy('projectNumber')">
                 Project Number</a></li>
         <li><a id="clientName" class="dropdown-item" href="#" onclick="changeSearchBy('clientName')">Client Name</a>
+        </li>
+        <li><a id="projectName" class="dropdown-item" href="#" onclick="changeSearchBy('projectName')">
+                Job Name</a></li>
     </ul>
     <script>
         function changeSearchBy(item) {
@@ -25,12 +28,13 @@
     {% endif %}
 
     <button class="btn btn-outline-primary" type="submit" id="button-search">Search</button>
-
-    <div class="invalid-feedback">
-        Please enter a search criteria.
-    </div>
-
 </div>
+
+<!-- <div class="invalid-feedback">
+    Please enter a search criteria.
+</div> -->
+
+
 <script type="text/javascript">
     (function () {
         'use strict'

@@ -398,7 +398,12 @@ def create_project(project_info):
 
 def get_client_projects(client_id):
     try:
-        sqlQuery = "SELECT *" + " FROM projects" + " WHERE client_id = :client_id;"
+        sqlQuery = """
+                    SELECT *
+                    FROM projects
+                    WHERE client_id = :client_id
+                    ORDER BY projects.project_id;
+                """
 
         query_params = {
             "client_id": client_id,
@@ -1315,34 +1320,41 @@ def search(search_by, search_criteria):
 
     search_by = search_by.lower().strip()
 
-    print(f"{search_by=}")
-    print(f"{search_criteria=}")
     try:
         # Default search is project address
         sqlQuery = (
-            "SELECT projects.*, clients.name"
+            "SELECT projects.*, clients.name as client_name"
             + " FROM projects"
             + " INNER JOIN clients"
             + " ON projects.client_id = clients.client_id"
-            + " WHERE projects.address LIKE '%'||:search_criteria||'%';"
+            + " WHERE UPPER(projects.address) LIKE UPPER('%'||:search_criteria||'%');"
         )
 
         if search_by == "client name":
             sqlQuery = (
-                "SELECT projects.*, clients.name"
+                "SELECT projects.*, clients.name as client_name"
                 + " FROM projects"
                 + " INNER JOIN clients"
                 + " ON projects.client_id = clients.client_id"
-                + " WHERE clients.name LIKE '%'||:search_criteria||'%';"
+                + " WHERE UPPER(clients.name) LIKE UPPER('%'||:search_criteria||'%');"
             )
 
         if search_by == "project number":
             sqlQuery = (
-                "SELECT projects.*, clients.name"
+                "SELECT projects.*, clients.name as client_name"
+                + " FROM projects"
+                + " JOIN clients"
+                + " ON projects.client_id = clients.client_id"
+                + " WHERE projects.project_id LIKE UPPER('%'||:search_criteria||'%');"
+            )
+
+        if search_by == "job name":
+            sqlQuery = (
+                "SELECT projects.*, clients.name as client_name"
                 + " FROM projects"
                 + " INNER JOIN clients"
                 + " ON projects.client_id = clients.client_id"
-                + " WHERE project_id = :search_criteria;"
+                + " WHERE UPPER(projects.name) LIKE UPPER('%'||:search_criteria||'%');"
             )
 
         query_params = {
