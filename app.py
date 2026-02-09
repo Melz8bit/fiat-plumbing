@@ -189,7 +189,7 @@ def logout():
 @login_required
 def main():
     user = database.get_user(session["user_id"])
-    clients = database.get_all_clients()
+    clients = database.get_all_clients(user.role)
     projects = database.get_all_projects(user.role)
 
     return render_template(
@@ -222,7 +222,7 @@ def client_view(client_id):
 @login_required
 def client_list():
     user = database.get_user(session["user_id"])
-    clients = database.get_all_clients()
+    clients = database.get_all_clients(user.role)
 
     return render_template(
         "client_list.html",
@@ -418,7 +418,7 @@ def search():
 @login_required
 def projects_list():
     user = database.get_user(session["user_id"])
-    projects = database.get_all_projects()
+    projects = database.get_all_projects(user.role)
 
     return render_template(
         "projects.html",
@@ -1321,7 +1321,7 @@ def project_add(client_id=None):
     form = ProjectForm()
 
     # Populate the form with an updated list of clients
-    clients = database.get_all_clients()
+    clients = database.get_all_clients(user.role)
     client_options = []
     for client_option in clients:
         client_info = (client_option["client_id"], client_option["name"])

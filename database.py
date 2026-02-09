@@ -167,15 +167,25 @@ def get_client_poc(client_id):
         return ""
 
 
-def get_all_clients():
+def get_all_clients(user_role):
     try:
         sqlQuery = (
             "SELECT clients.*, count(project_id) AS project_count"
             + " FROM clients"
             + " LEFT JOIN projects ON clients.client_id = projects.client_id"
             + " GROUP BY clients.client_id"
+            + " WHERE clients.is_test == FALSE"
             + " ORDER BY name"
         )
+
+        if user_role == "developer":
+            sqlQuery = (
+                "SELECT clients.*, count(project_id) AS project_count"
+                + " FROM clients"
+                + " LEFT JOIN projects ON clients.client_id = projects.client_id"
+                + " GROUP BY clients.client_id"
+                + " ORDER BY name"
+            )
 
         with engine.connect() as connection:
             clients = connection.execute(text(f"{sqlQuery}"))
@@ -302,7 +312,6 @@ def get_project_client(project_id):
 
 ############## Project Queries ##############
 def get_all_projects(user_role):
-    print(user_role)
     try:
         sqlQuery = f"""
                 SELECT projects.*, clients.name as client_name
