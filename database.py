@@ -173,8 +173,8 @@ def get_all_clients(user_role):
             "SELECT clients.*, count(project_id) AS project_count"
             + " FROM clients"
             + " LEFT JOIN projects ON clients.client_id = projects.client_id"
-            + " GROUP BY clients.client_id"
             + " WHERE clients.is_test == FALSE"
+            + " GROUP BY clients.client_id"
             + " ORDER BY name"
         )
 
