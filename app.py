@@ -745,6 +745,17 @@ def project_view(project_id, new_project=False):
     permit_add_form = PermitsAddForm()
     document_upload_form = DocumentUploadForm()
 
+    # Update project status
+    if project_status_form.validate_on_submit():
+        project_status = project_status_form.project_status.data
+        if project_status != project["status"]:
+            database.update_project_status(
+                project["project_id"], project_status, session["user_id"]
+            )
+        return redirect(url_for("project_view", project_id=project["project_id"]))
+    else:
+        print(f"{project_status_form.errors=}")
+
     # Add Project Note
     if (
         project_notes_form.validate_on_submit()

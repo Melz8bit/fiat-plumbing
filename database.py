@@ -319,7 +319,7 @@ def get_all_projects(user_role):
                 INNER JOIN clients
                 ON projects.client_id = clients.client_id
                 WHERE projects.is_test = FALSE
-                ORDER BY projects.project_id;
+                ORDER BY projects.name;
             """
 
         if user_role == "developer":
@@ -328,7 +328,7 @@ def get_all_projects(user_role):
                 FROM projects
                 INNER JOIN clients
                 ON projects.client_id = clients.client_id
-                ORDER BY projects.project_id;
+                ORDER BY projects.name;
             """
 
         with engine.connect() as connection:
