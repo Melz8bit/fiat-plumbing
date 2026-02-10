@@ -1649,8 +1649,8 @@ def create_proposal(project_id, user_id):
     }
     proposal_id = None
 
+    # Store proposal data into table
     try:
-        # Store proposal data into table
         sqlQuery = "INSERT INTO project_proposal (project_id)" + " VALUES (:project_id)"
 
         with engine.connect() as connection:
@@ -1663,8 +1663,8 @@ def create_proposal(project_id, user_id):
         print("Database Error:", e)
         return ""
 
+    # Get next proposal ID value
     try:
-        # Get next proposal ID value
         sqlQuery = (
             "SELECT MAX(proposal_id)"
             + " FROM project_proposal"

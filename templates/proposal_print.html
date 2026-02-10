@@ -212,6 +212,9 @@
         <div class="mt-2">
             To be paid as follows:
             <ul class="">
+                {% if proposal_fixtures|length == 0 %}
+                <div class="text-start text-uppercase fw-bold">To Be Determined</div>
+                {% else %}
                 {% for proposal_installment in proposal_installments %}
                 <li>
                     <div class="row">
@@ -230,6 +233,7 @@
                     </div>
                 </li>
                 {% endfor %}
+                {% endif %}
             </ul>
         </div>
 
