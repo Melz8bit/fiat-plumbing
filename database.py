@@ -1644,12 +1644,14 @@ def delete_proposal_note(note_id):
 
 
 def create_proposal(project_id, user_id):
-    try:
-        sqlQuery = "INSERT INTO project_proposal (project_id)" + " VALUES (:project_id)"
+    query_params = {
+        "project_id": project_id,
+    }
+    proposal_id = None
 
-        query_params = {
-            "project_id": project_id,
-        }
+    try:
+        # Store proposal data into table
+        sqlQuery = "INSERT INTO project_proposal (project_id)" + " VALUES (:project_id)"
 
         with engine.connect() as connection:
             result = connection.execute(text(f"{sqlQuery}"), query_params)
@@ -1657,20 +1659,92 @@ def create_proposal(project_id, user_id):
 
         print("Proposal created")
 
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    try:
+        # Get next proposal ID value
         sqlQuery = (
             "SELECT MAX(proposal_id)"
             + " FROM project_proposal"
             + " WHERE project_id = :project_id;"
         )
 
-        query_params = {
-            "project_id": project_id,
-        }
+        # query_params = {
+        #     "project_id": project_id,
+        # }
 
         with engine.connect() as connection:
             proposal_id = connection.execute(text(f"{sqlQuery}"), query_params)
             proposal_id = proposal_id.first()[0]
 
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    print(f"{proposal_id=}")
+    print(type(proposal_id))
+
+    # Update fixture temp table with proposal_id
+    try:
+        sqlQuery = """
+            UPDATE tmp_project_proposal_fixtures
+            SET proposal_id = :proposal_id
+            WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+            "proposal_id": int(proposal_id),
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Move fixtures from temp table
+    try:
+        sqlQuery = """
+            INSERT INTO project_proposal_fixtures
+            SELECT * FROM tmp_project_proposal_fixtures 
+                WHERE project_id = :project_id;
+        """
+
+        # query_params = {
+        #     "project_id": project_id,
+        # }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Delete data from fixtures temp table
+    try:
+        sqlQuery = """
+            DELETE FROM tmp_project_proposal_fixtures 
+            WHERE project_id = :project_id;
+        """
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+            print("Fixtures moved from temp table")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Create note in project
+    try:
         note_info = {
             "project_id": project_id,
             "comment": "Proposal created",
@@ -1704,7 +1778,11 @@ def update_proposal_items_id(project_id, proposal_id):
         with engine.connect() as connection:
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
 
+    try:
         # Update installments table
         sqlQuery = (
             "UPDATE project_proposal_installments"
@@ -1716,6 +1794,11 @@ def update_proposal_items_id(project_id, proposal_id):
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
 
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    try:
         # Update notes table
         sqlQuery = (
             "UPDATE project_proposal_notes"

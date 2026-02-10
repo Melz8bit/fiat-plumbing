@@ -1258,8 +1258,8 @@ def finalize_proposal():
         string=html_str,
         base_url=request.host_url,
     ).write_pdf()
-    print(f"{type(pdf_bytes)=}")
-    print(f"{type(pdf_bytes)=}")
+    # print(f"{type(pdf_bytes)=}")
+    # print(f"{type(pdf_bytes)=}")
 
     # upload_file_type = filename.filename.split(".")[-1]
     upload_file_name = f"{session['project_id']}-Proposal-{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
