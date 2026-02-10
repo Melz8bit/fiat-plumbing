@@ -174,7 +174,7 @@ def get_all_clients(user_role):
             + " FROM clients"
             + " LEFT JOIN projects ON clients.client_id = projects.client_id"
             + " GROUP BY clients.client_id"
-            + " WHERE clients.is_test == FALSE"
+            + " WHERE clients.`is`_test == FALSE"
             + " ORDER BY name"
         )
 
@@ -1427,9 +1427,9 @@ def get_project_fixtures(project_id):
 def get_proposal_fixtures(project_id):
     try:
         sqlQuery = (
-            "SELECT project_proposal_fixtures.*, matrix_fixtures.fixture_name AS fixture_name"
-            + " FROM project_proposal_fixtures"
-            + " INNER JOIN matrix_fixtures ON project_proposal_fixtures.fixture_abbreviation = matrix_fixtures.fixture_abbreviation"
+            "SELECT tmp_project_proposal_fixtures.*, matrix_fixtures.fixture_name AS fixture_name"
+            + " FROM tmp_project_proposal_fixtures"
+            + " INNER JOIN matrix_fixtures ON tmp_project_proposal_fixtures.fixture_abbreviation = matrix_fixtures.fixture_abbreviation"
             + " WHERE project_id = :project_id"
             + " AND proposal_id = 0 ORDER BY fixture_id;"
         )
@@ -1456,7 +1456,7 @@ def add_proposal_fixture(fixture_data):
     total_per_fixture = fixture_data["fixture_quantity"] * fixture_data["fixture_cost"]
     try:
         sqlQuery = (
-            "INSERT INTO project_proposal_fixtures (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost)"
+            "INSERT INTO tmp_project_proposal_fixtures (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost)"
             + " VALUES (:project_id, :fixture_abbreviation, :quantity, :cost_per_fixture, :total_per_fixture, :is_cost)"
         )
 
@@ -1483,7 +1483,7 @@ def add_proposal_fixture(fixture_data):
 def delete_proposal_fixture(fixture_id):
     try:
         sqlQuery = (
-            "DELETE FROM project_proposal_fixtures WHERE fixture_id = :fixture_id;"
+            "DELETE FROM tmp_project_proposal_fixtures WHERE fixture_id = :fixture_id;"
         )
 
         query_params = {
@@ -1552,7 +1552,7 @@ def get_proposal_installments(project_id):
 def add_proposal_installment(installment_data):
     try:
         sqlQuery = (
-            "INSERT INTO project_proposal_installments (project_id, installment_number, installment_category, installment_amount)"
+            "INSERT INTO tmp_project_proposal_installments (project_id, installment_number, installment_category, installment_amount)"
             + " VALUES (:project_id, :installment_number, :installment_category, :installment_amount)"
         )
 

@@ -56,7 +56,7 @@
                 var isCostCell = document.createElement("td");
                 var chkIsCost = document.createElement("input");
                 chkIsCost.type = "checkbox";
-                chkIsCost.checked = data[data.length - 1]['fixture_is_cost'];
+                chkIsCost.checked = data[i]['fixture_is_cost'];
                 chkIsCost.disabled = true;
                 isCostCell.append(chkIsCost);
                 newRow.appendChild(isCostCell);
@@ -363,7 +363,7 @@
                         {{ "${:,.2f}".format(fixture['cost_per_fixture']) }}
                     </td>
                     <td id="lblFixtureIsCost{{ fixture['fixture_id']|string }}">
-                        {{ fixture['fixture_is_cost'] }}
+                        <input type="checkbox" {% if fixture['is_cost'] %}checked{% endif %} disabled>
                     </td>
                     <td id="lblFixtureTotal{{ fixture['fixture_id']|string }}">
                         {{ "${:,.2f}".format(fixture['total_per_fixture']) }}

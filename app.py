@@ -791,6 +791,7 @@ def project_view(project_id, new_project=False):
         print(f"{document_upload_form.errors=}")
 
     tab = session.pop("active_tab", None)
+
     return render_template(
         "project.html",
         tab=tab,
@@ -802,6 +803,7 @@ def project_view(project_id, new_project=False):
         proposal_fixtures_form=proposal_fixtures_form,
         proposal_installments_form=proposal_installments_form,
         proposal_notes_form=proposal_notes_form,
+        proposal_fixtures=proposal_fixtures,
         proposal_fixtures_total=fixtures_total(proposal_fixtures),
         apply_payment_form=apply_payment_form,
         proposal_installments=proposal_installments,
