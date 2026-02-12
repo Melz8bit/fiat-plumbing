@@ -1072,7 +1072,9 @@ def apply_payment_ajax(project_id):
         payment_dict = None
         # print(f"{invoice['payment_remaining']=}")
         # print(f"{invoice['payment_received']=}")
-        if payment_remaining < invoice["payment_remaining"]:
+        if payment_remaining < (
+            invoice["payment_remaining"] - invoice["invoice_retainage"]
+        ):
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
                 "invoice_status": "Partial Payment",
@@ -1081,7 +1083,9 @@ def apply_payment_ajax(project_id):
             }
             payment_remaining = 0
 
-        if payment_remaining >= invoice["payment_remaining"]:
+        if payment_remaining >= (
+            invoice["payment_remaining"] - invoice["invoice_retainage"]
+        ):
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
                 "invoice_status": "Paid",
@@ -1091,7 +1095,7 @@ def apply_payment_ajax(project_id):
 
             payment_remaining -= invoice["payment_remaining"]
 
-        print(f"{payment_dict=}")
+        # print(f"{payment_dict=}")
         payment_applied_info.append(payment_dict)
 
         if payment_remaining == 0:
