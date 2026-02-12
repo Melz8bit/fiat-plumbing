@@ -38,6 +38,8 @@
                     <th>#</th>
                     <th>Created Date</th>
                     <th>Amount</th>
+                    <th>Retainage</th>
+                    <th>Total</th>
                     <th>Billed Date</th>
                     <th>Status</th>
                     <th>Status Date</th>
@@ -58,6 +60,8 @@
                     <td>{{ invoice['invoice_number'] }}</td>
                     <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
                     <td>{{ "${:,.2f}".format(invoice['invoice_amount']) }}</td>
+                    <td>{{ "${:,.2f}".format(invoice['invoice_retainage']) }}</td>
+                    <td>{{ "${:,.2f}".format(invoice['invoice_total']) }}</td>
                     <td>{{ invoice['billed_date'].strftime('%m/%d/%Y') }}</td>
                     <td>{{ invoice['invoice_status'] | capitalize }}</td>
                     <td>{{ invoice['invoice_status_date'].strftime('%m/%d/%Y') }}</td>
@@ -115,6 +119,8 @@
                                             <th>Method</th>
                                             <th>Check #</th>
                                             <th>Amount</th>
+                                            <!-- <th>Retainage</th>
+                                            <th>Total</th> -->
                                             <th>Date Received</th>
                                             <th>Note</th>
                                         </tr>
@@ -134,6 +140,8 @@
                                             <td>{{ payment['payment_method'] }}</td>
                                             <td>{{ payment['check_number'] }}</td>
                                             <td>{{ "${:,.2f}".format(payment['amount_applied']) }}</td>
+                                            <!-- <td>{{ "${:,.2f}".format(payment['amount_applied']) }}</td>
+                                            <td>{{ "${:,.2f}".format(payment['amount_applied']) }}</td> -->
                                             <td>{{ payment['date_received'].strftime('%m/%d/%Y') }}</td>
                                             <td>{{ payment['payment_note'] }}</td>
                                         </tr>

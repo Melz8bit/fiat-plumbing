@@ -413,4 +413,12 @@ class PermitsAddForm(FlaskForm):
         blank_text="Select City/County",
         get_pk=lambda x: x.id,
     )
+
+    permit_issue_date = DateField(
+        "Issue Date",
+    )
+
+    permit_expiration_date = DateField(
+        "Expiration Date",
+    )
     permit_add_submit = SubmitField("Submit")
