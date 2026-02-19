@@ -1,4 +1,4 @@
-<div class="modal-dialog modal-lg">
+<div class="modal-dialog modal-xl">
     <div class="modal-content">
         <div class="modal-header">
             <h1 class="modal-title fs-5">Apply Payment</h1>
@@ -41,6 +41,7 @@
                         <thead class="text-center">
                             <th>#</th>
                             <th>Created Date</th>
+                            <th>Invoice Total</th>
                             <th>Current Owed</th>
                             <th>Retainage</th>
                             <th>Applied</th>
@@ -64,13 +65,15 @@
                                     }}
                                 </td>
                                 <td>{{ invoice['created_date'].strftime('%m/%d/%Y') }}</td>
+                                <td>{{ "${:,.2f}".format(invoice['invoice_total']) }}
+                                </td>
                                 <td>{{ "${:,.2f}".format(invoice['payment_remaining'] - invoice['invoice_retainage']) }}
                                 </td>
                                 <td>{{ "${:,.2f}".format(invoice['invoice_retainage']) }}</td>
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <input id="txtInvoiceApplyPayment{{ invoice['invoice_id']|string }}"
-                                            class="form-control form-control-sm text-center" value="$0.00" disabled>
+                                            class="form-control form-control-sm text-center" value="$0.00">
                                         {{ apply_payment_form.amount_applied(
                                         id="invoiceApplyPayment"+invoice['invoice_id']|string
                                         ) }}

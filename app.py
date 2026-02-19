@@ -1058,6 +1058,12 @@ def apply_payment(form):
     return redirect(url_for("project_view", project_id=session["project_id"]))
 
 
+# @app.route("/test", methods=["GET", "POST"])
+# def test():
+#     print("hi")
+#     return jsonify("hi")
+
+
 @app.route("/apply_payment/<project_id>", methods=["GET", "POST"])
 def apply_payment_ajax(project_id):
     print(project_id)
@@ -1065,40 +1071,69 @@ def apply_payment_ajax(project_id):
 
     payment_applied_info = []
 
-    payment_remaining = float(ApplyPaymentForm().data["payment_amount"])
+    check_amount_remaining = float(ApplyPaymentForm().data["payment_amount"])
     open_invoices = database.get_open_invoices(project_id)
 
     for invoice in open_invoices:
         payment_dict = None
-        # print(f"{invoice['payment_remaining']=}")
-        # print(f"{invoice['payment_received']=}")
-        if payment_remaining < (
-            invoice["payment_remaining"] - invoice["invoice_retainage"]
+
+        print(f"{check_amount_remaining=}")
+
+        if invoice["payment_remaining"] - invoice["invoice_retainage"] == 0.00:
+            payment_dict = {
+                "invoice_id": invoice["invoice_id"],
+                "invoice_status": invoice["invoice_status"],
+                "amount_remaining": invoice["payment_remaining"],
+                "amount_received": 0.00,
+            }
+            payment_applied_info.append(payment_dict)
+            continue
+
+        print(
+            f"{round(invoice['payment_remaining'] - invoice['invoice_retainage'], 2)=}"
+        )
+        print(f"{invoice['payment_remaining']=}")
+        print(f"{invoice['invoice_retainage']=}")
+
+        if check_amount_remaining <= (
+            round(invoice["payment_remaining"] - invoice["invoice_retainage"], 2)
         ):
+            print(f"bye {invoice['invoice_id']=}")
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
                 "invoice_status": "Partial Payment",
-                "amount_remaining": invoice["payment_remaining"] - payment_remaining,
-                "amount_received": payment_remaining,
+                "amount_remaining": round(
+                    invoice["payment_remaining"] - check_amount_remaining, 2
+                ),
+                "amount_received": check_amount_remaining,
             }
-            payment_remaining = 0
+            check_amount_remaining = 0
 
-        if payment_remaining >= (
-            invoice["payment_remaining"] - invoice["invoice_retainage"]
+        if check_amount_remaining > (
+            round(invoice["payment_remaining"] - invoice["invoice_retainage"], 2)
         ):
+            print(f"hi {invoice['invoice_id']=}")
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
                 "invoice_status": "Paid",
-                "amount_received": invoice["payment_remaining"],
-                "amount_remaining": 0,
+                "amount_received": round(
+                    invoice["payment_remaining"] - invoice["invoice_retainage"], 2
+                ),
+                "amount_remaining": invoice["invoice_retainage"],
             }
 
-            payment_remaining -= invoice["payment_remaining"]
+            # print(f"{payment_dict=}")
+
+            check_amount_remaining -= round(
+                invoice["payment_remaining"] - invoice["invoice_retainage"], 2
+            )
+            # print(f"{check_amount_remaining=}")
 
         # print(f"{payment_dict=}")
+        # print(invoice["invoice_id"])
         payment_applied_info.append(payment_dict)
 
-        if payment_remaining == 0:
+        if check_amount_remaining == 0:
             # print(payment_applied_info)
             return jsonify(payment_applied_info)
 
