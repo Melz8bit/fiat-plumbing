@@ -316,8 +316,9 @@ class ApplyPaymentForm(FlaskForm):
         default=False,
     )
 
+    is_retainage = BooleanField("Apply to Retainage?")
+
     payment_note = TextAreaField("Note")
-    # invoice_select = BooleanField()
     apply_payment = SubmitField("Submit")
 
 

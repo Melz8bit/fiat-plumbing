@@ -1066,18 +1066,16 @@ def apply_payment(form):
 
 @app.route("/apply_payment/<project_id>", methods=["GET", "POST"])
 def apply_payment_ajax(project_id):
-    print(project_id)
-    payment_form = ApplyPaymentForm()
+    payment_form = ApplyPaymentForm().data
+    print(payment_form["is_retainage"])
 
     payment_applied_info = []
 
-    check_amount_remaining = float(ApplyPaymentForm().data["payment_amount"])
+    check_amount_remaining = float(payment_form["payment_amount"])
     open_invoices = database.get_open_invoices(project_id)
 
     for invoice in open_invoices:
         payment_dict = None
-
-        print(f"{check_amount_remaining=}")
 
         if invoice["payment_remaining"] - invoice["invoice_retainage"] == 0.00:
             payment_dict = {
@@ -1089,16 +1087,9 @@ def apply_payment_ajax(project_id):
             payment_applied_info.append(payment_dict)
             continue
 
-        print(
-            f"{round(invoice['payment_remaining'] - invoice['invoice_retainage'], 2)=}"
-        )
-        print(f"{invoice['payment_remaining']=}")
-        print(f"{invoice['invoice_retainage']=}")
-
         if check_amount_remaining <= (
             round(invoice["payment_remaining"] - invoice["invoice_retainage"], 2)
         ):
-            print(f"bye {invoice['invoice_id']=}")
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
                 "invoice_status": "Partial Payment",
@@ -1112,7 +1103,6 @@ def apply_payment_ajax(project_id):
         if check_amount_remaining > (
             round(invoice["payment_remaining"] - invoice["invoice_retainage"], 2)
         ):
-            print(f"hi {invoice['invoice_id']=}")
             payment_dict = {
                 "invoice_id": invoice["invoice_id"],
                 "invoice_status": "Paid",
@@ -1122,22 +1112,15 @@ def apply_payment_ajax(project_id):
                 "amount_remaining": invoice["invoice_retainage"],
             }
 
-            # print(f"{payment_dict=}")
-
             check_amount_remaining -= round(
                 invoice["payment_remaining"] - invoice["invoice_retainage"], 2
             )
-            # print(f"{check_amount_remaining=}")
 
-        # print(f"{payment_dict=}")
-        # print(invoice["invoice_id"])
         payment_applied_info.append(payment_dict)
 
         if check_amount_remaining == 0:
-            # print(payment_applied_info)
             return jsonify(payment_applied_info)
 
-    # print(f"{invoice_id=}")
     return jsonify("")
 
 

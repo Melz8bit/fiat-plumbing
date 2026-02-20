@@ -10,28 +10,32 @@
                 <!-- Payment Information -->
                 <h6>Payment Information</h6>
                 <div>
-                    <div class="row">
-                        <div class="input-group mb-3 col">
+                    <div class="row mb-3">
+                        <div class="input-group col">
                             {{ apply_payment_form.payment_method.label(class="input-group-text w-50") }}
                             {{ apply_payment_form.payment_method(class="form-select") }}
                         </div>
-                        <div class="input-group mb-3 col">
+                        <div class="input-group col">
                             {{ apply_payment_form.check_number.label(class="input-group-text w-50") }}
                             {{ apply_payment_form.check_number(class="form-control") }}
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="input-group mb-3 col">
+                    <div class="row mb-3 ">
+                        <div class="input-group col">
                             {{ apply_payment_form.payment_amount.label(class="input-group-text w-50") }}
                             <span class="input-group-text">$</span>
                             {{ apply_payment_form.payment_amount(class="form-control", min="0") }}
                         </div>
-                        <div class="input-group mb-3 col">
+                        <div class="input-group col">
                             {{ apply_payment_form.date_received.label(class="input-group-text w-50") }}
                             {{ apply_payment_form.date_received(class="form-control") }}
                         </div>
                     </div>
-                    <div class="text-center">
+                    <div class="text-center mb-3">
+                        {{apply_payment_form.is_retainage}}
+                        {{apply_payment_form.is_retainage.label}}
+                    </div>
+                    <div class="text-center mb-3">
                         <button class="btn btn-primary" id="btnApplyPayment" type="button">Apply</button>
                     </div>
                 </div>
