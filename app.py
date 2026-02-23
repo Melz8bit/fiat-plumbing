@@ -1004,6 +1004,7 @@ def get_project_payments(project_id):
     )
 
 
+# Store payment information in the database - finalize application of payment
 def apply_payment(form):
     # Payment Information Data
     payment_method = form.payment_method.data
@@ -1058,16 +1059,9 @@ def apply_payment(form):
     return redirect(url_for("project_view", project_id=session["project_id"]))
 
 
-# @app.route("/test", methods=["GET", "POST"])
-# def test():
-#     print("hi")
-#     return jsonify("hi")
-
-
 @app.route("/apply_payment/<project_id>", methods=["GET", "POST"])
 def apply_payment_ajax(project_id):
     payment_form = ApplyPaymentForm().data
-    print(payment_form["is_retainage"])
 
     payment_applied_info = []
 
@@ -1077,44 +1071,93 @@ def apply_payment_ajax(project_id):
     for invoice in open_invoices:
         payment_dict = None
 
-        if invoice["payment_remaining"] - invoice["invoice_retainage"] == 0.00:
-            payment_dict = {
-                "invoice_id": invoice["invoice_id"],
-                "invoice_status": invoice["invoice_status"],
-                "amount_remaining": invoice["payment_remaining"],
-                "amount_received": 0.00,
-            }
-            payment_applied_info.append(payment_dict)
-            continue
+        if not payment_form["is_retainage"]:
+            # Only retainage is pending
+            if invoice["payment_remaining"] - invoice["invoice_retainage"] == 0.00:
+                payment_dict = {
+                    "invoice_id": invoice["invoice_id"],
+                    "invoice_status": invoice["invoice_status"],
+                    "amount_remaining": invoice["payment_remaining"],
+                    "amount_received": 0.00,
+                }
+                payment_applied_info.append(payment_dict)
+                continue
 
-        if check_amount_remaining <= (
-            round(invoice["payment_remaining"] - invoice["invoice_retainage"], 2)
-        ):
-            payment_dict = {
-                "invoice_id": invoice["invoice_id"],
-                "invoice_status": "Partial Payment",
-                "amount_remaining": round(
-                    invoice["payment_remaining"] - check_amount_remaining, 2
-                ),
-                "amount_received": check_amount_remaining,
-            }
-            check_amount_remaining = 0
+            # Balance left after payment applied (not including retainage)
+            if check_amount_remaining <= (
+                round(invoice["payment_remaining"] - invoice["invoice_retainage"], 2)
+            ):
+                payment_dict = {
+                    "invoice_id": invoice["invoice_id"],
+                    "invoice_status": "Partial Payment",
+                    "amount_received": check_amount_remaining,
+                    "amount_remaining": round(
+                        invoice["payment_remaining"] - check_amount_remaining, 2
+                    ),
+                }
+                check_amount_remaining = 0
 
-        if check_amount_remaining > (
-            round(invoice["payment_remaining"] - invoice["invoice_retainage"], 2)
-        ):
-            payment_dict = {
-                "invoice_id": invoice["invoice_id"],
-                "invoice_status": "Paid",
-                "amount_received": round(
+            # Check still has amount left after applying to balance (not including retainage)
+            if check_amount_remaining > (
+                round(invoice["payment_remaining"] - invoice["invoice_retainage"], 2)
+            ):
+                payment_dict = {
+                    "invoice_id": invoice["invoice_id"],
+                    "invoice_status": "Paid",
+                    "amount_received": round(
+                        invoice["payment_remaining"] - invoice["invoice_retainage"],
+                        2,
+                    ),
+                    "amount_remaining": invoice["invoice_retainage"],
+                }
+
+                check_amount_remaining -= round(
                     invoice["payment_remaining"] - invoice["invoice_retainage"], 2
-                ),
-                "amount_remaining": invoice["invoice_retainage"],
-            }
-
-            check_amount_remaining -= round(
-                invoice["payment_remaining"] - invoice["invoice_retainage"], 2
-            )
+                )
+        else:  # Apply payment to retainage
+            # Only retainage is pending
+            if invoice["payment_remaining"] - invoice["invoice_retainage"] <= 0.00:
+                # print(f'{check_amount_remaining=}\t{invoice["invoice_retainage"]=}')
+                if check_amount_remaining >= invoice["payment_remaining"]:
+                    payment_dict = {
+                        "invoice_id": invoice["invoice_id"],
+                        "invoice_status": "Paid",
+                        "amount_received": invoice["payment_remaining"],
+                        "amount_remaining": 0.00,
+                    }
+                    payment_applied_info.append(payment_dict)
+                    check_amount_remaining -= round(invoice["payment_remaining"], 2)
+                else:
+                    payment_dict = {
+                        "invoice_id": invoice["invoice_id"],
+                        "invoice_status": "Partial Payment",
+                        "amount_received": check_amount_remaining,
+                        "amount_remaining": round(
+                            invoice["payment_remaining"] - check_amount_remaining, 2
+                        ),
+                    }
+                    payment_applied_info.append(payment_dict)
+                    check_amount_remaining = 0
+            else:
+                # print(f"{check_amount_remaining=}")
+                if check_amount_remaining >= invoice["payment_remaining"]:
+                    payment_dict = {
+                        "invoice_id": invoice["invoice_id"],
+                        "invoice_status": "Paid",
+                        "amount_received": check_amount_remaining,
+                        "amount_remaining": 0.00,
+                    }
+                    check_amount_remaining = 0
+                else:
+                    payment_dict = {
+                        "invoice_id": invoice["invoice_id"],
+                        "invoice_status": "Partial Payment",
+                        "amount_received": check_amount_remaining,
+                        "amount_remaining": round(
+                            invoice["payment_remaining"] - check_amount_remaining, 2
+                        ),
+                    }
+                    check_amount_remaining = 0
 
         payment_applied_info.append(payment_dict)
 
