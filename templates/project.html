@@ -492,6 +492,88 @@
             }
         });
     </script>
+
+    <script>
+        $(document).ready(function () {
+            // console.log("Script loaded and DOM ready");
+
+            // We use $(document).on to ensure dynamic buttons are caught
+            $(document).on("click", "#btnApplyPayment", function (e) {
+                // console.log("Apply button CLICKED - Logic Starting");
+                e.preventDefault();
+
+                // 1. Setup Validation Variables
+                const form = document.getElementById('applyPayment');
+                const amountInput = document.getElementById('payment_amount');
+                const amountFeedback = document.getElementById('amountFeedback');
+                const currencyFormatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                });
+
+                // 2. Define the ceiling
+                // Note: project_amount_owed must be available in the parent page context
+                const maxValue = parseFloat("{{ project_amount_owed }}") || 0;
+                const amount = parseFloat(amountInput.value);
+                // console.log("Validating: Amount=" + amount + " Max=" + maxValue);
+
+                // 3. Custom Validation Logic
+                let errorText = "";
+                if (isNaN(amount) || amount <= 0) {
+                    errorText = "Please enter a valid payment amount.";
+                } else if (amount > maxValue) {
+                    errorText = `Payment amount (${currencyFormatter.format(amount)}) is greater than the ${currencyFormatter.format(maxValue)} currently owed.`;
+                }
+
+                // 4. Set Validity
+                amountInput.setCustomValidity(errorText);
+                if (amountFeedback) amountFeedback.textContent = errorText;
+
+                // 5. Trigger Bootstrap UI styles
+                // We find the closest '.input-group' or 'col' that wraps our input
+                const amountContainer = amountInput.closest('.col');
+
+                if (errorText !== "") {
+                    // INVALID STATE
+                    amountInput.classList.add('is-invalid');
+
+                    // Manually show the message
+                    amountFeedback.textContent = errorText;
+                    amountFeedback.classList.remove('d-none');
+                    return;
+                } else {
+                    // VALID STATE
+                    amountInput.classList.remove('is-invalid');
+                    amountInput.classList.add('is-valid');
+
+                    // Manually hide the message
+                    amountFeedback.classList.add('d-none');
+                }
+
+                // 6. Stop if invalid
+                if (errorText !== "") {
+                    // console.warn("Validation failed: " + errorText);
+                    return;
+                }
+
+                // 6. Stop if the form is invalid
+                if (!form.checkValidity()) {
+                    // console.warn("Validation failed. Stopping AJAX.");
+                    return;
+                }
+            });
+
+            // CSRF Injection for AJAX
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        const csrfToken = "{{ apply_payment_form.csrf_token._value() }}";
+                        xhr.setRequestHeader("X-CSRFToken", csrfToken);
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -4,7 +4,7 @@
             <h1 class="modal-title fs-5">Apply Payment</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form id="applyPayment" name="applyPayment" method="POST">
+        <form id="applyPayment" name="applyPayment" method="POST" class="needs-validation" novalidate>
             {{ apply_payment_form.csrf_token() }}
             <div class="modal-body">
                 <!-- Payment Information -->
@@ -20,7 +20,7 @@
                             {{ apply_payment_form.check_number(class="form-control") }}
                         </div>
                     </div>
-                    <div class="row mb-3 ">
+                    <div class="row mb-3">
                         <div class="input-group col">
                             {{ apply_payment_form.payment_amount.label(class="input-group-text w-50") }}
                             <span class="input-group-text">$</span>
@@ -30,6 +30,9 @@
                             {{ apply_payment_form.date_received.label(class="input-group-text w-50") }}
                             {{ apply_payment_form.date_received(class="form-control") }}
                         </div>
+                    </div>
+                    <div class="text-danger d-none mb-3" id="amountFeedback">
+                        <!-- Custom error message will go here -->
                     </div>
                     <div class="text-center mb-3">
                         {{apply_payment_form.is_retainage}}

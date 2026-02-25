@@ -659,31 +659,31 @@ def get_project_invoices(project_id):
         return ""
 
 
-def get_open_invoices(project_id, invoice_number):
-    try:
-        sqlQuery = (
-            "SELECT *"
-            + " FROM project_invoices"
-            + " WHERE project_id = :project_id AND invoice_number <= :invoice_number AND invoice_status != 'Paid';"
-        )
+# def get_open_invoices(project_id, invoice_number):
+#     try:
+#         sqlQuery = (
+#             "SELECT *"
+#             + " FROM project_invoices"
+#             + " WHERE project_id = :project_id AND invoice_number <= :invoice_number AND invoice_status != 'Paid';"
+#         )
 
-        query_params = {
-            "project_id": project_id,
-            "invoice_number": int(invoice_number),
-        }
+#         query_params = {
+#             "project_id": project_id,
+#             "invoice_number": int(invoice_number),
+#         }
 
-        with engine.connect() as connection:
-            invoices = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                invoices_dict = invoices.mappings().all()
-            except:
-                invoices_dict = ""
+#         with engine.connect() as connection:
+#             invoices = connection.execute(text(f"{sqlQuery}"), query_params)
+#             try:
+#                 invoices_dict = invoices.mappings().all()
+#             except:
+#                 invoices_dict = ""
 
-        return invoices_dict
+#         return invoices_dict
 
-    except Exception as e:
-        print("Database Error:", e)
-        return ""
+#     except Exception as e:
+#         print("Database Error:", e)
+#         return ""
 
 
 def get_invoice(project_id, invoice_number):

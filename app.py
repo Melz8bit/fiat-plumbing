@@ -745,6 +745,11 @@ def project_view(project_id, new_project=False):
     permit_add_form = PermitsAddForm()
     document_upload_form = DocumentUploadForm()
 
+    open_invoices = database.get_open_invoices(project_id)
+    project_amount_owed = sum(
+        [invoice["payment_remaining"] for invoice in open_invoices]
+    )
+
     # Update project status
     if project_status_form.validate_on_submit():
         project_status = project_status_form.project_status.data
@@ -820,7 +825,7 @@ def project_view(project_id, new_project=False):
         proposal_installments=proposal_installments,
         proposal_installments_total=installments_total(proposal_installments),
         project_status_form=project_status_form,
-        # permit_add_form=permit_add_form,
+        project_amount_owed=project_amount_owed,
     )
 
 
@@ -1062,14 +1067,13 @@ def apply_payment(form):
 @app.route("/apply_payment/<project_id>", methods=["GET", "POST"])
 def apply_payment_ajax(project_id):
     payment_form = ApplyPaymentForm().data
-
     payment_applied_info = []
-
     check_amount_remaining = float(payment_form["payment_amount"])
     open_invoices = database.get_open_invoices(project_id)
 
     for invoice in open_invoices:
         payment_dict = None
+        check_amount_remaining = round(check_amount_remaining, 2)
 
         if not payment_form["is_retainage"]:
             # Only retainage is pending
@@ -1117,7 +1121,6 @@ def apply_payment_ajax(project_id):
         else:  # Apply payment to retainage
             # Only retainage is pending
             if invoice["payment_remaining"] - invoice["invoice_retainage"] <= 0.00:
-                # print(f'{check_amount_remaining=}\t{invoice["invoice_retainage"]=}')
                 if check_amount_remaining >= invoice["payment_remaining"]:
                     payment_dict = {
                         "invoice_id": invoice["invoice_id"],
@@ -1139,7 +1142,6 @@ def apply_payment_ajax(project_id):
                     payment_applied_info.append(payment_dict)
                     check_amount_remaining = 0
             else:
-                # print(f"{check_amount_remaining=}")
                 if check_amount_remaining >= invoice["payment_remaining"]:
                     payment_dict = {
                         "invoice_id": invoice["invoice_id"],
