@@ -745,10 +745,7 @@ def project_view(project_id, new_project=False):
     permit_add_form = PermitsAddForm()
     document_upload_form = DocumentUploadForm()
 
-    open_invoices = database.get_open_invoices(project_id)
-    project_amount_owed = sum(
-        [invoice["payment_remaining"] for invoice in open_invoices]
-    )
+    project_amount_owed = get_project_amount_owed(project_id)
 
     # Update project status
     if project_status_form.validate_on_submit():
@@ -993,6 +990,7 @@ def get_project_payments(project_id):
     payments = database.get_project_payments(project_id)
     open_invoices = database.get_open_invoices(project_id)
     project_payments = database.get_project_payments(project_id)
+    project_amount_owed = get_project_amount_owed(project_id)
 
     payment_detail_form = InvoicePaymentForm()
     apply_payment_form = ApplyPaymentForm()
@@ -1006,6 +1004,7 @@ def get_project_payments(project_id):
         project_payments=project_payments,
         payment_detail_form=payment_detail_form,
         apply_payment_form=apply_payment_form,
+        project_amount_owed=project_amount_owed,
     )
 
 
@@ -1167,6 +1166,11 @@ def apply_payment_ajax(project_id):
             return jsonify(payment_applied_info)
 
     return jsonify("")
+
+
+def get_project_amount_owed(project_id):
+    open_invoices = database.get_open_invoices(project_id)
+    return sum([invoice["payment_remaining"] for invoice in open_invoices])
 
 
 # Permits

@@ -22,7 +22,8 @@
     <!-- Payments -->
     <div>
         <div class="text-end pt-1">
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#applyPaymentModal">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#applyPaymentModal" {% if
+                project_amount_owed==0 %} disabled {% endif %}>
                 Apply Payment
             </button>
         </div>
