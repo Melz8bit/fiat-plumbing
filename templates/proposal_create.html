@@ -203,6 +203,7 @@
         document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
     }
 </script>
+
 <div class="modal-header">
     <h1 class="modal-title fs-4" id="modalProposalCreationLabel">Proposal Creation</h1>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -266,6 +267,16 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <hr>
+
+        <!-- Plan Date -->
+        <h3>Plans Information</h3>
+        <div class="input-group mb-3 w-25">
+            <span class="input-group-text" id="lblPlansDate">Plan Date:</span>
+            <input id="plans_date" type="date" class="form-control" placeholder="Username" aria-label="Username"
+                aria-describedby="lblPlansDate">
         </div>
 
         <hr>
@@ -668,6 +679,7 @@
                 </tfoot>
             </table>
         </form>
+
         <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
         <script>
             $(document).ready(function () {
@@ -973,28 +985,19 @@
 </div>
 <div class="modal-footer text-center">
     <div id="createPDF" class="mt-4">
-        <a href="{{ url_for('create_proposal_pdf', project_id=project['project_id'] )}}" class="btn btn-primary">View
-            PDF</a>
-        <!-- <button id="btnCreateProposalPDF" class="btn btn-primary">Create Proposal</button> -->
-        <!-- <script>
-            $(document).ready(function () {
-                $("#createPDF").on("click", "button[id^='btnCreateProposalPDF']", function (e) {
-                    var url = "{{ url_for('create_proposal_pdf', project_id=project['project_id']) }}";
-                    $.ajax({
-                        type: "POST",
-                        url: url,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        data: "", // serializes the form's elements.
-                        success: function (data) {
-                            // console.log(data)  // display the returned data in the console.
-                            // console.log(data.length);
-                        }
-                    });
-                });
-            });
-        </script> -->
+        <!-- <a href="{{ url_for('create_proposal_pdf', project_id=project['project_id'] )}}" class="btn btn-primary">
+            View PDF
+        </a> -->
+        <button onClick="redirectToUrl()" class="btn btn-primary">
+            View PDF
+        </button>
+        <script>
+            function redirectToUrl() {
+                var plans_date = document.getElementById('plans_date').value;
+                var url = "{{ url_for('create_proposal_pdf', project_id=project['project_id'], plans_date='TEMP' )}}";
+                url = url.replace('TEMP', encodeURIComponent(plans_date));
+                window.location.href = url;
+            }
+        </script>
     </div>
 </div>

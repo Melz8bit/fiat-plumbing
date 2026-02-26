@@ -1226,12 +1226,6 @@ def get_project_documents(project_id):
     )
 
 
-# @app.route("/finalizeProposal/<project_id>", methods=["POST"])
-# @login_required
-# def finalize_proposal(project_id):
-#     pass
-
-
 def upload_project_document(document_upload_form):
     document_type = document_upload_form.document_type.data
     document_upload_form.document_type.data = ""
@@ -1264,8 +1258,9 @@ def upload_project_document(document_upload_form):
 
 # Project Proposal
 @app.route("/createProposalPDF/<project_id>")
+@app.route("/createProposalPDF/<project_id>/<plans_date>")
 @login_required
-def create_proposal_pdf(project_id):
+def create_proposal_pdf(project_id, plans_date):
     project_info_temp = database.get_project(project_id)
     project_info = {}
     project_info["project_id"] = project_info_temp["project_id"]
