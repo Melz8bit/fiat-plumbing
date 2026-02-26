@@ -1282,6 +1282,9 @@ def create_proposal_pdf(project_id, plans_date):
     proposal_total_words = num2words(proposal_total)
     proposal_total_words = proposal_total_words.replace(",", "")
 
+    plans_date = datetime.strptime(plans_date, "%Y-%m-%d").date()
+    print(f"{type(plans_date)=}")
+
     return render_template(
         "proposal_print.html",
         project_info=project_info,
@@ -1291,6 +1294,7 @@ def create_proposal_pdf(project_id, plans_date):
         proposal_notes=proposal_notes,
         proposal_total=proposal_total,
         proposal_total_words=proposal_total_words,
+        plans_date=plans_date,
     )
 
 
