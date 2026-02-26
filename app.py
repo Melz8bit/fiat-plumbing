@@ -995,7 +995,6 @@ def get_project_payments(project_id):
     payment_detail_form = InvoicePaymentForm()
     apply_payment_form = ApplyPaymentForm()
 
-    # print(f"{open_invoices=}")
     return render_template(
         "project_payments.html",
         project_id=project_id,

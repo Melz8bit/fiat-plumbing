@@ -427,7 +427,7 @@ def get_max_project_id():
         sqlQuery = f"""
                 SELECT MAX(project_id)
                 FROM projects
-                WHERE project_id != '24-9999';
+                WHERE is_test = False AND project_id NOT LIKE 'PERS%' ;
             """
 
         with engine.connect() as connection:
@@ -449,7 +449,7 @@ def get_max_project_id():
 def get_next_project_id():
     current_max_id = get_max_project_id()
     curr_year = str(datetime.now().strftime("%y"))
-    print(current_max_id)
+    # print(current_max_id)
     # if current_max_id:
     next_id = int(current_max_id.split("-")[1]) + 1
     next_id_complete = curr_year + "-" + str(next_id)
