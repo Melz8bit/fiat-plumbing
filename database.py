@@ -432,12 +432,10 @@ def get_max_project_id():
 
         with engine.connect() as connection:
             max_id = connection.execute(text(f"{sqlQuery}"))
-            print(max_id)
             max_id = max_id.mappings().first()["max"]
-            print(max_id)
 
         if not max_id:
-            max_id = "0-0000"
+            max_id = "00-0000"
 
         return max_id
 
@@ -449,8 +447,6 @@ def get_max_project_id():
 def get_next_project_id():
     current_max_id = get_max_project_id()
     curr_year = str(datetime.now().strftime("%y"))
-    # print(current_max_id)
-    # if current_max_id:
     next_id = int(current_max_id.split("-")[1]) + 1
     next_id_complete = curr_year + "-" + str(next_id)
     return next_id_complete
@@ -1133,17 +1129,21 @@ def create_invoice(selected_invoices, project_id):
     # Invoice Create
     try:
         sqlQuery = (
-            "INSERT INTO project_invoices (project_id, invoice_number, billed_date, invoice_amount, invoice_status, payment_remaining)"
-            + " VALUES (:project_id, :invoice_number, :billed_date, :invoice_amount, :invoice_status, :payment_remaining)"
+            "INSERT INTO project_invoices (project_id, invoice_number, billed_date, invoice_total, invoice_status, payment_remaining, invoice_amount, invoice_retainage)"
+            + " VALUES (:project_id, :invoice_number, :billed_date, :invoice_total, :invoice_status, :payment_remaining, :invoice_amount, :invoice_retainage)"
         )
+
+        invoice_retainage = round(invoice_total * 0.10, 2)
 
         query_params = {
             "project_id": project_id,
             "invoice_number": next_invoice_number,
             "billed_date": datetime.now().strftime("%Y-%m-%d"),
-            "invoice_amount": invoice_total,
+            "invoice_total": invoice_total,
             "invoice_status": "Billed",
             "payment_remaining": invoice_total,
+            "invoice_amount": round(invoice_total - invoice_retainage, 2),
+            "invoice_retainage": invoice_retainage,
         }
 
         with engine.connect() as connection:
