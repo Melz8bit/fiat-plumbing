@@ -1,3 +1,11 @@
+<style>
+    input[id=installment_number] {
+        -webkit-appearance: textfield;
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+</style>
+
 <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
 <script>
     function updateFixtureTable(data) {
@@ -595,11 +603,11 @@
                 <div class="col-1">
                     <div class="input-group">
                         {{ proposal_installments_form.installment_number.label(class="input-group-text") }}
-                        {{ proposal_installments_form.installment_number(class="form-control text-center w-25") }}
+                        {{ proposal_installments_form.installment_number(class="form-control text-center") }}
                     </div>
                 </div>
 
-                <div class="col">
+                <div class="col-4">
                     <div class="input-group">
                         {{ proposal_installments_form.installments.label(class="input-group-text")}}
                         <select class="form-select" name="installment_select" id="installment_select">
@@ -631,7 +639,7 @@
                     </div>
                 </div>
 
-                <div class="col-1 text-end">
+                <div class="col-1 text-end w-auto">
                     <button class="btn btn-primary" id="btnAddInstallment" type="button">Add</button>
                 </div>
             </div>
