@@ -740,6 +740,17 @@
                             instNum.textContent = data[data.length - 1]['installment_number'];
                             newRow.appendChild(instNum);
 
+                            // // Safely get the last item
+                            // const lastItem = data.at ? data.at(-1) : data[data.length - 1];
+
+                            // if (lastItem) {
+                            //     var instNum = document.createElement("td");
+                            //     instNum.textContent = lastItem['installment_number'];
+                            //     newRow.appendChild(instNum);
+                            // } else {
+                            //     console.error("Data array is empty or invalid", data);
+                            // }
+
                             var instCat = document.createElement("td");
                             instCat.textContent = data[data.length - 1]['installment_category'];
                             newRow.appendChild(instCat);

@@ -1283,7 +1283,7 @@ def create_proposal_pdf(project_id, plans_date):
     proposal_total_words = proposal_total_words.replace(",", "")
 
     plans_date = datetime.strptime(plans_date, "%Y-%m-%d").date()
-    print(f"{type(plans_date)=}")
+    # print(f"{type(plans_date)=}")
 
     return render_template(
         "proposal_print.html",
@@ -1308,6 +1308,10 @@ def finalize_proposal():
     project_info = update_proposal_data("project", data["projectInfo"])
     project_id = project_info["project_id"]
 
+    plans_date = datetime.strptime(data["plansDate"], "%m/%d/%Y").date()
+    print(f"{type(plans_date)=}")
+    print(f"{plans_date=}")
+
     # Create proposal in database
     proposal_id = database.create_proposal(project_id, session["user_id"])
 
@@ -1331,6 +1335,7 @@ def finalize_proposal():
         proposal_notes=proposal_notes,
         proposal_total=proposal_total,
         proposal_total_words=proposal_total_words,
+        plans_date=plans_date,
     )
 
     # Convert HTML to PDF in memory
@@ -1362,6 +1367,7 @@ def finalize_proposal():
             proposal_notes=proposal_notes,
             proposal_total=proposal_total,
             proposal_total_words=proposal_total_words,
+            plans_date=plans_date,
         )
 
     # Add information to documents table

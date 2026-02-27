@@ -1527,7 +1527,7 @@ def get_proposal_installments(project_id):
     try:
         sqlQuery = (
             "SELECT *"
-            + " FROM project_proposal_installments"
+            + " FROM tmp_project_proposal_installments"
             + " WHERE project_id = :project_id AND proposal_id = 0 ORDER BY installment_id;"
         )
 

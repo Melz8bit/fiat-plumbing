@@ -173,7 +173,9 @@
         <!-- Bid Price -->
         <ul class="mb-3 ms-4">
             <li><strong><u>BID PRICE INCLUDES THE FOLLOWING:</u></strong></li>
-            <li class="no-bullets mt-2">Install plumbing as per plans dated {{ plans_date.strftime('%m/%d/%Y') }}</li>
+            <li class="no-bullets mt-2">Install plumbing as per plans dated
+                <label id=plansDate>{{ plans_date.strftime('%m/%d/%Y') }}</label>
+            </li>
         </ul>
         <p></p>
 
@@ -276,8 +278,11 @@
             <script>
                 $(document).ready(function () {
                     $("#finalizeButton").click(function () {
+                        var plansDate = document.getElementById("plansDate").innerText;
+                        console.log(plansDate);
                         var myData = {
                             projectInfo: $("#projectInfo").val(),
+                            plansDate: plansDate,
                             //     clientInfo: $("#clientInfo").val(),
                             //     proposalNotes: $("#proposalNotes").val(),
                             //     proposalTotal: parseFloat($("#proposalTotal").val()),
