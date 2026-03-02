@@ -743,65 +743,70 @@ def project_view(project_id, new_project=False):
     project_status_form = ProjectStatusForm()
     invoice_create_form = InvoiceCreateForm()
     permit_add_form = PermitsAddForm()
-    document_upload_form = DocumentUploadForm()
+    document_form = DocumentUploadForm()
 
     project_amount_owed = get_project_amount_owed(project_id)
 
-    # Update project status
-    if project_status_form.validate_on_submit():
-        project_status = project_status_form.project_status.data
-        if project_status != project["status"]:
-            database.update_project_status(
-                project["project_id"], project_status, session["user_id"]
+    if request.method == "POST":
+        # Update project status
+        if project_status_form.validate_on_submit():
+            project_status = project_status_form.project_status.data
+            if project_status != project["status"]:
+                database.update_project_status(
+                    project["project_id"], project_status, session["user_id"]
+                )
+            return redirect(url_for("project_view", project_id=project["project_id"]))
+        else:
+            print(f"{project_status_form.errors=}")
+
+        # Add Project Note
+        if (
+            project_notes_form.validate_on_submit()
+            and project_notes_form.project_note_submit.data
+        ):
+            return project_note_add(project_notes_form, project_id)
+        else:
+            print(f"{project_notes_form.errors=}")
+
+        # Create invoice
+        if (
+            invoice_create_form.validate_on_submit()
+            and invoice_create_form.invoice_create_submit.data
+        ):
+            return project_invoice_create(
+                request.form.getlist("installment_select"),
+                request.form.getlist("billed_amount"),
             )
-        return redirect(url_for("project_view", project_id=project["project_id"]))
-    else:
-        print(f"{project_status_form.errors=}")
+        else:
+            print(f"{invoice_create_form.errors=}")
 
-    # Add Project Note
-    if (
-        project_notes_form.validate_on_submit()
-        and project_notes_form.project_note_submit.data
-    ):
-        return project_note_add(project_notes_form, project_id)
-    else:
-        print(f"{project_notes_form.errors=}")
+        # Apply payment
+        if (
+            apply_payment_form.validate_on_submit()
+            and apply_payment_form.apply_payment.data
+        ):
+            return apply_payment(apply_payment_form)
+        else:
+            print(f"{apply_payment_form.errors=}")
 
-    # Create invoice
-    if (
-        invoice_create_form.validate_on_submit()
-        and invoice_create_form.invoice_create_submit.data
-    ):
-        return project_invoice_create(
-            request.form.getlist("installment_select"),
-            request.form.getlist("billed_amount"),
-        )
-    else:
-        print(f"{invoice_create_form.errors=}")
+        # Add Permit
+        if (
+            permit_add_form.validate_on_submit()
+            and permit_add_form.permit_add_submit.data
+        ):
+            return add_project_permit(permit_add_form)
+        else:
+            print(f"{permit_add_form.errors=}")
 
-    # Apply payment
-    if (
-        apply_payment_form.validate_on_submit()
-        and apply_payment_form.apply_payment.data
-    ):
-        return apply_payment(apply_payment_form)
-    else:
-        print(f"{apply_payment_form.errors=}")
-
-    # Add Permit
-    if permit_add_form.validate_on_submit() and permit_add_form.permit_add_submit.data:
-        return add_project_permit(permit_add_form)
-    else:
-        print(f"{permit_add_form.errors=}")
-
-    # Upload Document
-    if (
-        document_upload_form.validate_on_submit()
-        and document_upload_form.upload_document_submit.data
-    ):
-        return upload_project_document(document_upload_form)
-    else:
-        print(f"{document_upload_form.errors=}")
+        # Upload Document
+        if (
+            document_form.validate_on_submit()
+            and document_form.upload_document_submit.data
+        ):
+            print("here")
+            return upload_project_document(document_form)
+        else:
+            print(f"{document_form.errors=}")
 
     tab = session.pop("active_tab", None)
 
@@ -823,6 +828,7 @@ def project_view(project_id, new_project=False):
         proposal_installments_total=installments_total(proposal_installments),
         project_status_form=project_status_form,
         project_amount_owed=project_amount_owed,
+        document_form=document_form,
     )
 
 
@@ -1214,9 +1220,10 @@ def add_project_permit(permit_add_form):
 
 
 # Documents
-@app.route("/project/<project_id>/documents")
+@app.route("/project/<project_id>/documents", methods=["GET", "POST"])
 @login_required
 def get_project_documents(project_id):
+    print(request.method)
     documents = database.get_project_docs(project_id)
     document_form = DocumentUploadForm()
     return render_template(
@@ -1227,32 +1234,40 @@ def get_project_documents(project_id):
 
 
 def upload_project_document(document_upload_form):
-    document_type = document_upload_form.document_type.data
-    document_upload_form.document_type.data = ""
+    file_storage_obj = document_upload_form.upload_file.data
+    document_type = str(document_upload_form.document_type.data).strip()
     comment = document_upload_form.comment.data
+
+    # 2. Extract extension safely
+    original_name = file_storage_obj.filename
+    ext = original_name.rsplit(".", 1)[-1].lower() if "." in original_name else "bin"
+
+    # 3. Construct and SECURE the filename immediately
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    raw_name = f"{session['project_id']}_{document_type}_{timestamp}.{ext}"
+    safe_name = secure_filename(raw_name)
+
+    # 4. Upload to S3
+    success = upload_file(file_storage_obj, safe_name)
+
+    if success:
+        database.upload_document(
+            session["project_id"],
+            document_type,
+            comment,
+            session["user_id"],
+            safe_name,
+        )
+        flash("Document uploaded successfully!")
+    else:
+        flash("S3 Upload Failed")
+
+    document_upload_form.document_type.data = ""
     document_upload_form.comment.data = ""
-    filename = document_upload_form.upload_file.data
     document_upload_form.upload_file.data = ""
 
-    upload_file_type = filename.filename.split(".")[-1]
-    upload_file_name = f"{session['project_id']}-{document_type}-{datetime.now().strftime('%Y%m%d%H%M%S')}.{upload_file_type}"
-
-    # is_document_uploaded = upload_file(
-    #     filename,
-    #     upload_file_name,
-    #     filename.mimetype,
-    # )
-
-    is_document_uploaded = database.upload_document(
-        session["project_id"],
-        document_type,
-        comment,
-        session["user_id"],
-        upload_file_name,
-    )
-
     session["active_tab"] = "documents"
-    flash(is_document_uploaded)
+    # flash(is_document_uploaded)
     return redirect(url_for("project_view", project_id=session["project_id"]))
 
 

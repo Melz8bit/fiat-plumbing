@@ -58,7 +58,7 @@
             <div class="row">
                 <div class="col">
                     <form id="projectStatusForm" method="POST">
-                        {{ project_status_form.hidden_tag() }}
+                        {{ project_status_form.csrf_token() }}
                         <div class="input-group mb-3">
                             {{ project_status_form.project_status.label(class="input-group-text")}}
                             <select class="form-select" name="project_status" id="project_status">

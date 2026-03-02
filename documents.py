@@ -12,7 +12,6 @@ SECRET_ACCESS_KEY = os.getenv("S3_SECRET_ACCESS_KEY")
 S3_REGION = os.getenv("S3_REGION")
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 
-
 session = boto3.session.Session()
 s3_client = session.client(
     "s3",
@@ -22,18 +21,25 @@ s3_client = session.client(
 )
 
 
-def upload_file(file_to_upload, upload_file_name, filetype):
+def upload_file(file_to_upload, upload_file_name):
     try:
+        # Safety check: If BUCKET_NAME is None, this is the culprit
+        if not BUCKET_NAME or not isinstance(BUCKET_NAME, str):
+            raise TypeError(f"BUCKET_NAME must be a string, got {type(BUCKET_NAME)}")
+
+        file_to_upload.seek(0)
+
+        # Using the standard put_object with a read() to be safe
         s3_client.put_object(
-            Body=file_to_upload,
-            Bucket=BUCKET_NAME,
-            Key=secure_filename(upload_file_name),
+            Body=file_to_upload.read(),
+            Bucket=str(BUCKET_NAME),
+            Key=str(upload_file_name),
             ContentType=file_to_upload.content_type,
         )
-
-        print("File uploaded successfully")
+        return True
     except Exception as e:
-        print(f"Something went wrong - {e}")
+        print(f"S3 ERROR: {type(e).__name__} - {e}")
+        return False
 
 
 def upload_proposal(pdf_bytes, project_id, upload_file_name):

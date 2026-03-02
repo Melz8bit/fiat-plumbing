@@ -29,9 +29,9 @@
                         </div>
                         <div class="modal-body">
                             <form id="documentForm" method="POST" enctype="multipart/form-data">
-                                {{ document_form.hidden_tag() }}
+                                {{ document_form.csrf_token }}
 
-                                <div class="input-group mb-3">
+                                <!-- <div class="input-group mb-3">
                                     {{ document_form.document_type.label(class="input-group-text")}}
                                     <select class="form-select" name="document_type" id="document_type">
                                         {% for option in document_form.document_type %}
@@ -41,6 +41,10 @@
                                         {{ option }}
                                         {% endfor %}
                                     </select>
+                                </div> -->
+                                <div class="input-group mb-3">
+                                    {{ document_form.document_type.label(class="input-group-text")}}
+                                    {{ document_form.document_type(class="form-select") }}
                                 </div>
                                 <div class="input-group mb-3">
                                     {{ document_form.comment.label(class="input-group-text")}}

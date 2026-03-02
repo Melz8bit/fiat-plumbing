@@ -163,3 +163,4 @@ cython_debug/
 *.pdf
 upload_test.py
 
+xx.env
