@@ -1,0 +1,83 @@
+<div class="accordion" id="accordianHomePage">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseProjectSummary" aria-expanded="true" aria-controls="collapseProjectSummary">
+                Projects Summary
+            </button>
+        </h2>
+        <div id="collapseProjectSummary" class="accordion-collapse collapse show" data-bs-parent="#accordianHomePage">
+            <div class="accordion-body">
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <!-- Project Status Summary -->
+                <div class="container mt-4">
+                    <div class="card w-100">
+                        <div class="card-header">Project Status Summary</div>
+                        <div class="card-body">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                    <script>
+                        const ctx = document.getElementById('statusChart');
+
+                        new Chart(ctx, {
+                            type: 'bar', // or 'pie' or 'bar'
+                            data: {
+                                labels: {{ status_summary_labels | tojson }}, // Safely pass Python list to JS
+                            datasets: [{
+                                label: '# of Projects',
+                                data: {{ status_summary_values | tojson }},
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.8)', // Blue
+                                'rgba(255, 206, 86, 0.8)', // Yellow
+                                'rgba(75, 192, 192, 0.8)', // Green
+                                'rgba(255, 99, 132, 0.8)'  // Red
+                            ],
+                            borderWidth: 1
+            }]
+        },
+                            options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                }
+                            }
+                        }
+    });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseInspections" aria-expanded="false" aria-controls="collapseInspections">
+                Inspections
+            </button>
+        </h2>
+        <div id="collapseInspections" class="accordion-collapse collapse" data-bs-parent="#accordianHomePage">
+            <div class="accordion-body">
+                Coming Soon
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                Accordion Item #3
+            </button>
+        </h2>
+        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordianHomePage">
+            <div class="accordion-body">
+                <strong>This is the third item’s accordion body.</strong> It is hidden by default, until the collapse
+                plugin adds the appropriate classes that we use to style each element. These classes control the overall
+                appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with
+                custom CSS or overriding our default variables. It’s also worth noting that just about any HTML can go
+                within the <code>.accordion-body</code>, though the transition does limit overflow.
+            </div>
+        </div>
+    </div>
+</div>

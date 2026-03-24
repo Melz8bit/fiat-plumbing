@@ -192,11 +192,20 @@ def main():
     clients = database.get_all_clients(user.role)
     projects = database.get_all_projects(user.role)
 
+    # Graph data
+    status_counts = database.get_projects_status_summary()
+    status_summary_labels = [item["status"] for item in status_counts]
+    status_summary_values = [item["count"] for item in status_counts]
+
+    print(f"{status_summary_labels=}\t{status_summary_values=}")
+
     return render_template(
         "home.html",
         user=user,
         clients=clients,
         projects=projects,
+        status_summary_labels=status_summary_labels,
+        status_summary_values=status_summary_values,
     )
 
 

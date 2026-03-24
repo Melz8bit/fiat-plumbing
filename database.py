@@ -52,6 +52,29 @@ def get_results(sqlQuery):
         return ""
 
 
+############## Landing Page Queries ##############
+def get_projects_status_summary():
+    try:
+        sqlQuery = f"""
+                SELECT status, COUNT(status), order_number 
+                FROM projects
+                INNER JOIN matrix_project_statuses ON projects.status = matrix_project_statuses.project_status
+                WHERE status NOT LIKE 'Completed%' AND status NOT LIKE '%Cancelled%' AND status NOT LIKE '%Pending Response%'
+                GROUP BY status, order_number
+                ORDER BY order_number;
+            """
+
+        with engine.connect() as connection:
+            projects = connection.execute(text(f"{sqlQuery}"))
+            projects_status_summary_dict = projects.mappings().all()
+
+        return projects_status_summary_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 ############## User Queries ##############
 def get_user(user_id):
     try:
