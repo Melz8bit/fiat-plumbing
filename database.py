@@ -59,7 +59,7 @@ def get_projects_status_summary():
                 SELECT status, COUNT(status), order_number 
                 FROM projects
                 INNER JOIN matrix_project_statuses ON projects.status = matrix_project_statuses.project_status
-                WHERE status NOT LIKE 'Completed%' AND status NOT LIKE '%Cancelled%' AND status NOT LIKE '%Pending Response%'
+                WHERE projects.status NOT LIKE ALL (ARRAY['Completed%', '%Cancelled%', '%Pending Response%'])
                 GROUP BY status, order_number
                 ORDER BY order_number;
             """
@@ -69,6 +69,33 @@ def get_projects_status_summary():
             projects_status_summary_dict = projects.mappings().all()
 
         return projects_status_summary_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_projects_finance_summary():
+    try:
+        sqlQuery = f"""
+                SELECT 
+                    project_invoices.project_id,
+                    projects.name,
+                    SUM(project_invoices.invoice_total) as invoiceTotal, 
+                    SUM(project_invoices.payment_received) as totalReceived, 
+                    SUM(project_invoices.payment_remaining) as amountRemaining, 
+                    (SUM(project_invoices.payment_received) / NULLIF(SUM(project_invoices.invoice_total), 0) * 100) AS percentReceived
+                FROM project_invoices
+                INNER JOIN projects on project_invoices.project_id = projects.project_id
+                WHERE project_invoices.invoice_total IS NOT NULL AND projects.is_test = false
+                GROUP BY project_invoices.project_id, projects.name;
+            """
+
+        with engine.connect() as connection:
+            projects = connection.execute(text(f"{sqlQuery}"))
+            projects_finance__dict = projects.mappings().all()
+
+        return projects_finance__dict
 
     except Exception as e:
         print("Database Error:", e)

@@ -197,7 +197,7 @@ def main():
     status_summary_labels = [item["status"] for item in status_counts]
     status_summary_values = [item["count"] for item in status_counts]
 
-    print(f"{status_summary_labels=}\t{status_summary_values=}")
+    finance_counts = database.get_projects_finance_summary()
 
     return render_template(
         "home.html",
@@ -206,6 +206,7 @@ def main():
         projects=projects,
         status_summary_labels=status_summary_labels,
         status_summary_values=status_summary_values,
+        finance_counts=finance_counts,
     )
 
 
