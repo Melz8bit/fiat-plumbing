@@ -71,7 +71,16 @@
         }
 
         #formBody {
-            font-size: 12pt;
+            font-size: 10.5pt;
+            line-height: 1.4;
+        }
+
+        h3 {
+            font-size: 14pt;
+        }
+
+        h5 {
+            font-size: 11pt;
         }
 
         li.no-bullets {
@@ -106,8 +115,12 @@
             <!-- Header -->
             <div class="row align-items-center text-start">
                 <div class="col">
-                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"
+                    {% if logo_data %}
+                    <img src="data:image/png;base64,{{ logo_data }}" alt="Logo"
                         class="d-inline-block align-text-top me-2 h-auto">
+                    {% else %}
+                    <h3>FIAT PLUMBING</h3>
+                    {% endif %}
                 </div>
             </div>
             <div class="text-center">

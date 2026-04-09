@@ -1,5 +1,6 @@
 import mimetypes
 import ast
+import base64
 import json
 import os
 import urllib.parse
@@ -73,6 +74,9 @@ engine = db_connect()
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
+
+logo_path = os.path.join(app.root_path, "static", "logo.png")
+print(f"{logo_path=}")
 
 
 ############## Login/Logout ##############
@@ -1295,12 +1299,12 @@ def create_proposal_pdf(project_id, plans_date):
     project_info["state"] = project_info_temp["state"]
     project_info["zip_code"] = project_info_temp["zip_code"]
 
+    logo_data = get_encoded_logo()
+
     client_info = database.get_project_client(project_id)
     proposal_fixtures = database.get_proposal_fixtures(project_id)
     proposal_installments = database.get_proposal_installments(project_id)
     proposal_notes = database.get_proposal_notes(project_id)
-
-    print(f"{proposal_notes=}")
 
     proposal_total = 0
     for fixture in proposal_fixtures:
@@ -1310,10 +1314,10 @@ def create_proposal_pdf(project_id, plans_date):
     proposal_total_words = proposal_total_words.replace(",", "")
 
     plans_date = datetime.strptime(plans_date, "%Y-%m-%d").date()
-    # print(f"{type(plans_date)=}")
 
     return render_template(
         "proposal_print.html",
+        logo_data=logo_data,
         project_info=project_info,
         client_info=client_info,
         proposal_fixtures=proposal_fixtures,
@@ -1330,6 +1334,8 @@ def create_proposal_pdf(project_id, plans_date):
 def finalize_proposal():
     data_string = request.data.decode("utf-8")
     data = json.loads(data_string)
+
+    logo_data = get_encoded_logo()
 
     # Access data from the dictionary
     project_info = update_proposal_data("project", data["projectInfo"])
@@ -1353,6 +1359,7 @@ def finalize_proposal():
     # Render same template → HTML string
     html_str = render_template(
         "proposal_print.html",
+        logo_data=logo_data,
         project_info=project_info,
         client_info=client_info,
         proposal_fixtures=proposal_fixtures,
@@ -1366,7 +1373,7 @@ def finalize_proposal():
     # Convert HTML to PDF in memory
     pdf_bytes = HTML(
         string=html_str,
-        base_url=request.host_url,
+        base_url=app.root_path,
     ).write_pdf()
 
     # upload_file_type = filename.filename.split(".")[-1]
@@ -1625,6 +1632,17 @@ def update_proposal_data(data_type, proposal_data) -> list:
     return fixed_list
 
 
+def get_encoded_logo():
+    # This works on local Windows and Render Linux
+    path = os.path.join(app.root_path, "static", "logo.png")
+    try:
+        with open(path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode("utf-8")
+    except FileNotFoundError:
+        print(f"Warning: Logo not found at {path}")
+        return ""
+
+
 ############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
 @login_required
@@ -1803,4 +1821,3 @@ def get_today_date(value):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
-# A dumb change
