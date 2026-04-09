@@ -1300,6 +1300,8 @@ def create_proposal_pdf(project_id, plans_date):
     proposal_installments = database.get_proposal_installments(project_id)
     proposal_notes = database.get_proposal_notes(project_id)
 
+    print(f"{proposal_notes=}")
+
     proposal_total = 0
     for fixture in proposal_fixtures:
         proposal_total += fixture["total_per_fixture"]
@@ -1334,17 +1336,15 @@ def finalize_proposal():
     project_id = project_info["project_id"]
 
     plans_date = datetime.strptime(data["plansDate"], "%m/%d/%Y").date()
-    print(f"{type(plans_date)=}")
-    print(f"{plans_date=}")
 
     # Create proposal in database
     proposal_id = database.create_proposal(project_id, session["user_id"])
 
     # Get proposal data again for rendering
     client_info = database.get_project_client(project_id)
-    proposal_fixtures = database.get_proposal_fixtures(project_id)
-    proposal_installments = database.get_proposal_installments(project_id)
-    proposal_notes = database.get_proposal_notes(project_id)
+    proposal_fixtures = database.get_proposal_fixtures(project_id, proposal_id)
+    proposal_installments = database.get_proposal_installments(project_id, proposal_id)
+    proposal_notes = database.get_proposal_notes(project_id, proposal_id)
 
     proposal_total = sum(f["total_per_fixture"] for f in proposal_fixtures)
     proposal_total_words = num2words(proposal_total)
@@ -1368,8 +1368,6 @@ def finalize_proposal():
         string=html_str,
         base_url=request.host_url,
     ).write_pdf()
-    # print(f"{type(pdf_bytes)=}")
-    # print(f"{type(pdf_bytes)=}")
 
     # upload_file_type = filename.filename.split(".")[-1]
     upload_file_name = f"{session['project_id']}-Proposal-{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
@@ -1406,6 +1404,9 @@ def finalize_proposal():
 
     # Update proposal items with proposal ID
     database.update_proposal_items_id(project_id, proposal_id)
+
+    # Clean up temp tables
+    database.proposal_temp_tables_cleanup(project_id)
 
     flash(is_document_uploaded)
 
@@ -1626,12 +1627,14 @@ def update_proposal_data(data_type, proposal_data) -> list:
 
 ############## Misc. ##############
 @app.route("/populateCityStateCounty", methods=["GET", "POST"])
+@login_required
 def populate_city_state_county():
     results = database.get_city_state_county(request.args["zip_code"])
     return dict(results)
 
 
 @app.route("/addProposalFixture", methods=["POST"])
+@login_required
 def add_proposal_fixture():
     # Decode the bytes to a string
     serialized_data = request.data.decode("utf-8")
@@ -1684,12 +1687,15 @@ def get_all_proposal_fixtures(project_id):
 
 
 @app.route("/deleteProposalFixture/<fixture_id>/<project_id>", methods=["POST"])
+@login_required
 def delete_proposal_fixture(fixture_id, project_id):
+    # database.add_proposal_fixture(fixture_id, table_name="project_proposal_fixtures")
     database.delete_proposal_fixture(fixture_id)
     return get_all_proposal_fixtures(project_id)
 
 
 @app.route("/addProposalInstallment", methods=["POST"])
+@login_required
 def add_proposal_installment():
     # Decode the bytes to a string
     serialized_data = request.data.decode("utf-8")
@@ -1722,6 +1728,7 @@ def add_proposal_installment():
 
 
 @app.route("/addProposalNote", methods=["POST"])
+@login_required
 def add_proposal_note():
     # Decode the bytes to a string
     serialized_data = request.data.decode("utf-8")
@@ -1749,6 +1756,7 @@ def add_proposal_note():
 
 
 @app.route("/deleteProposalNote/<note_id>/<project_id>", methods=["POST"])
+@login_required
 def delete_proposal_note(note_id, project_id):
     database.delete_proposal_note(note_id)
 

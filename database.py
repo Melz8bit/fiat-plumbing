@@ -1474,18 +1474,19 @@ def get_project_fixtures(project_id):
         return None
 
 
-def get_proposal_fixtures(project_id):
+def get_proposal_fixtures(project_id, proposal_id=0):
     try:
         sqlQuery = (
             "SELECT tmp_project_proposal_fixtures.*, matrix_fixtures.fixture_name AS fixture_name"
             + " FROM tmp_project_proposal_fixtures"
             + " INNER JOIN matrix_fixtures ON tmp_project_proposal_fixtures.fixture_abbreviation = matrix_fixtures.fixture_abbreviation"
             + " WHERE project_id = :project_id"
-            + " AND proposal_id = 0 ORDER BY fixture_id;"
+            + " AND proposal_id = :proposal_id ORDER BY fixture_id;"
         )
 
         query_params = {
             "project_id": project_id,
+            "proposal_id": proposal_id,
         }
 
         with engine.connect() as connection:
@@ -1502,13 +1503,17 @@ def get_proposal_fixtures(project_id):
         return None
 
 
-def add_proposal_fixture(fixture_data):
+def add_proposal_fixture(fixture_data, table_name="tmp_project_proposal_fixtures"):
     total_per_fixture = fixture_data["fixture_quantity"] * fixture_data["fixture_cost"]
     try:
         sqlQuery = (
-            "INSERT INTO tmp_project_proposal_fixtures (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost)"
+            "INSERT INTO "
+            + table_name
+            + " (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost)"
             + " VALUES (:project_id, :fixture_abbreviation, :quantity, :cost_per_fixture, :total_per_fixture, :is_cost)"
         )
+
+        print(f"{sqlQuery=}")
 
         query_params = {
             "project_id": fixture_data["project_id"],
@@ -1573,16 +1578,17 @@ def get_installment_categories():
         return ""
 
 
-def get_proposal_installments(project_id):
+def get_proposal_installments(project_id, proposal_id=0):
     try:
         sqlQuery = (
             "SELECT *"
             + " FROM tmp_project_proposal_installments"
-            + " WHERE project_id = :project_id AND proposal_id = 0 ORDER BY installment_id;"
+            + " WHERE project_id = :project_id AND proposal_id = :proposal_id ORDER BY installment_id;"
         )
 
         query_params = {
             "project_id": project_id,
+            "proposal_id": proposal_id,
         }
 
         with engine.connect() as connection:
@@ -1592,6 +1598,26 @@ def get_proposal_installments(project_id):
             except:
                 installments_dict = ""
 
+        print(f"{installments_dict=}")
+
+        # if not installments_dict:
+        #     sqlQuery = (
+        #         "SELECT *"
+        #         + " FROM project_proposal_installments"
+        #         + " WHERE project_id = :project_id AND proposal_id = 0 ORDER BY installment_id;"
+        #     )
+
+        #     query_params = {
+        #         "project_id": project_id,
+        #     }
+
+        #     with engine.connect() as connection:
+        #         installments = connection.execute(text(f"{sqlQuery}"), query_params)
+        #         try:
+        #             installments_dict = installments.mappings().all()
+        #         except:
+        #             installments_dict = ""
+
         return installments_dict
 
     except Exception as e:
@@ -1599,10 +1625,14 @@ def get_proposal_installments(project_id):
         return None
 
 
-def add_proposal_installment(installment_data):
+def add_proposal_installment(
+    installment_data, table_name="tmp_project_proposal_installments"
+):
     try:
         sqlQuery = (
-            "INSERT INTO tmp_project_proposal_installments (project_id, installment_number, installment_category, installment_amount)"
+            "INSERT INTO "
+            + table_name
+            + " (project_id, installment_number, installment_category, installment_amount)"
             + " VALUES (:project_id, :installment_number, :installment_category, :installment_amount)"
         )
 
@@ -1624,17 +1654,37 @@ def add_proposal_installment(installment_data):
         return ""
 
 
-def get_proposal_notes(project_id):
+def delete_proposal_installment(installment_id):
+    try:
+        sqlQuery = "DELETE FROM tmp_project_proposal_installments WHERE installment_id = :installment_id;"
+
+        query_params = {
+            "installment_id": int(installment_id),
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Installment deleted")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_proposal_notes(project_id, proposal_id=0):
     try:
         sqlQuery = (
             "SELECT *"
-            + " FROM project_proposal_notes"
+            + " FROM tmp_project_proposal_notes"
             + " WHERE project_id = :project_id"
-            + " AND proposal_id = 0 ORDER BY note_id;"
+            + " AND proposal_id = :proposal_id ORDER BY note_id;"
         )
 
         query_params = {
             "project_id": project_id,
+            "proposal_id": proposal_id,
         }
 
         with engine.connect() as connection:
@@ -1654,7 +1704,7 @@ def get_proposal_notes(project_id):
 def add_proposal_note(note_data):
     try:
         sqlQuery = (
-            "INSERT INTO project_proposal_notes (project_id, note)"
+            "INSERT INTO tmp_project_proposal_notes (project_id, note)"
             + " VALUES (:project_id, :note)"
         )
 
@@ -1733,9 +1783,6 @@ def create_proposal(project_id, user_id):
         print("Database Error:", e)
         return ""
 
-    print(f"{proposal_id=}")
-    print(type(proposal_id))
-
     # Update fixture temp table with proposal_id
     try:
         sqlQuery = """
@@ -1757,6 +1804,73 @@ def create_proposal(project_id, user_id):
         print("Database Error:", e)
         return ""
 
+    # Update installment temp table with proposal_id
+    try:
+        sqlQuery = """
+            UPDATE tmp_project_proposal_installments
+            SET proposal_id = :proposal_id
+            WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+            "proposal_id": int(proposal_id),
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Update note temp table with proposal_id
+    try:
+        sqlQuery = """
+            UPDATE tmp_project_proposal_notes
+            SET proposal_id = :proposal_id
+            WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+            "proposal_id": int(proposal_id),
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Create note in project
+    try:
+        note_info = {
+            "project_id": project_id,
+            "comment": "Proposal created",
+            "comment_date": datetime.today(),
+            "user_id": user_id,
+        }
+
+        add_project_note(note_info)
+
+        return proposal_id
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def proposal_temp_tables_cleanup(project_id):
+    proposal_fixture_temp_table(project_id)
+    proposal_installment_temp_table(project_id)
+    proposal_note_temp_table(project_id)
+
+
+def proposal_fixture_temp_table(project_id):
     # Move fixtures from temp table
     try:
         sqlQuery = """
@@ -1765,9 +1879,9 @@ def create_proposal(project_id, user_id):
                 WHERE project_id = :project_id;
         """
 
-        # query_params = {
-        #     "project_id": project_id,
-        # }
+        query_params = {
+            "project_id": project_id,
+        }
 
         with engine.connect() as connection:
             result = connection.execute(text(f"{sqlQuery}"), query_params)
@@ -1793,18 +1907,77 @@ def create_proposal(project_id, user_id):
         print("Database Error:", e)
         return ""
 
-    # Create note in project
+
+def proposal_installment_temp_table(project_id):
+    # Move installments from temp table
     try:
-        note_info = {
+        sqlQuery = """
+            INSERT INTO project_proposal_installments
+            SELECT * FROM tmp_project_proposal_installments 
+                WHERE project_id = :project_id;
+        """
+
+        query_params = {
             "project_id": project_id,
-            "comment": "Proposal created",
-            "comment_date": datetime.today(),
-            "user_id": user_id,
         }
 
-        add_project_note(note_info)
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
 
-        return proposal_id
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Delete data from installments temp table
+    try:
+        sqlQuery = """
+            DELETE FROM tmp_project_proposal_installments 
+            WHERE project_id = :project_id;
+        """
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+            print("Installments moved from temp table")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def proposal_note_temp_table(project_id):
+    # Move notes from temp table
+    try:
+        sqlQuery = """
+            INSERT INTO project_proposal_notes
+            SELECT * FROM tmp_project_proposal_notes 
+                WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Delete data from notes temp table
+    try:
+        sqlQuery = """
+            DELETE FROM tmp_project_proposal_notes 
+            WHERE project_id = :project_id;
+        """
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+            print("Notes moved from temp table")
 
     except Exception as e:
         print("Database Error:", e)
@@ -1812,6 +1985,7 @@ def create_proposal(project_id, user_id):
 
 
 def update_proposal_items_id(project_id, proposal_id):
+    print("UPDATE PROPOSAL ID")
     try:
         query_params = {
             "project_id": project_id,
@@ -1820,7 +1994,7 @@ def update_proposal_items_id(project_id, proposal_id):
 
         # Update fixture table
         sqlQuery = (
-            "UPDATE project_proposal_fixtures"
+            "UPDATE tmp_project_proposal_fixtures"
             + " SET proposal_id = :proposal_id"
             + " WHERE project_id = :project_id AND proposal_id = 0;"
         )
@@ -1835,7 +2009,7 @@ def update_proposal_items_id(project_id, proposal_id):
     try:
         # Update installments table
         sqlQuery = (
-            "UPDATE project_proposal_installments"
+            "UPDATE tmp_project_proposal_installments"
             + " SET proposal_id = :proposal_id"
             + " WHERE project_id = :project_id AND proposal_id = 0;"
         )
@@ -1851,7 +2025,7 @@ def update_proposal_items_id(project_id, proposal_id):
     try:
         # Update notes table
         sqlQuery = (
-            "UPDATE project_proposal_notes"
+            "UPDATE tmp_project_proposal_notes"
             + " SET proposal_id = :proposal_id"
             + " WHERE project_id = :project_id AND proposal_id = 0;"
         )
