@@ -405,12 +405,14 @@
         // Permit Update
         function updatePermit(permitID) {
             const btnUpdateSavePermit = document.getElementById("btnUpdateSavePermit" + permitID);
+            const btnWebsitePermit = document.getElementById("btnWebsitePermit" + permitID);
             const btnCancelPermitUpdate = document.getElementById("btnCancelPermitUpdate" + permitID);
             const lblPermitStatus = document.getElementById("lblPermitStatus" + permitID);
             const selectPermitStatus = document.getElementById("selectPermitStatus" + permitID);
 
             if (btnUpdateSavePermit.innerText == "Update") {
                 btnUpdateSavePermit.innerText = "Save";
+                btnWebsitePermit.classList.remove("d-none");
                 btnCancelPermitUpdate.classList.remove("d-none");
                 lblPermitStatus.classList.add("d-none");
                 selectPermitStatus.classList.remove("d-none");
@@ -468,11 +470,13 @@
 
         function resetPermitUpdate(permitID) {
             const btnUpdateSavePermit = document.getElementById("btnUpdateSavePermit" + permitID);
+            const btnWebsitePermit = document.getElementById("btnWebsitePermit" + permitID);
             const btnCancelPermitUpdate = document.getElementById("btnCancelPermitUpdate" + permitID);
             const lblPermitStatus = document.getElementById("lblPermitStatus" + permitID);
             const selectPermitStatus = document.getElementById("selectPermitStatus" + permitID);
 
             btnUpdateSavePermit.innerText = "Update";
+            btnWebsitePermit.classList.add("d-none");
             btnCancelPermitUpdate.classList.add("d-none");
             lblPermitStatus.classList.remove("d-none");
             selectPermitStatus.classList.add("d-none");

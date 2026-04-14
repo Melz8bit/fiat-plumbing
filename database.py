@@ -541,86 +541,6 @@ def update_project_status(project_id, project_status, user_id):
         return ""
 
 
-############## Permits Queries ##############
-def get_master_permit(project_id):
-    try:
-        sqlQuery = (
-            "SELECT *"
-            + " FROM permits"
-            + " WHERE project_id = :project_id AND permit_type = 'MASTER';"
-        )
-
-        queryParams = {
-            "project_id": project_id,
-        }
-
-        with engine.connect() as connection:
-            master_permit = connection.execute(text(f"{sqlQuery}"), queryParams)
-            try:
-                master_permit_dict = master_permit.mappings().all()[0]
-            except:
-                master_permit_dict = ""
-
-        return master_permit_dict
-
-    except Exception as e:
-        print("Database Error:", e)
-        return ""
-
-
-def get_plumbing_permit(project_id):
-    try:
-        sqlQuery = (
-            "SELECT *"
-            + " FROM permits"
-            + " WHERE project_id = :project_id AND permit_type != 'MASTER';"
-        )
-
-        queryParams = {
-            "project_id": project_id,
-        }
-
-        with engine.connect() as connection:
-            plumbing_permit = connection.execute(text(f"{sqlQuery}"), queryParams)
-            try:
-                plumbing_permit_dict = plumbing_permit.mappings().all()[0]
-            except:
-                plumbing_permit_dict = ""
-
-        return plumbing_permit_dict
-
-    except Exception as e:
-        print("Database Error:", e)
-        return ""
-
-
-def insert_master_permit(project_id, permit_number):
-    try:
-        sqlQuery = (
-            "INSERT INTO permits (project_id, permit_number, permit_type, assigned_date, status, status_date)"
-            + " VALUES (:project_id, :permit_number, :permit_type, :assigned_date, :status, :status_date)"
-        )
-
-        query_params = {
-            "project_id": project_id,
-            "permit_number": permit_number,
-            "permit_type": "MASTER",
-            "assigned_date": TODAY,
-            "status": "ASSIGNED",
-            "status_date": TODAY,
-        }
-
-        with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
-            connection.commit()
-
-        print("Master permit inserted")
-
-    except Exception as e:
-        print("Database Error:", e)
-        return ""
-
-
 ############## Notes Queries ##############
 def get_project_notes(project_id):
     try:
@@ -831,15 +751,7 @@ def get_open_invoices(project_id):
 
 
 def get_invoice_payments_total(invoice_id):
-    # print(f"{invoice_id=}")
     try:
-        # sqlQuery = (
-        #     "SELECT invoice_payments.*, project_payments.*"
-        #     + " FROM invoice_payments"
-        #     + " INNER JOIN project_payments ON invoice_payments.project_id = project_payments.project_id"
-        #     + " WHERE invoice_payments.invoice_id = :invoice_id"
-        # )
-
         sqlQuery = (
             "SELECT SUM(amount_applied)"
             + " FROM invoice_payments"
@@ -2070,7 +1982,7 @@ def get_project_permits(project_id):
         }
 
         sqlQuery = (
-            "SELECT project_permits.*, matrix_permits_request.city_county"
+            "SELECT project_permits.*, matrix_permits_request.city_county, matrix_permits_request.website"
             + " FROM project_permits"
             + " LEFT JOIN matrix_permits_request"
             + " ON project_permits.city_county_id = matrix_permits_request.id"
@@ -2216,6 +2128,85 @@ def permit_follow_up_date(status_date, city_county_id):
             follow_up_date = status_date + timedelta(days=follow_up_days[0])
 
         return follow_up_date
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_master_permit(project_id):
+    try:
+        sqlQuery = (
+            "SELECT *"
+            + " FROM permits"
+            + " WHERE project_id = :project_id AND permit_type = 'MASTER';"
+        )
+
+        queryParams = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            master_permit = connection.execute(text(f"{sqlQuery}"), queryParams)
+            try:
+                master_permit_dict = master_permit.mappings().all()[0]
+            except:
+                master_permit_dict = ""
+
+        return master_permit_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_plumbing_permit(project_id):
+    try:
+        sqlQuery = (
+            "SELECT *"
+            + " FROM permits"
+            + " WHERE project_id = :project_id AND permit_type != 'MASTER';"
+        )
+
+        queryParams = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            plumbing_permit = connection.execute(text(f"{sqlQuery}"), queryParams)
+            try:
+                plumbing_permit_dict = plumbing_permit.mappings().all()[0]
+            except:
+                plumbing_permit_dict = ""
+
+        return plumbing_permit_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def insert_master_permit(project_id, permit_number):
+    try:
+        sqlQuery = (
+            "INSERT INTO permits (project_id, permit_number, permit_type, assigned_date, status, status_date)"
+            + " VALUES (:project_id, :permit_number, :permit_type, :assigned_date, :status, :status_date)"
+        )
+
+        query_params = {
+            "project_id": project_id,
+            "permit_number": permit_number,
+            "permit_type": "MASTER",
+            "assigned_date": TODAY,
+            "status": "ASSIGNED",
+            "status_date": TODAY,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Master permit inserted")
 
     except Exception as e:
         print("Database Error:", e)
