@@ -1425,8 +1425,6 @@ def add_proposal_fixture(fixture_data, table_name="tmp_project_proposal_fixtures
             + " VALUES (:project_id, :fixture_abbreviation, :quantity, :cost_per_fixture, :total_per_fixture, :is_cost)"
         )
 
-        print(f"{sqlQuery=}")
-
         query_params = {
             "project_id": fixture_data["project_id"],
             "fixture_abbreviation": fixture_data["fixture_select"],
@@ -1509,8 +1507,6 @@ def get_proposal_installments(project_id, proposal_id=0):
                 installments_dict = installments.mappings().all()
             except:
                 installments_dict = ""
-
-        print(f"{installments_dict=}")
 
         # if not installments_dict:
         #     sqlQuery = (
@@ -1786,8 +1782,8 @@ def proposal_fixture_temp_table(project_id):
     # Move fixtures from temp table
     try:
         sqlQuery = """
-            INSERT INTO project_proposal_fixtures
-            SELECT * FROM tmp_project_proposal_fixtures 
+            INSERT INTO project_proposal_fixtures (proposal_id, project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost)
+            SELECT proposal_id::bigint, project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost FROM tmp_project_proposal_fixtures 
                 WHERE project_id = :project_id;
         """
 
@@ -1824,8 +1820,8 @@ def proposal_installment_temp_table(project_id):
     # Move installments from temp table
     try:
         sqlQuery = """
-            INSERT INTO project_proposal_installments
-            SELECT * FROM tmp_project_proposal_installments 
+            INSERT INTO project_proposal_installments (proposal_id, project_id, installment_number, installment_category, installment_amount)
+            SELECT proposal_id::bigint, project_id, installment_number, installment_category, installment_amount FROM tmp_project_proposal_installments 
                 WHERE project_id = :project_id;
         """
 
@@ -1862,8 +1858,8 @@ def proposal_note_temp_table(project_id):
     # Move notes from temp table
     try:
         sqlQuery = """
-            INSERT INTO project_proposal_notes
-            SELECT * FROM tmp_project_proposal_notes 
+            INSERT INTO project_proposal_notes (project_id, proposal_id, note)
+            SELECT project_id, proposal_id::bigint, note FROM tmp_project_proposal_notes 
                 WHERE project_id = :project_id;
         """
 
@@ -1897,7 +1893,6 @@ def proposal_note_temp_table(project_id):
 
 
 def update_proposal_items_id(project_id, proposal_id):
-    print("UPDATE PROPOSAL ID")
     try:
         query_params = {
             "project_id": project_id,

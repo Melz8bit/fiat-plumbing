@@ -285,22 +285,25 @@
         </div>
 
         <div class="text-center my-3">
-            <button id="finalizeButton" class="btn btn-primary" type="submit">Create Proposal</button>
-            <!-- <button id="finalizeButton" class="btn btn-primary" onclick="window.print()">Create Proposal</button> -->
+            <button id="finalizeButton" class="btn btn-primary" type="submit">
+                <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status"
+                    aria-hidden="true"></span>
+                <span id="buttonText">Create Proposal</span>
+            </button>
             <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
             <script>
                 $(document).ready(function () {
                     $("#finalizeButton").click(function () {
+                        // Disable the button and show loading state
+                        const $btn = $(this);
+                        $btn.prop("disabled", true);
+                        $("#spinner").removeClass("d-none");
+                        $("#buttonText").text(" Processing...");
+
                         var plansDate = document.getElementById("plansDate").innerText;
-                        console.log(plansDate);
                         var myData = {
                             projectInfo: $("#projectInfo").val(),
                             plansDate: plansDate,
-                            //     clientInfo: $("#clientInfo").val(),
-                            //     proposalNotes: $("#proposalNotes").val(),
-                            //     proposalTotal: parseFloat($("#proposalTotal").val()),
-                            //     proposalTotalWords: $("#proposalTotalWords").val(),
-                            //     proposalInstallments: $("#proposalInstallments").val(),
                         };
 
                         $.ajax({
@@ -316,8 +319,11 @@
                                 window.location = response;
                             },
                             error: function (error) {
-                                // console.error(error);
-                                // Handle errors
+                                // Re-enable the button if something goes wrong
+                                alert("Something went wrong. Please try again.");
+                                $btn.prop("disabled", false);
+                                $("#spinner").addClass("d-none");
+                                $("#buttonText").text("Create Proposal");
                             }
                         });
                     });
