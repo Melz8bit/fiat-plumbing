@@ -1278,60 +1278,134 @@ def get_document_types():
 ############## Search Queries ##############
 def search(search_by, search_criteria):
     if not search_by:
-        search_by = "project address"
+        return search_universal(search_criteria)
 
-    search_by = search_by.lower().strip()
+    else:
+        search_by = search_by.lower().strip()
 
+        try:
+            match search_by:
+                case "project address":
+                    return search_property_address(search_criteria)
+                case "client name":
+                    return search_client_name(search_criteria)
+                case "project number":
+                    return search_project_id(search_criteria)
+                case "job name":
+                    return search_job_name(search_criteria)
+
+        except Exception as e:
+            print("Database Error:", e)
+            return ""
+
+
+def search_universal(search_criteria):
     try:
-        # Default search is project address
-        sqlQuery = (
-            "SELECT projects.*, clients.name as client_name"
-            + " FROM projects"
-            + " INNER JOIN clients"
-            + " ON projects.client_id = clients.client_id"
-            + " WHERE UPPER(projects.address) LIKE UPPER('%'||:search_criteria||'%');"
-        )
+        sqlQuery = """
+            SELECT projects.*, clients.name as client_name
+            FROM projects
+            INNER JOIN clients ON projects.client_id = clients.client_id
+            WHERE UPPER(projects.address) LIKE UPPER('%'||:search_criteria||'%')
+               OR UPPER(projects.project_id) LIKE UPPER('%'||:search_criteria||'%')
+               OR UPPER(projects.name) LIKE UPPER('%'||:search_criteria||'%')
+               OR UPPER(clients.name) LIKE UPPER('%'||:search_criteria||'%')
+            ORDER BY projects.project_id DESC;
+        """
 
-        if search_by == "client name":
-            sqlQuery = (
-                "SELECT projects.*, clients.name as client_name"
-                + " FROM projects"
-                + " INNER JOIN clients"
-                + " ON projects.client_id = clients.client_id"
-                + " WHERE UPPER(clients.name) LIKE UPPER('%'||:search_criteria||'%');"
-            )
-
-        if search_by == "project number":
-            sqlQuery = (
-                "SELECT projects.*, clients.name as client_name"
-                + " FROM projects"
-                + " JOIN clients"
-                + " ON projects.client_id = clients.client_id"
-                + " WHERE projects.project_id LIKE UPPER('%'||:search_criteria||'%');"
-            )
-
-        if search_by == "job name":
-            sqlQuery = (
-                "SELECT projects.*, clients.name as client_name"
-                + " FROM projects"
-                + " INNER JOIN clients"
-                + " ON projects.client_id = clients.client_id"
-                + " WHERE UPPER(projects.name) LIKE UPPER('%'||:search_criteria||'%');"
-            )
-
-        query_params = {
-            "search_criteria": search_criteria,
-        }
+        query_params = {"search_criteria": search_criteria}
 
         with engine.connect() as connection:
-            searh_results = connection.execute(text(f"{sqlQuery}"), query_params)
-            searh_results_dict = searh_results.mappings().all()
+            search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+            search_results_dict = search_results.mappings().all()
 
-        return searh_results_dict
+        print(search_results_dict)
+
+        return search_results_dict
 
     except Exception as e:
-        print("Database Error:", e)
-        return ""
+        print("Universal Search Error:", e)
+        return []
+
+
+def search_property_address(search_criteria):
+    sqlQuery = (
+        "SELECT projects.*, clients.name as client_name"
+        + " FROM projects"
+        + " INNER JOIN clients"
+        + " ON projects.client_id = clients.client_id"
+        + " WHERE UPPER(projects.address) LIKE UPPER('%'||:search_criteria||'%');"
+    )
+
+    query_params = {
+        "search_criteria": search_criteria,
+    }
+
+    with engine.connect() as connection:
+        search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+        prop_address_dict = search_results.mappings().all()
+
+    return prop_address_dict
+
+
+def search_project_id(search_criteria):
+
+    sqlQuery = (
+        "SELECT projects.*, clients.name as client_name"
+        + " FROM projects"
+        + " JOIN clients"
+        + " ON projects.client_id = clients.client_id"
+        + " WHERE projects.project_id LIKE UPPER('%'||:search_criteria||'%');"
+    )
+
+    query_params = {
+        "search_criteria": search_criteria,
+    }
+
+    with engine.connect() as connection:
+        search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+        project_id_temp = search_results.mappings().all()
+
+    return project_id_temp
+
+
+def search_client_name(search_criteria):
+    sqlQuery = (
+        "SELECT projects.*, clients.name as client_name"
+        + " FROM projects"
+        + " INNER JOIN clients"
+        + " ON projects.client_id = clients.client_id"
+        + " WHERE UPPER(clients.name) LIKE UPPER('%'||:search_criteria||'%');"
+    )
+
+    query_params = {
+        "search_criteria": search_criteria,
+    }
+
+    with engine.connect() as connection:
+        search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+        client_name_dict = search_results.mappings().all()
+
+    return client_name_dict
+
+
+def search_job_name(search_criteria):
+    sqlQuery = (
+        "SELECT projects.*, clients.name as client_name"
+        + " FROM projects"
+        + " INNER JOIN clients"
+        + " ON projects.client_id = clients.client_id"
+        + " WHERE UPPER(projects.name) LIKE UPPER('%'||:search_criteria||'%');"
+    )
+
+    query_params = {
+        "search_criteria": search_criteria,
+    }
+
+    with engine.connect() as connection:
+        search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+        job_name_dict = search_results.mappings().all()
+
+    return job_name_dict
 
 
 ############## Proposal Queries ##############
