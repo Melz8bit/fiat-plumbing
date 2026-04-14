@@ -410,12 +410,8 @@ def search():
             results="",
         )
 
-    search_criteria = request.args["search_criteria"]
-
-    search_by = request.args["search_by"]
-
-    # if not search_by:
-    #     search_by = "project address"
+    search_criteria = request.args["search_criteria"].strip()
+    search_by = request.args["search_by"].strip()
 
     results = database.search(search_by, search_criteria)
 

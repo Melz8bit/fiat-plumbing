@@ -1277,26 +1277,24 @@ def get_document_types():
 
 ############## Search Queries ##############
 def search(search_by, search_criteria):
-    if not search_by:
-        return search_universal(search_criteria)
+    search_by = search_by.lower().strip()
 
-    else:
-        search_by = search_by.lower().strip()
+    try:
+        match search_by:
+            case "project address":
+                return search_property_address(search_criteria)
+            case "client name":
+                return search_client_name(search_criteria)
+            case "project number":
+                return search_project_id(search_criteria)
+            case "job name":
+                return search_job_name(search_criteria)
+            case _:
+                return search_universal(search_criteria)
 
-        try:
-            match search_by:
-                case "project address":
-                    return search_property_address(search_criteria)
-                case "client name":
-                    return search_client_name(search_criteria)
-                case "project number":
-                    return search_project_id(search_criteria)
-                case "job name":
-                    return search_job_name(search_criteria)
-
-        except Exception as e:
-            print("Database Error:", e)
-            return ""
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
 
 
 def search_universal(search_criteria):
@@ -1317,8 +1315,6 @@ def search_universal(search_criteria):
         with engine.connect() as connection:
             search_results = connection.execute(text(f"{sqlQuery}"), query_params)
             search_results_dict = search_results.mappings().all()
-
-        print(search_results_dict)
 
         return search_results_dict
 
