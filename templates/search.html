@@ -1,8 +1,11 @@
 <div class="input-group my-3">
     <button id="selectSearchBy" class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
-        aria-expanded="false">Search By</button>
-    <input id="searchBy" type="text" name="search_by" style="display:none;">
+        aria-expanded="false">
+        {{ search_by if search_by else "Search By" }}
+    </button>
+    <input id="searchBy" type="text" name="search_by" value="{{ search_by if search_by else '' }}" style="display:none;">
     <ul class="dropdown-menu">
+        <li><a id="allSearch" class="dropdown-item" href="#" onclick="changeSearchBy('universal')">Search All</a></li>
         <li><a id="projectAddress" class="dropdown-item" href="#" onclick="changeSearchBy('projectAddress')">Project Address</a></li>
         <li><a id="projectNumber" class="dropdown-item" href="#" onclick="changeSearchBy('projectNumber')">Project Number</a></li>
         <li><a id="clientName" class="dropdown-item" href="#" onclick="changeSearchBy('clientName')">Client Name</a></li>
@@ -10,8 +13,9 @@
     </ul>
     <script>
         function changeSearchBy(item) {
-            document.getElementById("selectSearchBy").innerHTML = document.getElementById(item).innerHTML;
-            document.getElementById("searchBy").value = document.getElementById(item).innerHTML;
+            const selectedText = document.getElementById(item).innerText;
+            document.getElementById("selectSearchBy").innerText = selectedText;
+            document.getElementById("searchBy").value = selectedText;
         }
     </script>
 
@@ -45,8 +49,6 @@
                     if (!form.checkValidity()) {
                         event.preventDefault()
                         event.stopPropagation()
-                        // const searchErrorMessage = document.getElementById("searchCriteria")
-                        // searchErrorMessage.placeholder = "Please enter a search criteria."
                     }
 
                     form.classList.add('was-validated')

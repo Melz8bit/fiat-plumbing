@@ -419,6 +419,7 @@ def search():
         "search_results.html",
         user=user,
         search_criteria=search_criteria,
+        search_by=search_by,
         results=results,
     )
 
