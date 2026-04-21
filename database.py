@@ -1702,6 +1702,29 @@ def add_proposal_note(note_data):
         return ""
 
 
+def add_proposal_fixture_note(note_data):
+    try:
+        sqlQuery = (
+            "INSERT INTO tmp_project_proposal_fixture_notes (project_id, fixture_note)"
+            + " VALUES (:project_id, :fixture_note)"
+        )
+
+        query_params = {
+            "project_id": note_data["project_id"],
+            "fixture_note": note_data["fixture_note"],
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Fixture note added")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
 def delete_proposal_note(note_id):
     try:
         sqlQuery = "DELETE FROM project_proposal_notes WHERE note_id = :note_id;"
@@ -1880,6 +1903,44 @@ def proposal_fixture_temp_table(project_id):
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
             print("Fixtures moved from temp table")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def proposal_fixture_note_temp_table(project_id):
+    # Move notes from temp table
+    try:
+        sqlQuery = """
+            INSERT INTO project_proposal_fixture_notes (project_id, proposal_id, fixture_note)
+            SELECT project_id, proposal_id::bigint, note FROM project_proposal_fixture_notes 
+                WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+    # Delete data from notes temp table
+    try:
+        sqlQuery = """
+            DELETE FROM project_proposal_fixture_notes 
+            WHERE project_id = :project_id;
+        """
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+            print("Notes moved from temp table")
 
     except Exception as e:
         print("Database Error:", e)
