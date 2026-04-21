@@ -347,6 +347,16 @@ class ProposalFixturesForm(FlaskForm):
     )
 
 
+class ProposalFixtureNotesForm(FlaskForm):
+    project_id = HiddenField(
+        "Project ID",
+    )
+    fixture_note_id = HiddenField(
+        "Fixture Note ID",
+    )
+    fixture_note = StringField("Fixture Note")
+
+
 class ProposalInstallmentsForm(FlaskForm):
     project_id = HiddenField(
         "Project ID",

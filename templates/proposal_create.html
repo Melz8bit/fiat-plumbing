@@ -202,13 +202,85 @@
                 tableBody.appendChild(newRow);
             }
         }
-        // Get overall total
-        for (var i = 0; i < data.length; i++) {
-            total_fixtures_cost = total_fixtures_cost + data[i]['fixture_total'];
-        }
-        // console.log("Total: " + total_fixtures_cost);
+    }
 
-        document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
+    function updateFixtureNoteTable(data) {
+        var tableBody = document.getElementById("fixtureNoteTable").querySelector("tbody");
+        tableBody.innerHTML = "";
+
+        if (data.length == 0 || data == null) {
+            var newRow = document.createElement("tr");
+            newRow.classList.add("text-center");
+
+            // Create table cells for each item detail
+            var deleteCell = document.createElement("td");
+            deleteCell.classList.add("text-end");
+            deleteCell.id = "emptyFixtureNoteRow"
+            deleteCell.colSpan = "999";
+            deleteCell.textContent = "Please add fixture note(s)";
+            newRow.appendChild(deleteCell);
+
+            // Get the table body
+            var tableBody = document.getElementById("fixtureNoteTable").querySelector("tbody");
+
+            // Append the new row to the table body
+            tableBody.appendChild(newRow);
+
+        }
+        else {
+            for (let i = 0; i < data.length; i++) {
+                // Create a new table row
+                var newRow = document.createElement("tr");
+                newRow.classList.add("text-center");
+
+                // Create table cells for each item detail
+                var fixtureNoteCell = document.createElement("td");
+                fixtureNoteCell.textContent = data[i]['fixture_note'];
+                newRow.appendChild(fixtureNoteCell);
+
+                // Create delete button
+                var deleteCell = document.createElement("td");
+                deleteCell.classList.add("text-end");
+                var deleteButton = document.createElement("button");
+                deleteButton.id = "btnDeleteFixtureNoteLine" + data[i]['fixture_note_id'];
+                deleteButton.setAttribute("data-fixture-note-id", data[i]['fixture_note_id']);
+                deleteButton.classList.add("border-0", "bg-transparent");
+
+                var deleteIcon = document.createElement("i");
+                deleteIcon.className = "fa-solid fa-trash-can";
+
+                deleteButton.appendChild(deleteIcon);
+                deleteCell.appendChild(deleteButton);
+                deleteButton.addEventListener("click", function () {
+                    var fixtureNoteID = data[i]['fixture_note_id'];
+                    var url = "{{ url_for('delete_proposal_fixture_note', fixture_note_id='FIXTURE_NOTE_ID_REPLACE', project_id=project['project_id']) }}";
+                    url = url.replace("FIXTURE_NOTE_ID_REPLACE", noteID);
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        data: "", // serializes the form's elements.
+                        success: function (data) {
+                            // console.log(data)  // display the returned data in the console.
+
+                            updateFixtureNoteTable(data);
+                        }
+                    });
+
+                    e.preventDefault(); // block the traditional submission of the form.
+                });
+                newRow.appendChild(deleteCell);
+
+                // Get the table body
+                var tableBody = document.getElementById("fixtureNoteTable").querySelector("tbody");
+
+                // Append the new row to the table body
+                tableBody.appendChild(newRow);
+            }
+        }
     }
 </script>
 
@@ -599,13 +671,13 @@
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        {{ proposal_fixture_notes_form.note.label(class="input-group-text") }}
-                        {{ proposal_fixture_notes_form.note(class="form-control") }}
+                        {{ proposal_fixture_notes_form.fixture_note.label(class="input-group-text") }}
+                        {{ proposal_fixture_notes_form.fixture_note(class="form-control") }}
                     </div>
                 </div>
 
                 <div class="col-2 text-end">
-                    <button class="btn btn-primary" id="btnAddFixtureNote" type="button">Add FixtureNote</button>
+                    <button class="btn btn-primary" id="btnAddFixtureNote" type="button">Add Fixture Note</button>
                 </div>
             </div>
         </form>
@@ -655,7 +727,7 @@
                                         // console.log(data)  // display the returned data in the console.
                                         // console.log(data.length)
 
-                                        updateNoteTable(data);
+                                        updateFixtureNoteTable(data);
                                     }
                                 });
 
@@ -730,7 +802,7 @@
                             deleteButton.addEventListener("click", function () {
                                 var fixtureNoteID = data[data.length - 1]['fixture_note_id'];
                                 var url = "{{ url_for('delete_proposal_fixture_note', fixture_note_id='FIXTURE_NOTE_ID_REPLACE', project_id=project['project_id']) }}";
-                                url = url.replace("FIXTURE_NOTE_ID_REPLACE", noteID);
+                                url = url.replace("FIXTURE_NOTE_ID_REPLACE", fixtureNoteID);
                                 $.ajax({
                                     type: "POST",
                                     url: url,
@@ -757,7 +829,7 @@
                             tableBody.appendChild(newRow);
 
                             // Reset fixture info fields
-                            var fixtureNoteInput = document.getElementById("fixtureNote");
+                            var fixtureNoteInput = document.getElementById("fixture_note");
                             fixtureNoteInput.value = "";
                         }
                     });

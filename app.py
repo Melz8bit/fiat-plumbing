@@ -48,6 +48,7 @@ from forms import (
     InvoiceCreateForm,
     ApplyPaymentForm,
     ProposalFixturesForm,
+    ProposalFixtureNotesForm,
     ProposalInstallmentsForm,
     ProposalNotesForm,
     PermitsAddForm,
@@ -438,297 +439,6 @@ def projects_list():
     )
 
 
-# def project_view(project_id, new_project=False):
-#     user = database.get_user(session["user_id"])
-#     project = database.get_project(project_id)
-#     client = database.get_client(project["client_id"])
-#     notes = database.get_project_notes(project_id)
-#     installments = database.get_installments(project_id)
-#     invoices = database.get_invoices(project_id)
-#     open_invoices = database.get_open_invoices(project_id)
-#     project_payments = database.get_project_payments(project_id)
-#     documents = database.get_project_docs(project_id)
-#     master_permit = database.get_master_permit(project_id)
-#     plumbing_permit = database.get_plumbing_permit(project_id)
-#     proposal_fixtures = database.get_proposal_fixtures(project_id)
-#     proposal_installments = database.get_proposal_installments(project_id)
-#     proposal_notes = database.get_proposal_notes(project_id)
-#     fixtures = database.get_project_fixtures(project_id)
-#     permits = database.get_project_permits(project_id)
-
-#     session["project_id"] = project_id
-
-#     if new_project:
-#         flash("Project has been created")
-
-#     # Form Initialization
-#     master_form = MasterPermitForm()
-#     project_notes_form = ProjectNotesForm()
-#     document_form = DocumentUploadForm()
-#     project_status_form = ProjectStatusForm()
-#     invoice_status_form = InvoiceStatusUpdateForm()
-#     payment_detail_form = InvoicePaymentForm()
-#     invoice_create_form = InvoiceCreateForm()
-#     apply_payment_form = ApplyPaymentForm()
-#     proposal_fixtures_form = ProposalFixturesForm()
-#     proposal_installments_form = ProposalInstallmentsForm()
-#     proposal_notes_form = ProposalNotesForm()
-#     permit_add_form = PermitsAddForm()
-
-#     # Variable Initialization
-#     document_type = None
-#     comment = None
-#     filename = None
-
-#     # Track payments made on invoices and invoice items
-#     payment_info = {}
-#     payments_received_total = {}
-#     invoice_items = {}
-
-#     # Get installments per payment
-#     installment_payments = database.get_payment_installments(project_id)
-
-#     # Get project total amount
-#     project_total = 0
-#     for installment in installments:
-#         project_total += installment["installment_amount"]
-
-#     # Get total amount of payments received
-#     payments_total = 0
-#     for payment in project_payments:
-#         payments_total += payment["payment_amount"]
-
-#     # Create a dictionary mapping the city/county ID to its website URL
-#     permit_websites = {
-#         str(item.id): item.website for item in database.get_permit_add_information()
-#     }
-
-#     if invoices:
-#         for invoice in invoices:
-#             payment = database.get_invoice_payments(invoice["invoice_id"])
-#             if payment:
-#                 payment_info[invoice["invoice_id"]] = payment
-#                 payments_received_total[invoice["invoice_id"]] = (
-#                     database.get_invoice_payments_total(invoice["invoice_id"])
-#                 )
-
-#             invoice_item = database.get_invoice_items(
-#                 project_id, invoice["invoice_number"]
-#             )
-#             if invoice_item:
-#                 invoice_items[invoice_item[0]["invoice_number"]] = invoice_item
-#     else:
-#         invoices = []
-
-#     if master_form.validate_on_submit():
-#         master_permit = master_form.master_permit.data
-#         master_form.master_permit.data = ""
-
-#         database.insert_master_permit(project["project_id"], master_permit)
-#         return redirect(url_for("project_view", project_id=project["project_id"]))
-#     else:
-#         print(f"{master_form.errors=}")
-
-#     if project_status_form.validate_on_submit():
-#         project_status = project_status_form.project_status.data
-#         if project_status != project["status"]:
-#             database.update_project_status(
-#                 project["project_id"], project_status, session["user_id"]
-#             )
-#         return redirect(url_for("project_view", project_id=project["project_id"]))
-#     else:
-#         print(f"{project_status_form.errors=}")
-
-#     if document_form.validate_on_submit():
-#         document_type = document_form.document_type.data
-#         document_form.document_type.data = ""
-#         comment = document_form.comment.data
-#         document_form.comment.data = ""
-#         filename = document_form.upload_file.data
-#         document_form.upload_file.data = ""
-
-#         upload_file_type = filename.filename.split(".")[-1]
-#         upload_file_name = f"{project_id}-{document_type}-{datetime.now().strftime('%Y%m%d%H%M%S')}.{upload_file_type}"
-
-#         upload_file(
-#             filename,
-#             upload_file_name,
-#             filename.mimetype,
-#         )
-
-#         database.upload_document(
-#             project_id,
-#             document_type,
-#             comment,
-#             session["user_id"],
-#             upload_file_name,
-#         )
-
-#         return redirect(url_for("project_view", project_id=project["project_id"]))
-#     else:
-#         print(f"{document_form.errors=}")
-
-#     if apply_payment_form.validate_on_submit():
-#         # Payment Information Data
-#         payment_method = apply_payment_form.payment_method.data
-#         check_number = apply_payment_form.check_number.data
-#         payment_amount = apply_payment_form.payment_amount.data
-#         date_received = apply_payment_form.date_received.data
-#         payment_note = apply_payment_form.payment_note.data
-
-#         payment_information = {
-#             "project_id": project_id,
-#             "payment_method": payment_method,
-#             "check_number": check_number,
-#             "payment_amount": payment_amount,
-#             "date_received": date_received,
-#             "payment_note": payment_note,
-#         }
-
-#         # Invoice Application Data
-#         invoice_id_list = [int(x) for x in request.form.getlist("invoice_id")]
-#         payment_applied_list = [
-#             float(x) for x in request.form.getlist("amount_applied")
-#         ]
-#         payment_remaining_list = [
-#             float(x) for x in request.form.getlist("amount_remaining")
-#         ]
-#         invoice_status_list = request.form.getlist("invoice_status")
-
-#         database.insert_payment(payment_information)
-
-#         for invoice_id, applied_amount, remaining_amount, invoice_status in list(
-#             zip(
-#                 invoice_id_list,
-#                 payment_applied_list,
-#                 payment_remaining_list,
-#                 invoice_status_list,
-#             )
-#         ):
-#             if applied_amount > 0:
-#                 payment = {
-#                     "invoice_id": invoice_id,
-#                     "payment_received": applied_amount,
-#                     "payment_remaining": remaining_amount,
-#                     "invoice_status": invoice_status,
-#                     "date_received": date_received,
-#                     "project_id": project_id,
-#                     "check_number": check_number,
-#                 }
-#                 database.apply_payment(payment)
-
-#         # database.insert_payment(payment_information)
-
-#         return redirect(url_for("project_view", project_id=project["project_id"]))
-#     else:
-#         print(f"{apply_payment_form.errors=}")
-
-#     if permit_add_form.validate_on_submit():
-#         permit_info = {
-#             "project_id": project_id,
-#             "permit_number": permit_add_form.permit_number.data,
-#             "type": permit_add_form.permit_type.data,
-#             "status": permit_add_form.permit_status.data,
-#             "status_date": permit_add_form.permit_status_date.data,
-#             # "follow_up_date": None,
-#             # "follow_up_date": permit_add_form.follow_up_date.data,
-#             "user_id": session["user_id"],
-#             "note": permit_add_form.permit_note.data,
-#             "city_county_id": permit_add_form.city_county.data["id"],
-#         }
-
-#         database.add_permit(permit_info)
-#         flash("Permit successfully added")
-#         return redirect(url_for("project_view", project_id=project["project_id"]))
-#     else:
-#         print(f"{permit_add_form.errors=}")
-
-#     if invoice_create_form.validate_on_submit():
-#         selected_installments = request.form.getlist("installment_select")
-
-#         selected_invoices = []
-#         billed_invoice_amount = request.form.getlist("billed_amount")
-#         while "0" in billed_invoice_amount:
-#             billed_invoice_amount.remove("0")
-
-#         zipped_installments = zip(selected_installments, billed_invoice_amount)
-
-#         for installment_id, billed_amount in zipped_installments:
-#             current_installment = [
-#                 d for d in installments if d["installment_id"] == int(installment_id)
-#             ]
-
-#             # INFO: selected_invoices{installment_number: (user_amount, installment_total, billed_amount)}
-#             selected_invoices.append(
-#                 (
-#                     int(installment_id),
-#                     float(billed_amount),
-#                     current_installment[0]["installment_amount"],
-#                     current_installment[0]["billed_amount"],
-#                 )
-#             )
-
-#         database.create_invoice(selected_invoices, project_id)
-
-#         return redirect(url_for("project_view", project_id=project["project_id"]))
-#     else:
-#         print(f"{invoice_create_form.errors=}")
-
-#     if project_notes_form.validate_on_submit():
-#         note = project_notes_form.project_note.data
-#         note_info = {
-#             "project_id": project["project_id"],
-#             "comment": note,
-#             "user_id": session["user_id"],
-#         }
-#         database.add_project_note(note_info)
-#         flash("Note successfully added")
-#         return redirect(url_for("project_view", project_id=project["project_id"]))
-#     else:
-#         print(f"{project_notes_form.errors=}")
-
-
-#     return render_template(
-#         "project.html",
-#         user=user,
-#         project=project,
-#         client=client,
-#         notes=notes,
-#         installments=installments,
-#         invoices=invoices,
-#         invoice_items=invoice_items,
-#         documents=documents,
-#         master_permit=master_permit,
-#         plumbing_permit=plumbing_permit,
-#         master_form=master_form,
-#         project_notes_form=project_notes_form,
-#         document_form=document_form,
-#         project_status_form=project_status_form,
-#         invoice_status_form=invoice_status_form,
-#         payment_detail_form=payment_detail_form,
-#         apply_payment_form=apply_payment_form,
-#         invoice_create_form=invoice_create_form,
-#         proposal_fixtures_form=proposal_fixtures_form,
-#         proposal_installments_form=proposal_installments_form,
-#         proposal_notes_form=proposal_notes_form,
-#         permit_add_form=permit_add_form,
-#         payment_info=payment_info,
-#         payments_received_total=payments_received_total,
-#         open_invoices=open_invoices,
-#         project_payments=project_payments,
-#         project_total=project_total,
-#         payments_total=payments_total,
-#         installment_payments=installment_payments,
-#         proposal_fixtures=proposal_fixtures,
-#         proposal_fixtures_total=fixtures_total(proposal_fixtures),
-#         proposal_installments=proposal_installments,
-#         proposal_installments_total=installments_total(proposal_installments),
-#         proposal_notes=proposal_notes,
-#         fixtures=fixtures,
-#         fixtures_total=fixtures_total(fixtures),
-#         permits=permits,
-#         permit_websites=permit_websites,
-#     )
 @app.route("/project/<project_id>", methods=["GET", "POST"])
 @app.route("/project/<project_id>/<new_project>", methods=["GET", "POST"])
 @login_required
@@ -750,6 +460,7 @@ def project_view(project_id, new_project=False):
     proposal_fixtures_form = ProposalFixturesForm()
     proposal_installments_form = ProposalInstallmentsForm()
     proposal_notes_form = ProposalNotesForm()
+    proposal_fixture_notes_form = ProposalFixtureNotesForm()
     apply_payment_form = ApplyPaymentForm()
     project_status_form = ProjectStatusForm()
     invoice_create_form = InvoiceCreateForm()
@@ -830,6 +541,7 @@ def project_view(project_id, new_project=False):
         notes=notes,
         project_notes_form=project_notes_form,
         proposal_fixtures_form=proposal_fixtures_form,
+        proposal_fixture_notes_form=proposal_fixture_notes_form,
         proposal_installments_form=proposal_installments_form,
         proposal_notes_form=proposal_notes_form,
         proposal_fixtures=proposal_fixtures,
@@ -1699,6 +1411,60 @@ def get_all_proposal_fixtures(project_id):
         )
 
     return jsonify(fixtures_added)
+
+
+@app.route("/addProposalFixtureNote", methods=["POST"])
+@login_required
+def add_proposal_fixture_note():
+    # Decode the bytes to a string
+    serialized_data = request.data.decode("utf-8")
+
+    # Parse the query string into a dictionary
+    parsed_data = urllib.parse.parse_qs(serialized_data)
+
+    # Convert the dictionary values to strings (if needed)
+    for key, value in parsed_data.items():
+        parsed_data[key] = value[0]
+
+    database.add_proposal_fixture_note(parsed_data)
+
+    fixture_notes_added = []
+    fixture_notes = database.get_proposal_fixture_notes(parsed_data["project_id"])
+
+    if fixture_notes:
+        for note in fixture_notes:
+            fixture_notes_added.append(
+                {
+                    "fixture_note_id": note["fixture_note_id"],
+                    "fixture_note": note["fixture_note"],
+                }
+            )
+    return jsonify(fixture_notes_added)
+
+
+@app.route(
+    "/deleteProposalFixtureNote/<fixture_note_id>/<project_id>", methods=["POST"]
+)
+@login_required
+def delete_proposal_fixture_note(fixture_note_id, project_id):
+    database.delete_proposal_fixture_note(fixture_note_id)
+
+    return get_all_proposal_fixture_notes(project_id)
+
+
+def get_all_proposal_fixture_notes(project_id):
+    fixture_notes_added = []
+    fixture_notes = database.get_proposal_fixture_notes(project_id)
+
+    for note in fixture_notes:
+        fixture_notes_added.append(
+            {
+                "fixture_note_id": note["fixture_note_id"],
+                "fixture_note": note["fixture_note"],
+            }
+        )
+
+    return jsonify(fixture_notes_added)
 
 
 @app.route("/deleteProposalFixture/<fixture_id>/<project_id>", methods=["POST"])

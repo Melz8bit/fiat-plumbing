@@ -1702,6 +1702,53 @@ def add_proposal_note(note_data):
         return ""
 
 
+def delete_proposal_note(note_id):
+    try:
+        sqlQuery = "DELETE FROM tmp_project_proposal_notes WHERE note_id = :note_id;"
+
+        query_params = {
+            "note_id": int(note_id),
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+
+        print("Note deleted")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_proposal_fixture_notes(project_id, proposal_id=0):
+    try:
+        sqlQuery = (
+            "SELECT *"
+            + " FROM tmp_project_proposal_fixture_notes"
+            + " WHERE project_id = :project_id"
+            + " AND proposal_id = :proposal_id ORDER BY fixture_note_id;"
+        )
+
+        query_params = {
+            "project_id": project_id,
+            "proposal_id": proposal_id,
+        }
+
+        with engine.connect() as connection:
+            notes = connection.execute(text(f"{sqlQuery}"), query_params)
+            try:
+                proposal_notes_dict = notes.mappings().all()
+            except:
+                proposal_notes_dict = ""
+
+        return proposal_notes_dict
+
+    except Exception as e:
+        print("Database Error:", e)
+        return None
+
+
 def add_proposal_fixture_note(note_data):
     try:
         sqlQuery = (
@@ -1725,19 +1772,19 @@ def add_proposal_fixture_note(note_data):
         return ""
 
 
-def delete_proposal_note(note_id):
+def delete_proposal_fixture_note(fixture_note_id):
     try:
-        sqlQuery = "DELETE FROM project_proposal_notes WHERE note_id = :note_id;"
+        sqlQuery = "DELETE FROM tmp_project_proposal_fixture_notes WHERE fixture_note_id = :fixture_note_id;"
 
         query_params = {
-            "note_id": int(note_id),
+            "fixture_note_id": int(fixture_note_id),
         }
 
         with engine.connect() as connection:
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
 
-        print("Note deleted")
+        print("Fixture note deleted")
 
     except Exception as e:
         print("Database Error:", e)
