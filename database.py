@@ -1988,7 +1988,7 @@ def proposal_fixture_note_temp_table(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
-            print("Notes moved from temp table")
+            print("Fixture notes moved from temp table")
 
     except Exception as e:
         print("Database Error:", e)
