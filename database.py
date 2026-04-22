@@ -1962,7 +1962,7 @@ def proposal_fixture_note_temp_table(project_id):
     try:
         sqlQuery = """
             INSERT INTO project_proposal_fixture_notes (project_id, proposal_id, fixture_note)
-            SELECT project_id, proposal_id::bigint, note FROM project_proposal_fixture_notes 
+            SELECT project_id, proposal_id::bigint, fixture_note FROM project_proposal_fixture_notes 
                 WHERE project_id = :project_id;
         """
 
@@ -1981,7 +1981,7 @@ def proposal_fixture_note_temp_table(project_id):
     # Delete data from notes temp table
     try:
         sqlQuery = """
-            DELETE FROM project_proposal_fixture_notes 
+            DELETE FROM tmp_project_proposal_fixture_notes 
             WHERE project_id = :project_id;
         """
 
