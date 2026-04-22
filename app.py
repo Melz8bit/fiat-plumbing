@@ -1123,8 +1123,8 @@ def finalize_proposal():
     # Update proposal items with proposal ID
     database.update_proposal_items_id(project_id, proposal_id)
 
-    # Clean up temp tables
-    database.proposal_temp_tables_cleanup(project_id)
+    # Perform move from temp to permanent
+    database.proposal_temp_tables_finalize(project_id)
 
     flash(is_document_uploaded)
 
@@ -1341,6 +1341,24 @@ def update_proposal_data(data_type, proposal_data) -> list:
         fixed_list.append(json.loads(x))
 
     return fixed_list
+
+
+@app.route("/clear_proposal_draft/<project_id>", methods=["POST"])
+@login_required
+def clear_proposal_draft(project_id):
+    # Call your cleanup function
+    database.proposal_clear_temp_tables(project_id)
+    return jsonify(success=True)
+
+
+@app.route("/clear_proposal_installments/<project_id>", methods=["POST"])
+@login_required
+def clear_proposal_installments(project_id):
+    try:
+        database.proposal_clear_installment_temp(project_id)
+        return jsonify(success=True)
+    except Exception as e:
+        return jsonify(success=False, error=str(e)), 500
 
 
 def get_encoded_logo():

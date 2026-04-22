@@ -1912,8 +1912,9 @@ def create_proposal(project_id, user_id):
         return ""
 
 
-def proposal_temp_tables_cleanup(project_id):
+def proposal_temp_tables_finalize(project_id):
     proposal_fixture_temp_table(project_id)
+    proposal_fixture_note_temp_table(project_id)
     proposal_installment_temp_table(project_id)
     proposal_note_temp_table(project_id)
 
@@ -2120,6 +2121,97 @@ def update_proposal_items_id(project_id, proposal_id):
             connection.commit()
 
         print("Proposal items updated")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def proposal_clear_temp_tables(project_id):
+    proposal_clear_fixture_temp(project_id)
+    proposal_clear_fixture_note_temp(project_id)
+    proposal_clear_installment_temp(project_id)
+    proposal_clear_note_temp(project_id)
+
+
+def proposal_clear_fixture_temp(project_id):
+    try:
+        sqlQuery = """
+            DELETE FROM tmp_project_proposal_fixtures 
+            WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+            print("Fixtures temp table cleared")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def proposal_clear_fixture_note_temp(project_id):
+    try:
+        sqlQuery = """
+            DELETE FROM tmp_project_proposal_fixture_notes
+            WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+            print("Fixture notes temp table cleared")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def proposal_clear_installment_temp(project_id):
+    try:
+        sqlQuery = """
+            DELETE FROM tmp_project_proposal_installments
+            WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+            print("Installments temp table cleared")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def proposal_clear_note_temp(project_id):
+    try:
+        sqlQuery = """
+            DELETE FROM tmp_project_proposal_notes
+            WHERE project_id = :project_id;
+        """
+
+        query_params = {
+            "project_id": project_id,
+        }
+
+        with engine.connect() as connection:
+            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            connection.commit()
+            print("Notes temp table cleared")
 
     except Exception as e:
         print("Database Error:", e)

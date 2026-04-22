@@ -4,9 +4,101 @@
         -moz-appearance: textfield;
         appearance: textfield;
     }
+
+    .modal {
+        overflow-y: auto !important;
+    }
+
+    #modalProposalCreation .modal-body {
+        max-height: calc(100vh - 200px); /* Keeps header/footer visible */
+        overflow-y: auto;
+    }
 </style>
 
 <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
+<script>
+    // Handle the "Continue" button for unfinished proposals
+    function continueDraft() {
+        $("#proposalPrompt").addClass("d-none");
+        $("#proposalMainContent").removeClass("d-none");
+    
+        // Trigger math calculation now that the elements are visible
+        initializeProposalMath();
+
+        // 2. Re-calculate scrollbars
+        var myModal = document.getElementById('modalProposalCreation'); 
+        if (myModal) {
+            var modalInstance = bootstrap.Modal.getInstance(myModal);
+            if (modalInstance) {
+                modalInstance.handleUpdate();
+            }
+        }
+    }
+
+    // Handle the "Start Over" button
+    function confirmStartOver() {
+        if (confirm("Are you sure? This will delete all items, installments, and notes currently in this draft.")) {
+            // Adjust this URL to match your actual Flask route name
+            var url = "{{ url_for('clear_proposal_draft', project_id=project['project_id']) }}";
+            
+            $.ajax({
+                type: "POST",
+                url: url,
+                success: function(response) {
+                    // 1. Wipe the UI tables
+                    updateFixtureTable([]);
+                    updateFixtureNoteTable([]);
+                    updateNoteTable([]);
+
+                    // Reset the footer totals manually so initializeProposalMath picks up $0
+                    document.getElementById("proposalFixturesTotal").textContent = "$0.00";
+                    document.getElementById("proposalInstallmentsTotal").textContent = "$0.00";
+                    
+                    // 2. Switch views
+                    $("#proposalPrompt").addClass("d-none");
+                    $("#proposalMainContent").removeClass("d-none");
+                    
+                    // 3. Reset math to zero
+                    initializeProposalMath();
+                },
+                error: function() {
+                    alert("Error clearing draft. Please try again.");
+                }
+            });
+        }
+    }
+
+    // On modal load, re-calculate totals
+    function initializeProposalMath() {
+        if ($("#proposalMainContent").hasClass("d-none")) return;
+
+        // 1. Grab the current totals from the table footers
+        let fixtureTotalRaw = document.getElementById("proposalFixturesTotal").textContent.replace(/[$,]/g, '');
+        let installmentTotalRaw = document.getElementById("proposalInstallmentsTotal").textContent.replace(/[$,]/g, '');
+        
+        let totalFixtures = parseFloat(fixtureTotalRaw) || 0;
+        let totalInstallmentsScheduled = parseFloat(installmentTotalRaw) || 0;
+
+        // 2. Calculate and set the "Remaining" balance
+        // This tells the user exactly how much is left to be scheduled in the payment plan
+        let remaining = (totalFixtures - totalInstallmentsScheduled).toFixed(2);
+        document.getElementById("installment_amount_remaining").value = remaining;
+        
+        // 3. CLEAN UP: Sync the Installment Number
+        // Count existing rows that aren't the "empty" placeholder
+        let installmentRows = document.getElementById("installmentTable").querySelectorAll("tbody tr:not(#emptyInstallmentRow)");
+        
+        // Set the input to the next available number (e.g., if 2 exist, this becomes 3)
+        document.getElementById("installment_number").value = installmentRows.length + 1;
+    }
+
+    $(document).ready(function() {
+        if ($("#proposalPrompt").hasClass("d-none")) {
+            initializeProposalMath();
+        }
+    });
+</script>
+
 <script>
     function updateFixtureTable(data) {
         let formatting_options = {
@@ -282,788 +374,826 @@
             }
         }
     }
+
+    function clearInstallmentsUIOnly() {
+        // Wipe the table body
+        var instBody = document.getElementById("installmentTable").querySelector("tbody");
+        instBody.innerHTML = '<tr id="emptyInstallmentRow"><td class="text-center" colspan="100%">Please add installment(s)</td></tr>';
+        
+        // Reset the footer total
+        document.getElementById("proposalInstallmentsTotal").textContent = "$0.00";
+        
+        // Reset the installment number back to 1
+        document.getElementById("installment_number").value = 1;
+    }
 </script>
 
-<div class="modal-header">
-    <h1 class="modal-title fs-4" id="modalProposalCreationLabel">Proposal Creation</h1>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div id="proposalPrompt" class="{% if proposal_fixtures|length == 0 and proposal_fixture_notes|length == 0 and proposal_installments|length == 0 and proposal_notes|length == 0 %}d-none{% endif %}">
+    <div class="row justify-content-center align-items-center" style="min-height: 300px;">
+        <div class="col-md-6 col-lg-5 text-center p-4 border rounded shadow-sm bg-light">
+            <i class="fa-solid fa-file-invoice-dollar fa-3x mb-3 text-primary"></i>
+            <h4>Draft Found</h4>
+            <p class="text-muted">You have an unfinished proposal draft.</p>
+            <div class="d-grid gap-2 d-md-block mt-4">
+                <button type="button" class="btn btn-success" onclick="continueDraft()">Continue Draft</button>
+                <button type="button" class="btn btn-outline-danger" onclick="confirmStartOver()">Start Over</button>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="modal-body">
-    <div class="container p-3">
-        <div class="row gx-5">
-            <!-- Client Info -->
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Client Information</h5>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="client_name">Name</span>
-                            <input type="text" class="form-control" value="{{ client['name'] }}"
-                                aria-label="{{ project['client_name'] }}" aria-describedby="client_name" readonly>
-                        </div>
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="client_address">Address</span>
-                            <input type="text" class="form-control"
-                                value="{{ client['address'] }}, {{ client['city'] }}, {{ client['state'] }} {{ client['zip_code'] }}"
-                                aria-label="{{ client['address'] }}, {{ client['city'] }}, {{ client['state'] }} {{ client['zip_code'] }}"
-                                aria-describedby="client_address" readonly>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Project Info -->
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Project Information</h5>
-
-                        <div class="row">
-                            <div class="col">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text" id="project_name">Name</span>
-                                    <input type="text" class="form-control" value="{{ project['name'] }}"
-                                        aria-label="{{ project['name'] }}" aria-describedby="project_name" readonly>
-                                </div>
+<div id="proposalMainContent" 
+    class="{% if proposal_fixtures|length > 0 or proposal_fixture_notes|length > 0 or proposal_installments|length > 0 or proposal_notes|length > 0 %}d-none{% endif %}">
+    
+    <div class="modal-header">
+        <h1 class="modal-title fs-4" id="modalProposalCreationLabel">Proposal Creation</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <div class="container p-3">
+            <div class="row gx-5">
+                <!-- Client Info -->
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">Client Information</h5>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="client_name">Name</span>
+                                <input type="text" class="form-control" value="{{ client['name'] }}"
+                                    aria-label="{{ project['client_name'] }}" aria-describedby="client_name" readonly>
                             </div>
-                            <div class="col-4">
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text" id="project_id">#</span>
-                                    <input type="text" class="form-control" value="{{ project['project_id'] }}"
-                                        aria-label="{{ project['project_id'] }}" aria-describedby="project_id" readonly>
-                                </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="client_address">Address</span>
+                                <input type="text" class="form-control"
+                                    value="{{ client['address'] }}, {{ client['city'] }}, {{ client['state'] }} {{ client['zip_code'] }}"
+                                    aria-label="{{ client['address'] }}, {{ client['city'] }}, {{ client['state'] }} {{ client['zip_code'] }}"
+                                    aria-describedby="client_address" readonly>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Project Info -->
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">Project Information</h5>
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text" id="project_name">Name</span>
+                                        <input type="text" class="form-control" value="{{ project['name'] }}"
+                                            aria-label="{{ project['name'] }}" aria-describedby="project_name" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text" id="project_id">#</span>
+                                        <input type="text" class="form-control" value="{{ project['project_id'] }}"
+                                            aria-label="{{ project['project_id'] }}" aria-describedby="project_id" readonly>
+                                    </div>
+                                </div>
+                            </div>
 
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="project_address">Address</span>
-                            <input type="text" class="form-control"
-                                value="{{ project['address'] }}, {{ project['city'] }}, {{ project['state'] }} {{ project['zip_code'] }}"
-                                aria-label="{{ project['address'] }}, {{ project['city'] }}, {{ project['state'] }} {{ project['zip_code'] }}"
-                                aria-describedby="project_address" readonly>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="project_address">Address</span>
+                                <input type="text" class="form-control"
+                                    value="{{ project['address'] }}, {{ project['city'] }}, {{ project['state'] }} {{ project['zip_code'] }}"
+                                    aria-label="{{ project['address'] }}, {{ project['city'] }}, {{ project['state'] }} {{ project['zip_code'] }}"
+                                    aria-describedby="project_address" readonly>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <hr>
+            <hr>
 
-        <!-- Plan Date -->
-        <h3>Plans Information</h3>
-        <div class="input-group mb-3 w-25">
-            <span class="input-group-text" id="lblPlansDate">Plan Date:</span>
-            <input id="plans_date" type="date" class="form-control" placeholder="Username" aria-label="Username"
-                aria-describedby="lblPlansDate">
-        </div>
-
-        <hr>
-
-        <!-- Fixtures -->
-        <h3>Items</h3>
-        <form id="addFixtures" method="POST" enctype="multipart/form-data">
-            {{ proposal_fixtures_form.csrf_token() }}
-            {{ proposal_fixtures_form.project_id(value=project['project_id']) }}
-            <!-- Add Fixture -->
-            <div class="row mb-3">
-                <div class="col-4">
-                    <div class="input-group">
-                        {{ proposal_fixtures_form.fixtures.label(class="input-group-text")}}
-                        <select class="form-select" name="fixture_select" id="fixture_select">
-                            {% for option in proposal_fixtures_form.fixtures %}
-                            {% if loop.first %}
-                            <option selected disabled value="">Select Fixture</option>
-                            {% endif %}
-                            {{ option }}
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="input-group">
-                        {{ proposal_fixtures_form.fixture_quantity.label(class="input-group-text") }}
-                        {{ proposal_fixtures_form.fixture_quantity(class="form-control text-end", placeholder="0",
-                        text=0,
-                        min=0) }}
-                    </div>
-                </div>
-
-                <div class="col-3">
-                    <div class="input-group">
-                        {{ proposal_fixtures_form.fixture_cost.label(class="input-group-text") }}
-                        {{ proposal_fixtures_form.fixture_cost(class="form-control text-end", placeholder="0.00",
-                        text=0.00,
-                        step="0.01",
-                        min=0.00)
-                        }}
-                    </div>
-                </div>
-
-                <div class="col d-flex justify-content-evenly align-items-center">
-                    <div class="form-check">
-                        {{ proposal_fixtures_form.fixture_is_cost(class="form-check-input", type="checkbox")
-                        }}
-                        <label class="form-check-label" for="fixture_is_cost">
-                            Cost?
-                        </label>
-                    </div>
-                </div>
-
-                <div class="col-2 d-flex align-items-center justify-content-end">
-                    <button class="btn btn-primary btn-sm" id="btnAddFixture" type="button">Add Fixture</button>
-                </div>
-            </div>
-        </form>
-        <!-- Fixture Display Table -->
-        <table id="fixtureTable" class="table table-striped">
-            <thead>
-                <tr>
-                    <th class="text-center">Abbreviation</th>
-                    <th class="text-center">Name</th>
-                    <th class="text-center">Quantity</th>
-                    <th class="text-center">Amount</th>
-                    <th class="text-center">Is Cost?</th>
-                    <th class="text-center">Total</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Fixture Table-->
-                {% if proposal_fixtures|length == 0 %}
-                <tr id="emptyFixtureRow">
-                    <td class="text-center" colspan="100%">
-                        Please add fixture(s)
-                    </td>
-                </tr>
-                {% else %}
-                {% for fixture in proposal_fixtures %}
-                <tr id="fixtureLineItem{{ fixture['fixture_id']|string }}" class="text-center">
-                    <td id="lblFixtureAbbr{{ fixture['fixture_id']|string }}">
-                        {{ fixture['fixture_abbreviation'] }}
-                        {{ proposal_fixtures_form.fixture_id(value=fixture['fixture_id']) }}
-                    </td>
-                    <td id="lblFixtureName{{ fixture['fixture_id']|string }}">
-                        {{ fixture['fixture_name'] }}
-                    </td>
-                    <td id="lblFixtureQty{{ fixture['fixture_id']|string }}">
-                        {{ fixture['quantity'] }}
-                    </td>
-                    <td id="lblFixtureCost{{ fixture['fixture_id']|string }}">
-                        {{ "${:,.2f}".format(fixture['cost_per_fixture']) }}
-                    </td>
-                    <td id="lblFixtureIsCost{{ fixture['fixture_id']|string }}">
-                        <input type="checkbox" {% if fixture['is_cost'] %}checked{% endif %} disabled>
-                    </td>
-                    <td id="lblFixtureTotal{{ fixture['fixture_id']|string }}">
-                        {{ "${:,.2f}".format(fixture['total_per_fixture']) }}
-                    </td>
-                    <td>
-                        <button id="btnDeleteFixtureLine{{ fixture['fixture_id']|string }}" type="button"
-                            class="border-0 bg-transparent" data-fixture-id="{{ fixture['fixture_id']|string }}">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                    <script>
-                        // Delete fixture line item
-                        $(document).ready(function () {
-                            $("#fixtureTable").on("click", "button[id^='btnDeleteFixtureLine{{ fixture['fixture_id']|string }}']", function (e) {
-                                var fixtureId = $(this).data("fixture-id");
-                                var url = "{{ url_for('delete_proposal_fixture', fixture_id=fixture['fixture_id'], project_id=fixture['project_id']) }}";
-                                $.ajax({
-                                    type: "POST",
-                                    url: url,
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    data: "", // serializes the form's elements.
-                                    success: function (data) {
-                                        // console.log(data)  // display the returned data in the console.
-                                        // console.log(data.length)
-
-                                        updateFixtureTable(data);
-                                    }
-                                });
-
-                                e.preventDefault(); // block the traditional submission of the form.
-                            });
-
-                            // Inject our CSRF token into our AJAX request.
-                            $.ajaxSetup({
-                                beforeSend: function (xhr, settings) {
-                                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                                        xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
-                                    }
-                                }
-                            })
-                        });
-
-                    </script>
-                </tr>
-                {% endfor %}
-                {% endif %}
-            </tbody>
-            <tfoot>
-                <tr class="text-center">
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td class="fw-semibold">Total</td>
-                    <td id="proposalFixturesTotal" class="fw-semibold">{{ "${:,.2f}".format(proposal_fixtures_total)
-                        }}</td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
-        <script>
-            var fixture_id = null;
-            // Add fixture line item
-            $(document).ready(function () {
-                $("#addFixtures").on("click", "button[id^='btnAddFixture']", function (e) {
-                    var url = "{{ url_for('add_proposal_fixture') }}";
-                    var data = $('#addFixtures').serializeArray();
-                    $.ajax({
-                        type: "POST",
-                        url: url,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        data: data, // serializes the form's elements.
-                        success: function (data) {
-                            var rowToDelete = document.getElementById("emptyFixtureRow");
-                            if (rowToDelete) {
-                                rowToDelete.remove();
-                            }
-
-                            updateFixtureTable(data);
-
-                            document.getElementById("fixture_select").selectedIndex = 0;
-                            document.getElementById("fixture_quantity").value = "";
-                            document.getElementById("fixture_cost").value = "";
-                        }
-                    });
-                    e.preventDefault(); // block the traditional submission of the form.
-                });
-
-
-                // Inject our CSRF token into our AJAX request.
-                $.ajaxSetup({
-                    beforeSend: function (xhr, settings) {
-                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
-                        }
-                    }
-                })
-            });
-        </script>
-
-        <!-- Fixture Notes -->
-        <h3>Fixture Notes</h3>
-        <form id="addFixtureNotes" method="POST" enctype="multipart/form-data">
-            {{ proposal_fixture_notes_form.csrf_token() }}
-            {{ proposal_fixture_notes_form.project_id(value=project['project_id']) }}
-            <!-- Add fixture note -->
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
-                        {{ proposal_fixture_notes_form.fixture_note.label(class="input-group-text") }}
-                        {{ proposal_fixture_notes_form.fixture_note(class="form-control") }}
-                    </div>
-                </div>
-
-                <div class="col-2 text-end">
-                    <button class="btn btn-primary" id="btnAddFixtureNote" type="button">Add Fixture Note</button>
-                </div>
-            </div>
-        </form>
-        <!-- Fixture Notes Display Table -->
-        <table id="fixtureNoteTable" class="table table-striped">
-            <thead>
-                <tr class="text-center">
-                    <th colspan="999">{{ proposal_fixture_notes_form.fixture_note.label }}</th>
-                    <!-- <th></th> -->
-                </tr>
-            </thead>
-            <tbody>
-                {% if proposal_fixture_notes|length == 0 %}
-                <tr id="emptyFixtureNoteRow">
-                    <td class="text-center" colspan="100%">
-                        Please add fixture note(s)
-                    </td>
-                </tr>
-                {% else %}
-                {% for note in proposal_fixture_notes %}
-                <tr class="text-center">
-                    <td id="lblFixtureNoteNumber{{ note['fixture_note_id']|string }}">
-                        {{ note['fixture_note'] }}
-                        {{ proposal_fixture_notes_form.fixture_note_id(value=note['fixture_note_id']) }}
-                    </td>
-                    <td class="text-end">
-                        <button id="btnDeleteFixtureNoteLine{{ note['fixture_note_id']|string }}" type="button"
-                            class="border-0 bg-transparent" data-fixture-id="{{ note['fixture_note_id']|string }}">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                    <!-- Delete fixture note line item -->
-                    <script>
-                        $(document).ready(function () {
-                            $("#fixtureNoteTable").on("click", "button[id^='btnDeleteFixtureNoteLine{{ note['fixture_note_id']|string }}']", function (e) {
-                                var fixtureNoteId = $(this).data("fixture-note-id");
-                                var url = "{{ url_for('delete_proposal_fixture_note', fixture_note_id=note['fixture_note_id'], project_id=note['project_id']) }}";
-                                $.ajax({
-                                    type: "POST",
-                                    url: url,
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    data: "", // serializes the form's elements.
-                                    success: function (data) {
-                                        // console.log(data)  // display the returned data in the console.
-                                        // console.log(data.length)
-
-                                        updateFixtureNoteTable(data);
-                                    }
-                                });
-
-                                e.preventDefault(); // block the traditional submission of the form.
-                            });
-
-                            // Inject our CSRF token into our AJAX request.
-                            $.ajaxSetup({
-                                beforeSend: function (xhr, settings) {
-                                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                                        xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
-                                    }
-                                }
-                            })
-                        });
-
-
-                    </script>
-                </tr>
-                {% endfor %}
-                {% endif %}
-            </tbody>
-            <tfoot>
-            </tfoot>
-        </table>
-        <!-- Add note line item -->
-        <script>
-            $(document).ready(function () {
-                $("#addFixtureNotes").on("click", "button[id^='btnAddFixtureNote']", function (e) {
-                    var url = "{{ url_for('add_proposal_fixture_note') }}";
-                    var data = $('#addFixtureNotes').serializeArray();
-                    $.ajax({
-                        type: "POST",
-                        url: url,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        data: data, // serializes the form's elements.
-                        success: function (data) {
-                            var rowToDelete = document.getElementById("emptyFixtureNoteRow");
-                            if (rowToDelete) {
-                                rowToDelete.remove();
-                            }
-
-                            updateFixtureNoteTable(data);
-
-                            document.getElementById("fixture_note").value = "";
-                        }
-                    });
-                    e.preventDefault(); // block the traditional submission of the form.
-                });
-
-
-                // Inject our CSRF token into our AJAX request.
-                $.ajaxSetup({
-                    beforeSend: function (xhr, settings) {
-                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
-                        }
-                    }
-                })
-            });
-        </script>
-
-
-        <hr>
-
-        <!-- Installments - Payment Plan -->
-        <h3>Payment Plan</h3>
-        <form id="addInstallments" method="POST" enctype="multipart/form-data">
-            {{ proposal_installments_form.csrf_token() }}
-            {{ proposal_installments_form.project_id(value=project['project_id']) }}
-            <!-- Add Installment -->
-            <div class="row mb-3">
-                <div class="col-1">
-                    <div class="input-group">
-                        {{ proposal_installments_form.installment_number.label(class="input-group-text") }}
-                        {{ proposal_installments_form.installment_number(class="form-control text-center") }}
-                    </div>
-                </div>
-
-                <div class="col-4">
-                    <div class="input-group">
-                        {{ proposal_installments_form.installments.label(class="input-group-text")}}
-                        <select class="form-select" name="installment_select" id="installment_select">
-                            {% for option in proposal_installments_form.installments %}
-                            {% if loop.first %}
-                            <option selected disabled value="">Add Installment</option>
-                            {% endif %}
-                            {{ option }}
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col">
-                    <div class="input-group">
-                        {{ proposal_installments_form.installment_amount.label(class="input-group-text") }}
-                        {{ proposal_installments_form.installment_amount(class="form-control text-end",
-                        placeholder="0",
-                        text=0,
-                        min=0) }}
-                    </div>
-                </div>
-
-                <div class="col">
-                    <div class="input-group">
-                        {{ proposal_installments_form.installment_amount_remaining.label(class="input-group-text") }}
-                        {{ proposal_installments_form.installment_amount_remaining(class="form-control text-end",
-                        placeholder="0",text=0.00,step=0.01) }}
-                    </div>
-                </div>
-
-                <div class="col-1 text-end w-auto">
-                    <button class="btn btn-primary" id="btnAddInstallment" type="button">Add</button>
-                </div>
+            <!-- Plan Date -->
+            <h3>Plans Information</h3>
+            <div class="input-group mb-3 w-25">
+                <span class="input-group-text" id="lblPlansDate">Plan Date:</span>
+                <input id="plans_date" type="date" class="form-control" placeholder="Username" aria-label="Username"
+                    aria-describedby="lblPlansDate">
             </div>
 
-            <!-- Table with Payment Plan Installments -->
-            <table id="installmentTable" class="table table-striped">
+            <hr>
+
+            <!-- Fixtures -->
+            <h3>Items</h3>
+            <form id="addFixtures" method="POST" enctype="multipart/form-data">
+                {{ proposal_fixtures_form.csrf_token() }}
+                {{ proposal_fixtures_form.project_id(value=project['project_id']) }}
+                <!-- Add Fixture -->
+                <div class="row mb-3">
+                    <div class="col-4">
+                        <div class="input-group">
+                            {{ proposal_fixtures_form.fixtures.label(class="input-group-text")}}
+                            <select class="form-select" name="fixture_select" id="fixture_select">
+                                {% for option in proposal_fixtures_form.fixtures %}
+                                {% if loop.first %}
+                                <option selected disabled value="">Select Fixture</option>
+                                {% endif %}
+                                {{ option }}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div class="input-group">
+                            {{ proposal_fixtures_form.fixture_quantity.label(class="input-group-text") }}
+                            {{ proposal_fixtures_form.fixture_quantity(class="form-control text-end", placeholder="0",
+                            text=0,
+                            min=0) }}
+                        </div>
+                    </div>
+
+                    <div class="col-3">
+                        <div class="input-group">
+                            {{ proposal_fixtures_form.fixture_cost.label(class="input-group-text") }}
+                            {{ proposal_fixtures_form.fixture_cost(class="form-control text-end", placeholder="0.00",
+                            text=0.00,
+                            step="0.01",
+                            min=0.00)
+                            }}
+                        </div>
+                    </div>
+
+                    <div class="col d-flex justify-content-evenly align-items-center">
+                        <div class="form-check">
+                            {{ proposal_fixtures_form.fixture_is_cost(class="form-check-input", type="checkbox")
+                            }}
+                            <label class="form-check-label" for="fixture_is_cost">
+                                Cost?
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-2 d-flex align-items-center justify-content-end">
+                        <button class="btn btn-primary btn-sm" id="btnAddFixture" type="button">Add Fixture</button>
+                    </div>
+                </div>
+            </form>
+            <!-- Fixture Display Table -->
+            <table id="fixtureTable" class="table table-striped">
                 <thead>
-                    <tr class="text-center">
-                        <th>#</th>
-                        <th>Category</th>
-                        <th>Amount</th>
+                    <tr>
+                        <th class="text-center">Abbreviation</th>
+                        <th class="text-center">Name</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-center">Amount</th>
+                        <th class="text-center">Is Cost?</th>
+                        <th class="text-center">Total</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if proposal_installments|length == 0 %}
-                    <tr id="emptyInstallmentRow">
+                    <!-- Fixture Table-->
+                    {% if proposal_fixtures|length == 0 %}
+                    <tr id="emptyFixtureRow">
                         <td class="text-center" colspan="100%">
-                            Please add installment(s)
+                            Please add fixture(s)
                         </td>
                     </tr>
                     {% else %}
-                    {% for installment in proposal_installments %}
-                    <tr class="text-center">
-                        <td id="lbliInstallmentNumber{{ installment['installment_id']|string }}">
-                            {{ installment['installment_number'] }}
+                    {% for fixture in proposal_fixtures %}
+                    <tr id="fixtureLineItem{{ fixture['fixture_id']|string }}" class="text-center">
+                        <td id="lblFixtureAbbr{{ fixture['fixture_id']|string }}">
+                            {{ fixture['fixture_abbreviation'] }}
+                            {{ proposal_fixtures_form.fixture_id(value=fixture['fixture_id']) }}
                         </td>
-                        <td id="lbliInstallmentCategory{{ installment['installment_id']|string }}">
-                            {{ installment['installment_category'] }}
+                        <td id="lblFixtureName{{ fixture['fixture_id']|string }}">
+                            {{ fixture['fixture_name'] }}
                         </td>
-                        <td id="lbliInstallmentAmt{{ installment['installment_id']|string }}">
-                            {{ "${:,.2f}".format(installment['installment_amount']) }}
+                        <td id="lblFixtureQty{{ fixture['fixture_id']|string }}">
+                            {{ fixture['quantity'] }}
                         </td>
+                        <td id="lblFixtureCost{{ fixture['fixture_id']|string }}">
+                            {{ "${:,.2f}".format(fixture['cost_per_fixture']) }}
+                        </td>
+                        <td id="lblFixtureIsCost{{ fixture['fixture_id']|string }}">
+                            <input type="checkbox" {% if fixture['is_cost'] %}checked{% endif %} disabled>
+                        </td>
+                        <td id="lblFixtureTotal{{ fixture['fixture_id']|string }}">
+                            {{ "${:,.2f}".format(fixture['total_per_fixture']) }}
+                        </td>
+                        <td>
+                            <button id="btnDeleteFixtureLine{{ fixture['fixture_id']|string }}" type="button"
+                                class="border-0 bg-transparent" data-fixture-id="{{ fixture['fixture_id']|string }}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                        <script>
+                            // Delete fixture line item
+                            $(document).ready(function () {
+                                $("#fixtureTable").on("click", "button[id^='btnDeleteFixtureLine{{ fixture['fixture_id']|string }}']", function (e) {
+                                    var fixtureId = $(this).data("fixture-id");
+                                    var url = "{{ url_for('delete_proposal_fixture', fixture_id=fixture['fixture_id'], project_id=fixture['project_id']) }}";
+                                    $.ajax({
+                                        type: "POST",
+                                        url: url,
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'Content-Type': 'application/json'
+                                        },
+                                        data: "", // serializes the form's elements.
+                                        success: function (data) {
+                                            // console.log(data)  // display the returned data in the console.
+                                            // console.log(data.length)
+
+                                            updateFixtureTable(data);
+                                        }
+                                    });
+
+                                    e.preventDefault(); // block the traditional submission of the form.
+                                });
+
+                                // Inject our CSRF token into our AJAX request.
+                                $.ajaxSetup({
+                                    beforeSend: function (xhr, settings) {
+                                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                                        }
+                                    }
+                                })
+                            });
+
+                        </script>
                     </tr>
                     {% endfor %}
                     {% endif %}
                 </tbody>
                 <tfoot>
-                    <tr>
+                    <tr class="text-center">
                         <td></td>
-                        <td class="fw-semibold text-end">Total</td>
-                        <td id="proposalInstallmentsTotal" class="fw-semibold text-center">{{
-                            "${:,.2f}".format(proposal_installments_total)
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="fw-semibold">Total</td>
+                        <td id="proposalFixturesTotal" class="fw-semibold">{{ "${:,.2f}".format(proposal_fixtures_total)
                             }}</td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
-        </form>
+            <script>
+                var fixture_id = null;
+                // Add fixture line item
+                $(document).ready(function () {
+                    $("#addFixtures").on("click", "button[id^='btnAddFixture']", function (e) {
+                        var url = "{{ url_for('add_proposal_fixture') }}";
+                        var data = $('#addFixtures').serializeArray();
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            data: data, // serializes the form's elements.
+                            success: function (data) {
+                                var rowToDelete = document.getElementById("emptyFixtureRow");
+                                if (rowToDelete) {
+                                    rowToDelete.remove();
+                                }
 
-        <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
-        <script>
-            $(document).ready(function () {
-                $("#btnAddInstallment").on("click", function (e) {
-                    var installmentAmountRemaining = document.getElementById("installment_amount_remaining");
-                    var installmentAmount = document.getElementById("installment_amount");
-                    if (parseFloat(installmentAmount.value) > parseFloat(installmentAmountRemaining.value)) {
-                        const toastLiveExample = document.getElementById('liveToast')
-                        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
-                        var toastBody = document.getElementById('toast-body')
-                        toastBody.innerHTML = "Installment amount is more than the remaining amount."
-                        toastBootstrap.show()
-                        return;
-                    }
-                    var url = "{{ url_for('add_proposal_installment') }}";
-                    var data = $('#addInstallments').serializeArray();
-                    var curr_install_number = document.getElementById("installment_number").value;
-                    $.ajax({
-                        type: "POST",
-                        url: url,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        data: data, // serializes the form's elements.
-                        success: function (data) {
-                            // console.log(data)  // display the returned data in the console.
-                            // console.log(data.length);
+                                updateFixtureTable(data);
 
-                            if (data.length == 1) {
-                                var tableBody = document.getElementById("installmentTable").querySelector("tbody");
-                                var rowToDelete = document.getElementById("emptyInstallmentRow");
-                                rowToDelete.remove();
+                                // Clear installments since the total changed
+                                clearInstallmentsUIOnly(); // Helper function below
+                                
+                                // Call a route to clear installments in the DB
+                                $.post("{{ url_for('clear_proposal_installments', project_id=project['project_id']) }}", function() {
+                                    initializeProposalMath(); // Recalculate with $0 installments
+                                });
+
+                                document.getElementById("fixture_select").selectedIndex = 0;
+                                document.getElementById("fixture_quantity").value = "";
+                                document.getElementById("fixture_cost").value = "";
                             }
-
-                            let formatting_options = {
-                                style: 'currency',
-                                currency: 'USD',
-                                minimumFractionDigits: 2,
-                            }
-                            let dollarString = new Intl.NumberFormat("en-US", formatting_options);
-                            var total_installments_cost = 0;
-
-                            // Create a new table row
-                            var newRow = document.createElement("tr");
-                            newRow.classList.add("text-center");
-
-                            // Create table cells for each item detail
-                            var instNum = document.createElement("td");
-                            instNum.textContent = data[data.length - 1]['installment_number'];
-                            newRow.appendChild(instNum);
-
-                            // // Safely get the last item
-                            // const lastItem = data.at ? data.at(-1) : data[data.length - 1];
-
-                            // if (lastItem) {
-                            //     var instNum = document.createElement("td");
-                            //     instNum.textContent = lastItem['installment_number'];
-                            //     newRow.appendChild(instNum);
-                            // } else {
-                            //     console.error("Data array is empty or invalid", data);
-                            // }
-
-                            var instCat = document.createElement("td");
-                            instCat.textContent = data[data.length - 1]['installment_category'];
-                            newRow.appendChild(instCat);
-
-                            var instAmt = document.createElement("td");
-                            instAmt.textContent = dollarString.format(data[data.length - 1]['installment_amount']);
-                            newRow.appendChild(instAmt);
-
-                            // Get the table body
-                            var tableBody = document.getElementById("installmentTable").querySelector("tbody");
-
-                            // Append the new row to the table body
-                            tableBody.appendChild(newRow);
-
-                            installmentAmountRemaining.value -= data[data.length - 1]['installment_amount'].toFixed(2);
-
-                            // Get overall total
-                            for (var i = 0; i < data.length; i++) {
-                                total_installments_cost = total_installments_cost + data[i]['installment_amount'];
-                            }
-                            // console.log("Total: " + total_installments_cost);
-
-                            document.getElementById("proposalInstallmentsTotal").textContent = dollarString.format(total_installments_cost);
-
-                            // Reset installment info fields
-                            var installment_number = document.getElementById("installment_number");
-                            var installment_select = document.getElementById("installment_select");
-                            var installment_amount = document.getElementById("installment_amount");
-                            installment_number.value = parseInt(installment_number.value) + 1;
-                            installment_select.selectedIndex = 0;
-                            installment_amount.value = "";
-                        }
+                        });
+                        e.preventDefault(); // block the traditional submission of the form.
                     });
-                    e.preventDefault(); // block the traditional submission of the form.
-                });
 
-                // Inject our CSRF token into our AJAX request.
-                $.ajaxSetup({
-                    beforeSend: function (xhr, settings) {
-                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+
+                    // Inject our CSRF token into our AJAX request.
+                    $.ajaxSetup({
+                        beforeSend: function (xhr, settings) {
+                            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                            }
                         }
-                    }
-                })
-            });
-        </script>
+                    })
+                });
+            </script>
 
-        <hr>
+            <!-- Fixture Notes -->
+            <h3>Fixture Notes</h3>
+            <form id="addFixtureNotes" method="POST" enctype="multipart/form-data">
+                {{ proposal_fixture_notes_form.csrf_token() }}
+                {{ proposal_fixture_notes_form.project_id(value=project['project_id']) }}
+                <!-- Add fixture note -->
+                <div class="row">
+                    <div class="col">
+                        <div class="input-group mb-3">
+                            {{ proposal_fixture_notes_form.fixture_note.label(class="input-group-text") }}
+                            {{ proposal_fixture_notes_form.fixture_note(class="form-control") }}
+                        </div>
+                    </div>
 
-        <!-- Notes -->
-        <h3>Notes</h3>
-        <form id="addNotes" method="POST" enctype="multipart/form-data">
-            {{ proposal_notes_form.csrf_token() }}
-            {{ proposal_notes_form.project_id(value=project['project_id']) }}
-            <!-- Add note -->
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
-                        {{ proposal_notes_form.note.label(class="input-group-text") }}
-                        {{ proposal_notes_form.note(class="form-control") }}
+                    <div class="col-2 text-end">
+                        <button class="btn btn-primary" id="btnAddFixtureNote" type="button">Add Fixture Note</button>
+                    </div>
+                </div>
+            </form>
+            <!-- Fixture Notes Display Table -->
+            <table id="fixtureNoteTable" class="table table-striped">
+                <thead>
+                    <tr class="text-center">
+                        <th>{{ proposal_fixture_notes_form.fixture_note.label }}</th>
+                        <th style="width: 1px;"></th> </tr>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if proposal_fixture_notes|length == 0 %}
+                    <tr id="emptyFixtureNoteRow">
+                        <td class="text-center" colspan="100%">
+                            Please add fixture note(s)
+                        </td>
+                    </tr>
+                    {% else %}
+                    {% for note in proposal_fixture_notes %}
+                    <tr class="text-center">
+                        <td id="lblFixtureNoteNumber{{ note['fixture_note_id']|string }}">
+                            {{ note['fixture_note'] }}
+                            {{ proposal_fixture_notes_form.fixture_note_id(value=note['fixture_note_id']) }}
+                        </td>
+                        <td class="text-end">
+                            <button id="btnDeleteFixtureNoteLine{{ note['fixture_note_id']|string }}" type="button"
+                                class="border-0 bg-transparent" data-fixture-id="{{ note['fixture_note_id']|string }}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                        <!-- Delete fixture note line item -->
+                        <script>
+                            $(document).ready(function () {
+                                $("#fixtureNoteTable").on("click", "button[id^='btnDeleteFixtureNoteLine{{ note['fixture_note_id']|string }}']", function (e) {
+                                    var fixtureNoteId = $(this).data("fixture-note-id");
+                                    var url = "{{ url_for('delete_proposal_fixture_note', fixture_note_id=note['fixture_note_id'], project_id=note['project_id']) }}";
+                                    $.ajax({
+                                        type: "POST",
+                                        url: url,
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'Content-Type': 'application/json'
+                                        },
+                                        data: "", // serializes the form's elements.
+                                        success: function (data) {
+                                            // console.log(data)  // display the returned data in the console.
+                                            // console.log(data.length)
+
+                                            updateFixtureNoteTable(data);
+                                        }
+                                    });
+
+                                    e.preventDefault(); // block the traditional submission of the form.
+                                });
+
+                                // Inject our CSRF token into our AJAX request.
+                                $.ajaxSetup({
+                                    beforeSend: function (xhr, settings) {
+                                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                                        }
+                                    }
+                                })
+                            });
+
+
+                        </script>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+            <!-- Add note line item -->
+            <script>
+                $(document).ready(function () {
+                    $("#addFixtureNotes").on("click", "button[id^='btnAddFixtureNote']", function (e) {
+                        var url = "{{ url_for('add_proposal_fixture_note') }}";
+                        var data = $('#addFixtureNotes').serializeArray();
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            data: data, // serializes the form's elements.
+                            success: function (data) {
+                                var rowToDelete = document.getElementById("emptyFixtureNoteRow");
+                                if (rowToDelete) {
+                                    rowToDelete.remove();
+                                }
+
+                                updateFixtureNoteTable(data);
+
+                                document.getElementById("fixture_note").value = "";
+                            }
+                        });
+                        e.preventDefault(); // block the traditional submission of the form.
+                    });
+
+
+                    // Inject our CSRF token into our AJAX request.
+                    $.ajaxSetup({
+                        beforeSend: function (xhr, settings) {
+                            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                            }
+                        }
+                    })
+                });
+            </script>
+
+
+            <hr>
+
+            <!-- Installments - Payment Plan -->
+            <h3>Payment Plan</h3>
+            <form id="addInstallments" method="POST" enctype="multipart/form-data">
+                {{ proposal_installments_form.csrf_token() }}
+                {{ proposal_installments_form.project_id(value=project['project_id']) }}
+                <!-- Add Installment -->
+                <div class="row mb-3">
+                    <div class="col-1">
+                        <div class="input-group">
+                            {{ proposal_installments_form.installment_number.label(class="input-group-text") }}
+                            {{ proposal_installments_form.installment_number(class="form-control text-center") }}
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="input-group">
+                            {{ proposal_installments_form.installments.label(class="input-group-text")}}
+                            <select class="form-select" name="installment_select" id="installment_select">
+                                {% for option in proposal_installments_form.installments %}
+                                {% if loop.first %}
+                                <option selected disabled value="">Add Installment</option>
+                                {% endif %}
+                                {{ option }}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="input-group">
+                            {{ proposal_installments_form.installment_amount.label(class="input-group-text") }}
+                            {{ proposal_installments_form.installment_amount(class="form-control text-end",
+                            placeholder="0",
+                            text=0,
+                            min=0) }}
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="input-group">
+                            {{ proposal_installments_form.installment_amount_remaining.label(class="input-group-text") }}
+                            {{ proposal_installments_form.installment_amount_remaining(class="form-control text-end",
+                            placeholder="0",text=0.00,step=0.01) }}
+                        </div>
+                    </div>
+
+                    <div class="col-1 text-end w-auto">
+                        <button class="btn btn-primary" id="btnAddInstallment" type="button">Add</button>
                     </div>
                 </div>
 
-                <div class="col-2 text-end">
-                    <button class="btn btn-primary" id="btnAddNote" type="button">Add Note</button>
-                </div>
-            </div>
-        </form>
-        <!-- Notes Display Table -->
-        <table id="noteTable" class="table table-striped">
-            <thead>
-                <tr class="text-center">
-                    <th>{{ proposal_notes_form.note.label }}</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if proposal_notes|length == 0 %}
-                <tr id="emptyNoteRow">
-                    <td class="text-center" colspan="100%">
-                        Please add note(s)
-                    </td>
-                </tr>
-                {% else %}
-                {% for note in proposal_notes %}
-                <tr class="text-center">
-                    <td id="lblNoteNumber{{ note['note_id']|string }}">
-                        {{ note['note'] }}
-                        {{ proposal_notes_form.note_id(value=note['note_id']) }}
-                    </td>
-                    <td class="text-end">
-                        <button id="btnDeleteNoteLine{{ note['note_id']|string }}" type="button"
-                            class="border-0 bg-transparent" data-fixture-id="{{ note['note_id']|string }}">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                    <!-- Delete note line item -->
-                    <script>
-                        $(document).ready(function () {
-                            $("#noteTable").on("click", "button[id^='btnDeleteNoteLine{{ note['note_id']|string }}']", function (e) {
-                                var noteId = $(this).data("note-id");
-                                var url = "{{ url_for('delete_proposal_note', note_id=note['note_id'], project_id=note['project_id']) }}";
-                                $.ajax({
-                                    type: "POST",
-                                    url: url,
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    data: "", // serializes the form's elements.
-                                    success: function (data) {
-                                        // console.log(data)  // display the returned data in the console.
-                                        // console.log(data.length)
+                <!-- Table with Payment Plan Installments -->
+                <table id="installmentTable" class="table table-striped">
+                    <thead>
+                        <tr class="text-center">
+                            <th>#</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if proposal_installments|length == 0 %}
+                        <tr id="emptyInstallmentRow">
+                            <td class="text-center" colspan="100%">
+                                Please add installment(s)
+                            </td>
+                        </tr>
+                        {% else %}
+                        {% for installment in proposal_installments %}
+                        <tr class="text-center">
+                            <td id="lbliInstallmentNumber{{ installment['installment_id']|string }}">
+                                {{ installment['installment_number'] }}
+                            </td>
+                            <td id="lbliInstallmentCategory{{ installment['installment_id']|string }}">
+                                {{ installment['installment_category'] }}
+                            </td>
+                            <td id="lbliInstallmentAmt{{ installment['installment_id']|string }}">
+                                {{ "${:,.2f}".format(installment['installment_amount']) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td></td>
+                            <td class="fw-semibold text-end">Total</td>
+                            <td id="proposalInstallmentsTotal" class="fw-semibold text-center">{{
+                                "${:,.2f}".format(proposal_installments_total)
+                                }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </form>
 
-                                        updateNoteTable(data);
-                                    }
+            <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
+            <script>
+                $(document).ready(function () {
+                    $("#btnAddInstallment").on("click", function (e) {
+                        var installmentAmountRemaining = document.getElementById("installment_amount_remaining");
+                        var installmentAmount = document.getElementById("installment_amount");
+                        if (parseFloat(installmentAmount.value) > parseFloat(installmentAmountRemaining.value)) {
+                            const toastLiveExample = document.getElementById('liveToast')
+                            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+                            var toastBody = document.getElementById('toast-body')
+                            toastBody.innerHTML = "Installment amount is more than the remaining amount."
+                            toastBootstrap.show()
+                            return;
+                        }
+                        var url = "{{ url_for('add_proposal_installment') }}";
+                        var data = $('#addInstallments').serializeArray();
+                        var curr_install_number = document.getElementById("installment_number").value;
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            data: data, // serializes the form's elements.
+                            success: function (data) {
+                                // console.log(data)  // display the returned data in the console.
+                                // console.log(data.length);
+
+                                if (data.length == 1) {
+                                    var tableBody = document.getElementById("installmentTable").querySelector("tbody");
+                                    var rowToDelete = document.getElementById("emptyInstallmentRow");
+                                    rowToDelete.remove();
+                                }
+
+                                let formatting_options = {
+                                    style: 'currency',
+                                    currency: 'USD',
+                                    minimumFractionDigits: 2,
+                                }
+                                let dollarString = new Intl.NumberFormat("en-US", formatting_options);
+                                var total_installments_cost = 0;
+
+                                // Create a new table row
+                                var newRow = document.createElement("tr");
+                                newRow.classList.add("text-center");
+
+                                // Create table cells for each item detail
+                                var instNum = document.createElement("td");
+                                instNum.textContent = data[data.length - 1]['installment_number'];
+                                newRow.appendChild(instNum);
+
+                                // // Safely get the last item
+                                // const lastItem = data.at ? data.at(-1) : data[data.length - 1];
+
+                                // if (lastItem) {
+                                //     var instNum = document.createElement("td");
+                                //     instNum.textContent = lastItem['installment_number'];
+                                //     newRow.appendChild(instNum);
+                                // } else {
+                                //     console.error("Data array is empty or invalid", data);
+                                // }
+
+                                var instCat = document.createElement("td");
+                                instCat.textContent = data[data.length - 1]['installment_category'];
+                                newRow.appendChild(instCat);
+
+                                var instAmt = document.createElement("td");
+                                instAmt.textContent = dollarString.format(data[data.length - 1]['installment_amount']);
+                                newRow.appendChild(instAmt);
+
+                                // Get the table body
+                                var tableBody = document.getElementById("installmentTable").querySelector("tbody");
+
+                                // Append the new row to the table body
+                                tableBody.appendChild(newRow);
+
+                                installmentAmountRemaining.value -= data[data.length - 1]['installment_amount'].toFixed(2);
+
+                                // Get overall total
+                                for (var i = 0; i < data.length; i++) {
+                                    total_installments_cost = total_installments_cost + data[i]['installment_amount'];
+                                }
+                                // console.log("Total: " + total_installments_cost);
+
+                                document.getElementById("proposalInstallmentsTotal").textContent = dollarString.format(total_installments_cost);
+
+                                // Reset installment info fields
+                                var installment_number = document.getElementById("installment_number");
+                                var installment_select = document.getElementById("installment_select");
+                                var installment_amount = document.getElementById("installment_amount");
+                                installment_number.value = parseInt(installment_number.value) + 1;
+                                installment_select.selectedIndex = 0;
+                                installment_amount.value = "";
+                            }
+                        });
+                        e.preventDefault(); // block the traditional submission of the form.
+                    });
+
+                    // Inject our CSRF token into our AJAX request.
+                    $.ajaxSetup({
+                        beforeSend: function (xhr, settings) {
+                            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                            }
+                        }
+                    })
+                });
+            </script>
+
+            <hr>
+
+            <!-- Notes -->
+            <h3>Notes</h3>
+            <form id="addNotes" method="POST" enctype="multipart/form-data">
+                {{ proposal_notes_form.csrf_token() }}
+                {{ proposal_notes_form.project_id(value=project['project_id']) }}
+                <!-- Add note -->
+                <div class="row">
+                    <div class="col">
+                        <div class="input-group mb-3">
+                            {{ proposal_notes_form.note.label(class="input-group-text") }}
+                            {{ proposal_notes_form.note(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <div class="col-2 text-end">
+                        <button class="btn btn-primary" id="btnAddNote" type="button">Add Note</button>
+                    </div>
+                </div>
+            </form>
+            <!-- Notes Display Table -->
+            <table id="noteTable" class="table table-striped">
+                <thead>
+                    <tr class="text-center">
+                        <th>{{ proposal_notes_form.note.label }}</th>
+                        <th style="width: 1px;"></th> </tr>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if proposal_notes|length == 0 %}
+                    <tr id="emptyNoteRow">
+                        <td class="text-center" colspan="100%">
+                            Please add note(s)
+                        </td>
+                    </tr>
+                    {% else %}
+                    {% for note in proposal_notes %}
+                    <tr class="text-center">
+                        <td id="lblNoteNumber{{ note['note_id']|string }}">
+                            {{ note['note'] }}
+                            {{ proposal_notes_form.note_id(value=note['note_id']) }}
+                        </td>
+                        <td class="text-end">
+                            <button id="btnDeleteNoteLine{{ note['note_id']|string }}" type="button"
+                                class="border-0 bg-transparent" data-fixture-id="{{ note['note_id']|string }}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                        <!-- Delete note line item -->
+                        <script>
+                            $(document).ready(function () {
+                                $("#noteTable").on("click", "button[id^='btnDeleteNoteLine{{ note['note_id']|string }}']", function (e) {
+                                    var noteId = $(this).data("note-id");
+                                    var url = "{{ url_for('delete_proposal_note', note_id=note['note_id'], project_id=note['project_id']) }}";
+                                    $.ajax({
+                                        type: "POST",
+                                        url: url,
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'Content-Type': 'application/json'
+                                        },
+                                        data: "", // serializes the form's elements.
+                                        success: function (data) {
+                                            // console.log(data)  // display the returned data in the console.
+                                            // console.log(data.length)
+
+                                            updateNoteTable(data);
+                                        }
+                                    });
+
+                                    e.preventDefault(); // block the traditional submission of the form.
                                 });
 
-                                e.preventDefault(); // block the traditional submission of the form.
+                                // Inject our CSRF token into our AJAX request.
+                                $.ajaxSetup({
+                                    beforeSend: function (xhr, settings) {
+                                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                                        }
+                                    }
+                                })
                             });
 
-                            // Inject our CSRF token into our AJAX request.
-                            $.ajaxSetup({
-                                beforeSend: function (xhr, settings) {
-                                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                                        xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
-                                    }
+
+                        </script>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table>
+            <!-- Add note line item -->
+            <script>
+                $(document).ready(function () {
+                    $("#addNotes").on("click", "button[id^='btnAddNote']", function (e) {
+                        var url = "{{ url_for('add_proposal_note') }}";
+                        var data = $('#addNotes').serializeArray();
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            data: data, // serializes the form's elements.
+                            success: function (data) {
+                                var rowToDelete = document.getElementById("emptyNoteRow");
+                                if (rowToDelete) {
+                                    rowToDelete.remove();
                                 }
-                            })
-                        });
 
+                                updateNoteTable(data);
 
-                    </script>
-                </tr>
-                {% endfor %}
-                {% endif %}
-            </tbody>
-            <tfoot>
-            </tfoot>
-        </table>
-        <!-- Add note line item -->
-        <script>
-            $(document).ready(function () {
-                $("#addNotes").on("click", "button[id^='btnAddNote']", function (e) {
-                    var url = "{{ url_for('add_proposal_note') }}";
-                    var data = $('#addNotes').serializeArray();
-                    $.ajax({
-                        type: "POST",
-                        url: url,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        data: data, // serializes the form's elements.
-                        success: function (data) {
-                            var rowToDelete = document.getElementById("emptyNoteRow");
-                            if (rowToDelete) {
-                                rowToDelete.remove();
+                                document.getElementById("note").value = "";
                             }
-
-                            updateNoteTable(data);
-
-                            document.getElementById("note").value = "";
-                        }
+                        });
+                        e.preventDefault(); // block the traditional submission of the form.
                     });
-                    e.preventDefault(); // block the traditional submission of the form.
-                });
 
 
-                // Inject our CSRF token into our AJAX request.
-                $.ajaxSetup({
-                    beforeSend: function (xhr, settings) {
-                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                    // Inject our CSRF token into our AJAX request.
+                    $.ajaxSetup({
+                        beforeSend: function (xhr, settings) {
+                            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                                xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
+                            }
                         }
-                    }
-                })
-            });
-        </script>
+                    })
+                });
+            </script>
 
 
 
-        <!-- Toast Message -->
-        <div class="toast-container position-fixed bottom-0 end-0 p-3">
-            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-header">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <strong class="ms-2 me-auto">Attention</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div id="toast-body" class="toast-body">
+            <!-- Toast Message -->
+            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <strong class="ms-2 me-auto">Attention</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div id="toast-body" class="toast-body">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<div class="modal-footer text-center">
-    <div id="createPDF" class="mt-4">
-        <!-- <a href="{{ url_for('create_proposal_pdf', project_id=project['project_id'] )}}" class="btn btn-primary">
-            View PDF
-        </a> -->
-        <button onClick="redirectToUrl()" class="btn btn-primary">
-            View PDF
-        </button>
-        <script>
-            function redirectToUrl() {
-                var plans_date = document.getElementById('plans_date').value;
-                var url = "{{ url_for('create_proposal_pdf', project_id=project['project_id'], plans_date='TEMP' )}}";
-                url = url.replace('TEMP', encodeURIComponent(plans_date));
-                window.location.href = url;
-            }
-        </script>
+    <div class="modal-footer text-center">
+        <div id="createPDF" class="mt-4">
+            <!-- <a href="{{ url_for('create_proposal_pdf', project_id=project['project_id'] )}}" class="btn btn-primary">
+                View PDF
+            </a> -->
+            <button onClick="redirectToUrl()" class="btn btn-primary">
+                View PDF
+            </button>
+            <script>
+                function redirectToUrl() {
+                    var plans_date = document.getElementById('plans_date').value;
+                    var url = "{{ url_for('create_proposal_pdf', project_id=project['project_id'], plans_date='TEMP' )}}";
+                    url = url.replace('TEMP', encodeURIComponent(plans_date));
+                    window.location.href = url;
+                }
+            </script>
+        </div>
     </div>
 </div>
