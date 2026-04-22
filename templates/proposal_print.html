@@ -194,8 +194,14 @@
 
         <!-- Fixture Info -->
         <ul class="mb-4 ms-4">
-            <li><strong><u>FIXTURE <em>(WHERE APPLICABLE)</em> TO BE AS FOLLOWS:</u></strong></li>
-            <li class="no-bullets mt-2">To be supplied by owner</li>
+            <li class="mb-2"><strong><u>FIXTURE <em>(WHERE APPLICABLE)</em> TO BE AS FOLLOWS:</u></strong></li>
+            {% if proposal_fixture_notes|length == 0 %}
+            <li class="no-bullets">To be supplied by owner</li>
+            {% else %}
+            {% for proposal_fixture_note in proposal_fixture_notes %}
+            <li class="no-bullets">{{ proposal_fixture_note['fixture_note'] }}</li>
+            {% endfor %}
+            {% endif %}
         </ul>
         <p></p>
 

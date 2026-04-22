@@ -1014,6 +1014,7 @@ def create_proposal_pdf(project_id, plans_date):
 
     client_info = database.get_project_client(project_id)
     proposal_fixtures = database.get_proposal_fixtures(project_id)
+    proposal_fixture_notes = database.get_proposal_fixture_notes(project_id)
     proposal_installments = database.get_proposal_installments(project_id)
     proposal_notes = database.get_proposal_notes(project_id)
 
@@ -1032,6 +1033,7 @@ def create_proposal_pdf(project_id, plans_date):
         project_info=project_info,
         client_info=client_info,
         proposal_fixtures=proposal_fixtures,
+        proposal_fixture_notes=proposal_fixture_notes,
         proposal_installments=proposal_installments,
         proposal_notes=proposal_notes,
         proposal_total=proposal_total,
