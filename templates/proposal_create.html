@@ -84,8 +84,8 @@
 
                 deleteButton.appendChild(deleteIcon);
                 deleteCell.appendChild(deleteButton);
-                deleteButton.addEventListener("click", function () {
-                    var fixtureID = data[i]['fixture_id'];
+                let fixtureID = data[i]['fixture_id'];
+                deleteButton.addEventListener("click", function (e) {
                     var url = "{{ url_for('delete_proposal_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
                     url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
                     $.ajax({
@@ -135,7 +135,7 @@
 
             // Create table cells for each item detail
             var deleteCell = document.createElement("td");
-            deleteCell.classList.add("text-end");
+            deleteCell.classList.add("text-center");
             deleteCell.id = "emptyNoteRow"
             deleteCell.colSpan = "999";
             deleteCell.textContent = "Please add note(s)";
@@ -172,7 +172,7 @@
 
                 deleteButton.appendChild(deleteIcon);
                 deleteCell.appendChild(deleteButton);
-                deleteButton.addEventListener("click", function () {
+                deleteButton.addEventListener("click", function (e) {
                     var noteID = data[i]['note_id'];
                     var url = "{{ url_for('delete_proposal_note', note_id='NOTE_ID_REPLACE', project_id=project['project_id']) }}";
                     url = url.replace("NOTE_ID_REPLACE", noteID);
@@ -214,7 +214,7 @@
 
             // Create table cells for each item detail
             var deleteCell = document.createElement("td");
-            deleteCell.classList.add("text-end");
+            deleteCell.classList.add("text-center");
             deleteCell.id = "emptyFixtureNoteRow"
             deleteCell.colSpan = "999";
             deleteCell.textContent = "Please add fixture note(s)";
@@ -251,10 +251,10 @@
 
                 deleteButton.appendChild(deleteIcon);
                 deleteCell.appendChild(deleteButton);
-                deleteButton.addEventListener("click", function () {
+                deleteButton.addEventListener("click", function (e) {
                     var fixtureNoteID = data[i]['fixture_note_id'];
                     var url = "{{ url_for('delete_proposal_fixture_note', fixture_note_id='FIXTURE_NOTE_ID_REPLACE', project_id=project['project_id']) }}";
-                    url = url.replace("FIXTURE_NOTE_ID_REPLACE", noteID);
+                    url = url.replace("FIXTURE_NOTE_ID_REPLACE", fixtureNoteID);
                     $.ajax({
                         type: "POST",
                         url: url,
@@ -534,117 +534,16 @@
                         },
                         data: data, // serializes the form's elements.
                         success: function (data) {
-                            // console.log(data)  // display the returned data in the console.
-                            // console.log(data.length);
-
-                            if (data.length == 1) {
-                                var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
-                                var rowToDelete = document.getElementById("emptyFixtureRow");
+                            var rowToDelete = document.getElementById("emptyFixtureRow");
+                            if (rowToDelete) {
                                 rowToDelete.remove();
                             }
 
-                            let formatting_options = {
-                                style: 'currency',
-                                currency: 'USD',
-                                minimumFractionDigits: 2,
-                            }
-                            let dollarString = new Intl.NumberFormat("en-US", formatting_options);
-                            var total_fixtures_cost = 0;
+                            updateFixtureTable(data);
 
-                            fixture_id = data[data.length - 1]['fixture_id'];
-
-                            // Create a new table row
-                            var newRow = document.createElement("tr");
-                            newRow.setAttribute("id", "fixtureLineItem" + fixture_id);
-                            newRow.classList.add("text-center");
-
-                            // Create table cells for each item detail
-                            var abbrCell = document.createElement("td");
-                            abbrCell.textContent = data[data.length - 1]['fixture_abbreviation'];
-                            newRow.appendChild(abbrCell);
-
-                            var nameCell = document.createElement("td");
-                            nameCell.textContent = data[data.length - 1]['fixture_name'];
-                            newRow.appendChild(nameCell);
-
-                            var qtyCell = document.createElement("td");
-                            qtyCell.textContent = data[data.length - 1]['fixture_quantity'];
-                            newRow.appendChild(qtyCell);
-
-                            var costCell = document.createElement("td");
-                            costCell.textContent = dollarString.format(data[data.length - 1]['fixture_cost']);
-                            newRow.appendChild(costCell);
-
-                            var isCostCell = document.createElement("td");
-                            var chkIsCost = document.createElement("input");
-                            chkIsCost.type = "checkbox";
-                            chkIsCost.checked = data[data.length - 1]['fixture_is_cost'];
-                            chkIsCost.disabled = true;
-                            isCostCell.append(chkIsCost);
-                            newRow.appendChild(isCostCell);
-
-                            var totalCell = document.createElement("td");
-                            totalCell.textContent = dollarString.format(data[data.length - 1]['fixture_total']);
-                            newRow.appendChild(totalCell);
-
-                            var deleteCell = document.createElement("td");
-                            var deleteButton = document.createElement("button");
-                            deleteButton.id = "btnDeleteFixtureLine" + data[data.length - 1]['fixture_id'];
-                            deleteButton.type = "button";
-                            deleteButton.setAttribute("data-fixture-id", data[data.length - 1]['fixture_id']);
-                            deleteButton.classList.add("border-0", "bg-transparent");
-
-                            var deleteIcon = document.createElement("i");
-                            deleteIcon.className = "fa-solid fa-trash-can";
-
-                            deleteButton.appendChild(deleteIcon);
-                            deleteCell.appendChild(deleteButton);
-                            deleteButton.addEventListener("click", function () {
-                                var fixtureID = data[data.length - 1]['fixture_id'];
-                                var url = "{{ url_for('delete_proposal_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
-                                url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
-                                $.ajax({
-                                    type: "POST",
-                                    url: url,
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    data: "", // serializes the form's elements.
-                                    success: function (data) {
-                                        // console.log(data)  // display the returned data in the console.
-
-                                        updateFixtureTable(data);
-                                    }
-                                });
-
-                                e.preventDefault(); // block the traditional submission of the form.
-                            });
-                            newRow.appendChild(deleteCell);
-
-                            // Get the table body
-                            var tableBody = document.getElementById("fixtureTable").querySelector("tbody");
-
-                            // Append the new row to the table body
-                            tableBody.appendChild(newRow);
-
-                            // Get overall total
-                            for (var i = 0; i < data.length; i++) {
-                                total_fixtures_cost = total_fixtures_cost + data[i]['fixture_total'];
-                            }
-                            // console.log("Total: " + total_fixtures_cost);
-
-                            document.getElementById("proposalFixturesTotal").textContent = dollarString.format(total_fixtures_cost);
-                            var installmentAmountRemaining = document.getElementById("installment_amount_remaining");
-                            installmentAmountRemaining.value = total_fixtures_cost.toFixed(2);
-
-                            // Reset fixture info fields
-                            var fixture_select = document.getElementById("fixture_select");
-                            var fixture_quantity = document.getElementById("fixture_quantity");
-                            var fixture_cost = document.getElementById("fixture_cost");
-                            fixture_select.selectedIndex = 0;
-                            fixture_quantity.value = "";
-                            fixture_cost.value = "";
+                            document.getElementById("fixture_select").selectedIndex = 0;
+                            document.getElementById("fixture_quantity").value = "";
+                            document.getElementById("fixture_cost").value = "";
                         }
                     });
                     e.preventDefault(); // block the traditional submission of the form.
@@ -685,8 +584,8 @@
         <table id="fixtureNoteTable" class="table table-striped">
             <thead>
                 <tr class="text-center">
-                    <th>{{ proposal_fixture_notes_form.fixture_note.label }}</th>
-                    <th></th>
+                    <th colspan="999">{{ proposal_fixture_notes_form.fixture_note.label }}</th>
+                    <!-- <th></th> -->
                 </tr>
             </thead>
             <tbody>
@@ -699,7 +598,7 @@
                 {% else %}
                 {% for note in proposal_fixture_notes %}
                 <tr class="text-center">
-                    <td id="lblFixtureNoteNumber{{ fixture_note['fixture_note_id']|string }}">
+                    <td id="lblFixtureNoteNumber{{ note['fixture_note_id']|string }}">
                         {{ note['fixture_note'] }}
                         {{ proposal_fixture_notes_form.fixture_note_id(value=note['fixture_note_id']) }}
                     </td>
@@ -768,69 +667,14 @@
                         },
                         data: data, // serializes the form's elements.
                         success: function (data) {
-                            // console.log(data)  // display the returned data in the console.
-                            // console.log(data.length);
-
-                            if (data.length == 1) {
-                                var tableBody = document.getElementById("fixtureNoteTable").querySelector("tbody");
-                                var rowToDelete = document.getElementById("emptyFixtureNoteRow");
+                            var rowToDelete = document.getElementById("emptyFixtureNoteRow");
+                            if (rowToDelete) {
                                 rowToDelete.remove();
                             }
 
-                            // Create a new table row
-                            var newRow = document.createElement("tr");
-                            newRow.classList.add("text-center");
+                            updateFixtureNoteTable(data);
 
-                            // Create table cells for each item detail
-                            var fixtureNoteCell = document.createElement("td");
-                            fixtureNoteCell.textContent = data[data.length - 1]['fixture_note'];
-                            newRow.appendChild(fixtureNoteCell);
-
-                            var deleteCell = document.createElement("td");
-                            deleteCell.classList.add("text-end");
-                            var deleteButton = document.createElement("button");
-                            deleteButton.id = "btnDeleteFixtureNoteLine" + data[data.length - 1]['fixture_note_id'];
-                            deleteButton.type = "button";
-                            deleteButton.setAttribute("data-fixture-note-id", data[data.length - 1]['fixture_note_id']);
-                            deleteButton.classList.add("border-0", "bg-transparent");
-
-                            var deleteIcon = document.createElement("i");
-                            deleteIcon.className = "fa-solid fa-trash-can";
-
-                            deleteButton.appendChild(deleteIcon);
-                            deleteCell.appendChild(deleteButton);
-                            deleteButton.addEventListener("click", function () {
-                                var fixtureNoteID = data[data.length - 1]['fixture_note_id'];
-                                var url = "{{ url_for('delete_proposal_fixture_note', fixture_note_id='FIXTURE_NOTE_ID_REPLACE', project_id=project['project_id']) }}";
-                                url = url.replace("FIXTURE_NOTE_ID_REPLACE", fixtureNoteID);
-                                $.ajax({
-                                    type: "POST",
-                                    url: url,
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    data: "", // serializes the form's elements.
-                                    success: function (data) {
-                                        // console.log(data)  // display the returned data in the console.
-
-                                        updateNoteTable(data);
-                                    }
-                                });
-
-                                e.preventDefault(); // block the traditional submission of the form.
-                            });
-                            newRow.appendChild(deleteCell);
-
-                            // Get the table body
-                            var tableBody = document.getElementById("fixtureNoteTable").querySelector("tbody");
-
-                            // Append the new row to the table body
-                            tableBody.appendChild(newRow);
-
-                            // Reset fixture info fields
-                            var fixtureNoteInput = document.getElementById("fixture_note");
-                            fixtureNoteInput.value = "";
+                            document.getElementById("fixture_note").value = "";
                         }
                     });
                     e.preventDefault(); // block the traditional submission of the form.
@@ -1164,69 +1008,14 @@
                         },
                         data: data, // serializes the form's elements.
                         success: function (data) {
-                            // console.log(data)  // display the returned data in the console.
-                            // console.log(data.length);
-
-                            if (data.length == 1) {
-                                var tableBody = document.getElementById("noteTable").querySelector("tbody");
-                                var rowToDelete = document.getElementById("emptyNoteRow");
+                            var rowToDelete = document.getElementById("emptyNoteRow");
+                            if (rowToDelete) {
                                 rowToDelete.remove();
                             }
 
-                            // Create a new table row
-                            var newRow = document.createElement("tr");
-                            newRow.classList.add("text-center");
+                            updateNoteTable(data);
 
-                            // Create table cells for each item detail
-                            var noteCell = document.createElement("td");
-                            noteCell.textContent = data[data.length - 1]['note'];
-                            newRow.appendChild(noteCell);
-
-                            var deleteCell = document.createElement("td");
-                            deleteCell.classList.add("text-end");
-                            var deleteButton = document.createElement("button");
-                            deleteButton.id = "btnDeleteNoteLine" + data[data.length - 1]['note_id'];
-                            deleteButton.type = "button";
-                            deleteButton.setAttribute("data-note-id", data[data.length - 1]['note_id']);
-                            deleteButton.classList.add("border-0", "bg-transparent");
-
-                            var deleteIcon = document.createElement("i");
-                            deleteIcon.className = "fa-solid fa-trash-can";
-
-                            deleteButton.appendChild(deleteIcon);
-                            deleteCell.appendChild(deleteButton);
-                            deleteButton.addEventListener("click", function () {
-                                var noteID = data[data.length - 1]['note_id'];
-                                var url = "{{ url_for('delete_proposal_note', note_id='NOTE_ID_REPLACE', project_id=project['project_id']) }}";
-                                url = url.replace("NOTE_ID_REPLACE", noteID);
-                                $.ajax({
-                                    type: "POST",
-                                    url: url,
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    data: "", // serializes the form's elements.
-                                    success: function (data) {
-                                        // console.log(data)  // display the returned data in the console.
-
-                                        updateNoteTable(data);
-                                    }
-                                });
-
-                                e.preventDefault(); // block the traditional submission of the form.
-                            });
-                            newRow.appendChild(deleteCell);
-
-                            // Get the table body
-                            var tableBody = document.getElementById("noteTable").querySelector("tbody");
-
-                            // Append the new row to the table body
-                            tableBody.appendChild(newRow);
-
-                            // Reset fixture info fields
-                            var noteInput = document.getElementById("note");
-                            noteInput.value = "";
+                            document.getElementById("note").value = "";
                         }
                     });
                     e.preventDefault(); // block the traditional submission of the form.

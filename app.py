@@ -455,6 +455,7 @@ def project_view(project_id, new_project=False):
     project_notes_form = ProjectNotesForm()
     notes = database.get_project_notes(project_id)
     proposal_fixtures = database.get_proposal_fixtures(project_id)
+    proposal_fixture_notes = database.get_proposal_fixture_notes(project_id)
     proposal_installments = database.get_proposal_installments(project_id)
 
     proposal_fixtures_form = ProposalFixturesForm()
@@ -545,6 +546,7 @@ def project_view(project_id, new_project=False):
         proposal_installments_form=proposal_installments_form,
         proposal_notes_form=proposal_notes_form,
         proposal_fixtures=proposal_fixtures,
+        proposal_fixture_notes=proposal_fixture_notes,
         proposal_fixtures_total=fixtures_total(proposal_fixtures),
         apply_payment_form=apply_payment_form,
         proposal_installments=proposal_installments,
