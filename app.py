@@ -25,6 +25,7 @@ from flask_login import (
     login_user,
     logout_user,
 )
+from itsdangerous import URLSafeTimedSerializer
 from num2words import num2words
 from sqlalchemy import null, select
 from weasyprint import HTML
@@ -38,6 +39,8 @@ from forms import (
     ClientForm,
     LoginForm,
     SignUpForm,
+    ResetPasswordForm,
+    ForgotPasswordForm,
     ProjectForm,
     ProjectNotesForm,
     MasterPermitForm,
@@ -68,6 +71,7 @@ DAYS_UNTIL_DUE = 30
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
+serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 app.jinja_env.filters["jsonify"] = jsonify
 
 engine = db_connect()
@@ -147,11 +151,11 @@ def sign_up():
         if password != confirm:
             flash("Passwords do not match")
 
-        try:
-            if len(database.get_user_from_email(email)) > 0:
-                flash("Email is already in use. Please choose another email.")
+        existing_user = database.get_user_from_email(email)
+        if existing_user:
+            flash("Email is already in use. Please choose another email.")
 
-        except Exception as e:
+        else:
             password_hash = generate_password_hash(password, "scrypt")
             user_info = {
                 "first_name": first_name,
@@ -162,12 +166,7 @@ def sign_up():
 
             try:
                 database.create_user(user_info)
-                flash("Thanks for registering")
-                first_name = ""
-                last_name = ""
-                email = ""
-                password = ""
-                confirm = ""
+                flash("Thank you for registering. You can now log in.")
 
                 return redirect(url_for("login"))
             except Exception as e:
@@ -175,6 +174,7 @@ def sign_up():
 
     for error in list(signup_form.errors.values()):
         flash(error[0])
+
     return render_template(
         "sign_up.html",
         signup_form=signup_form,
@@ -187,6 +187,66 @@ def logout():
     logout_user()
     flash("You have been logged out.")
     return redirect(url_for("login"))
+
+
+############## Password Reset ##############
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    forgot_password_form = ForgotPasswordForm()
+
+    if forgot_password_form.validate_on_submit():
+        email = forgot_password_form.email.data
+        user = database.get_user_from_email(email)
+
+        if user:
+            # Generate secure token
+            token = serializer.dumps(email, salt="password-reset-salt")
+            reset_url = url_for("reset_password", token=token, _external=True)
+
+            # TODO: Integrate your email sending logic here
+            # send_reset_email(email, reset_url)
+
+            print(f"Reset URL for {email}: {reset_url}")  # For local testing
+
+            flash(
+                "If an account with that email exists, a password reset link has been sent."
+            )
+            return redirect(url_for("login"))
+
+    return render_template(
+        "forgot_password.html", forgot_password_form=forgot_password_form
+    )
+
+
+@app.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    try:
+        # Token duration
+        token_max_age = 3600
+        email = serializer.loads(
+            token, salt="password-reset-salt", max_age=token_max_age
+        )
+    except Exception:
+        flash("The password reset link is invalid or has expired.")
+        return redirect(url_for("forgot_password"))
+
+    reset_password_form = ResetPasswordForm()
+
+    if reset_password_form.validate_on_submit():
+        password = reset_password_form.password.data
+        password_hash = generate_password_hash(password, "scrypt")
+
+        try:
+            database.update_user_password(email, password_hash)
+            flash("Your password has been updated. You can now log in.")
+            return redirect(url_for("login"))
+        except Exception as e:
+            flash("An error occurred updated your password. Please try again.")
+            print(f"Error updating password: {e}")
+
+    return render_template(
+        "reset_password.html", reset_password_form=reset_password_form
+    )
 
 
 ############## Home ##############

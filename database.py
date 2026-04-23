@@ -154,6 +154,7 @@ def get_user_from_email(email):
 
 
 def create_user(user_info):
+    print(f"{user_info=}")
     try:
         sqlQuery = (
             "INSERT INTO users (user_id, first_name, last_name, email, password)"
@@ -175,8 +176,32 @@ def create_user(user_info):
         print("User created")
 
     except Exception as e:
-        print("Database Error:", e)
+        print("User Creation Database Error:", e)
         return ""
+
+
+def update_user_password(email, new_password_hash):
+    try:
+        sqlQuery = """
+            UPDATE users
+            SET password = :password
+            WHERE email = :email;
+        """
+
+        query_params = {
+            "password": new_password_hash,
+            "email": email,
+        }
+
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), query_params)
+            connection.commit()
+
+        print("User password updated successfully")
+
+    except Exception as e:
+        print(f"Database error: {e}")
+        raise e
 
 
 ############## Client Queries ##############

@@ -13,11 +13,17 @@ from wtforms import (
     StringField,
     SubmitField,
     TextAreaField,
-    validators,
     IntegerField,
 )
 from flask_wtf.file import FileField, FileRequired
-from wtforms.validators import DataRequired, InputRequired, ValidationError, EqualTo
+from wtforms.validators import (
+    DataRequired,
+    InputRequired,
+    ValidationError,
+    EqualTo,
+    Email,
+    Length,
+)
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from database import (
@@ -93,8 +99,8 @@ class LoginForm(FlaskForm):
 class SignUpForm(FlaskForm):
     def password_check(form, field):
         password = form.password.data
-        if len(password) < 4:
-            raise ValidationError("Password must be at lest 8 letters long")
+        if len(password) < 8:
+            raise ValidationError("Password must be at least 8 characters long")
         elif re.search("[0-9]", password) is None:
             raise ValidationError("Password must contain a number")
         elif re.search("[A-Z]", password) is None:
@@ -122,6 +128,32 @@ class SignUpForm(FlaskForm):
         ],
     )
     sign_up_submit = SubmitField("Sign Up")
+
+
+class ForgotPasswordForm(FlaskForm):
+    email = StringField(
+        "Email",
+        validators=[DataRequired(), Email()],
+    )
+    submit = SubmitField("Request Password Reset")
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField(
+        "New Password",
+        validators=[
+            DataRequired(),
+            Length(min=8, message="Password must be at least 8 characters long"),
+        ],
+    )
+    confirm = PasswordField(
+        "Confirm New Password",
+        validators=[
+            DataRequired(),
+            EqualTo("password", message="Password must match."),
+        ],
+    )
+    submit = SubmitField("Reset Password")
 
 
 class ClientForm(FlaskForm):
