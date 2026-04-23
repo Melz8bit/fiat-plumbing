@@ -90,6 +90,21 @@ STATE_OPTIONS = [
 ]
 
 
+def password_check(form, field):
+    password = field.data
+
+    if len(password) < 8:
+        raise ValidationError("Password must be at least 8 characters long")
+    elif re.search("[0-9]", password) is None:
+        raise ValidationError("Password must contain a number")
+    elif re.search("[A-Z]", password) is None:
+        raise ValidationError("Password must have one uppercase letter")
+    elif re.search("[-\#\$\.\%\&\*\!]", password) is None:
+        raise ValidationError(
+            "Password must have at least one special character '- # $ . % & * !' "
+        )
+
+
 class LoginForm(FlaskForm):
     email = EmailField("Email", validators=[InputRequired()])
     password = PasswordField("Password", validators=[InputRequired()])
@@ -97,19 +112,6 @@ class LoginForm(FlaskForm):
 
 
 class SignUpForm(FlaskForm):
-    def password_check(form, field):
-        password = form.password.data
-        if len(password) < 8:
-            raise ValidationError("Password must be at least 8 characters long")
-        elif re.search("[0-9]", password) is None:
-            raise ValidationError("Password must contain a number")
-        elif re.search("[A-Z]", password) is None:
-            raise ValidationError("Password must have one uppercase letter")
-        elif re.search("[-\#\$\.\%\&\*\!]", password) is None:
-            raise ValidationError(
-                "Password must have at least one special character '- # $ . % & * !' "
-            )
-
     first_name = StringField("First Name", validators=[DataRequired()])
     last_name = StringField("Last Name", validators=[DataRequired()])
     email = EmailField("Email", validators=[DataRequired()])
@@ -143,7 +145,7 @@ class ResetPasswordForm(FlaskForm):
         "New Password",
         validators=[
             DataRequired(),
-            Length(min=8, message="Password must be at least 8 characters long"),
+            password_check,
         ],
     )
     confirm = PasswordField(

@@ -244,8 +244,12 @@ def reset_password(token):
             flash("An error occurred updated your password. Please try again.")
             print(f"Error updating password: {e}")
 
+    for error in list(reset_password_form.errors.values()):
+        flash(error[0])
+
     return render_template(
-        "reset_password.html", reset_password_form=reset_password_form
+        "reset_password.html",
+        reset_password_form=reset_password_form,
     )
 
 
