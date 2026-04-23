@@ -2428,7 +2428,7 @@ def get_master_permit(project_id):
     try:
         sqlQuery = (
             "SELECT *"
-            + " FROM permits"
+            + " FROM project_permits"
             + " WHERE project_id = :project_id AND permit_type = 'MASTER';"
         )
 
@@ -2454,7 +2454,7 @@ def get_plumbing_permit(project_id):
     try:
         sqlQuery = (
             "SELECT *"
-            + " FROM permits"
+            + " FROM project_permits"
             + " WHERE project_id = :project_id AND permit_type != 'MASTER';"
         )
 
@@ -2497,6 +2497,27 @@ def insert_master_permit(project_id, permit_number):
             connection.commit()
 
         print("Master permit inserted")
+
+    except Exception as e:
+        print("Database Error:", e)
+        return ""
+
+
+def get_all_permits():
+    try:
+        sqlQuery = """
+            SELECT * 
+            FROM project_permits;
+        """
+
+        with engine.connect() as connection:
+            plumbing_permit = connection.execute(text(f"{sqlQuery}"))
+            try:
+                plumbing_permit_dict = plumbing_permit.mappings().all()
+            except:
+                plumbing_permit_dict = ""
+
+        return plumbing_permit_dict
 
     except Exception as e:
         print("Database Error:", e)

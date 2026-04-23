@@ -127,8 +127,6 @@ def login():
             else:
                 flash("Incorrect username or password")
 
-        print("here")
-
         return render_template(
             "login.html",
             login_form=login_form,
@@ -260,6 +258,9 @@ def main():
     user = database.get_user(session["user_id"])
     clients = database.get_all_clients(user.role)
     projects = database.get_all_projects(user.role)
+    permits = database.get_all_permits()
+
+    permits_summary = get_permit_dashboard_summary(permits)
 
     # Graph data
     status_counts = database.get_projects_status_summary()
@@ -276,7 +277,51 @@ def main():
         status_summary_labels=status_summary_labels,
         status_summary_values=status_summary_values,
         finance_counts=finance_counts,
+        permits_summary=permits_summary,
     )
+
+
+def get_permit_dashboard_summary(raw_permits):
+    summary_dict = {}
+
+    for permit in raw_permits:
+        project_id = permit.get("project_id")
+
+        # 1. Initialize the project in our tracking dictionary if it doesn't exist yet
+        if project_id not in summary_dict:
+            summary_dict[project_id] = {
+                "project_id": project_id,
+                "plumbing_permit_number": None,
+                "plumbing_permit_status": None,
+                "plumbing_permit_status_date": None,
+                "master_permit_number": None,
+                "master_permit_status": None,
+                "master_permit_status_date": None,
+            }
+
+        # 2. Safely format the date to a string (e.g., '02/17/2026') for the UI
+        status_date = permit.get("status_date")
+        formatted_date = status_date.strftime("%m/%d/%Y") if status_date else None
+
+        # 3. Map the data based on the permit type
+        permit_type = permit.get("type")
+
+        if permit_type == "Plumbing":
+            summary_dict[project_id]["plumbing_permit_number"] = permit.get(
+                "permit_number"
+            )
+            summary_dict[project_id]["plumbing_permit_status"] = permit.get("status")
+            summary_dict[project_id]["plumbing_permit_status_date"] = formatted_date
+
+        elif permit_type == "Master":
+            summary_dict[project_id]["master_permit_number"] = permit.get(
+                "permit_number"
+            )
+            summary_dict[project_id]["master_permit_status"] = permit.get("status")
+            summary_dict[project_id]["master_permit_status_date"] = formatted_date
+
+    # 4. Convert our grouping dictionary back into a flat list of dictionaries
+    return list(summary_dict.values())
 
 
 ############## Client ##############
@@ -590,7 +635,6 @@ def project_view(project_id, new_project=False):
             document_form.validate_on_submit()
             and document_form.upload_document_submit.data
         ):
-            print("here")
             return upload_project_document(document_form)
         else:
             print(f"{document_form.errors=}")

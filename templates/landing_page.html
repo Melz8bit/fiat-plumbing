@@ -1,4 +1,18 @@
+<style>
+    /* Adds a solid split line after the fourth column */
+    .td-permit:nth-child(4) {
+        border-right: 2px solid black;
+        padding-right: 10px;
+    }
+
+    /* Adds padding to the next column to create space */
+    .td-permit:nth-child(5) {
+        padding-left: 10px;
+    }
+</style>
+
 <div class="accordion" id="accordianHomePage">
+    <!-- Projects Summary -->
     <div class="accordion-item">
         <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -50,6 +64,8 @@
             </div>
         </div>
     </div>
+
+    <!-- Finances -->
     <div class="accordion-item">
         <h2 class="accordion-header">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -82,6 +98,53 @@
             </div>
         </div>
     </div>
+
+    <!-- Permits -->
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapsePermits" aria-expanded="false" aria-controls="collapsePermits">
+                Permits
+            </button>
+        </h2>
+        <div id="collapsePermits" class="accordion-collapse collapse" data-bs-parent="#accordianHomePage">
+            <div class="accordion-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="text-center" colspan="3">Plumbing</th>
+                            <th class="text-center" colspan="3">Master</th>
+                        </tr>
+                        <tr>
+                            <th>Project ID</th>
+                            <th>Permit Number</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Permit Number</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        {% for permit in permits_summary %}
+                        <tr>
+                            <td class="td-permit">{{ permit["project_id"] }}</td>
+                            <td class="td-permit">{{ permit["plumbing_permit_number"] | default('', true) }}</td>
+                            <td class="td-permit">{{ permit["plumbing_permit_status"] | default('', true) }}</td>
+                            <td class="td-permit">{{ permit["plumbing_permit_status_date"] | default('', true) }}</td>
+                            <td class="td-permit">{{ permit["master_permit_number"] | default('', true) }}</td>
+                            <td class="td-permit">{{ permit["master_permit_status"] | default('', true) }}</td>
+                            <td class="td-permit">{{ permit["master_permit_status_date"] | default('', true) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspection -->
     <div class="accordion-item">
         <h2 class="accordion-header">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
