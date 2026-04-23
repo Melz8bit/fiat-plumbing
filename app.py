@@ -3,7 +3,9 @@ import ast
 import base64
 import json
 import os
+import sys
 import urllib.parse
+from contextlib import contextmanager
 from datetime import datetime, date, timedelta
 from flask import (
     Flask,
@@ -28,9 +30,30 @@ from flask_login import (
 from itsdangerous import URLSafeTimedSerializer
 from num2words import num2words
 from sqlalchemy import null, select
-from weasyprint import HTML
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
+
+
+@contextmanager
+def suppress_c_warnings():
+    """Temporarily redirects C-level stderr to devnull to suppress GLib warnings."""
+    # Open a connection to the system's null device
+    devnull = os.open(os.devnull, os.O_WRONLY)
+    # Save the original stderr file descriptor
+    old_stderr = os.dup(sys.stderr.fileno())
+    try:
+        # Swap stderr with devnull
+        os.dup2(devnull, sys.stderr.fileno())
+        yield
+    finally:
+        # Restore the original stderr when done
+        os.dup2(old_stderr, sys.stderr.fileno())
+        os.close(devnull)
+        os.close(old_stderr)
+
+
+with suppress_c_warnings():
+    from weasyprint import HTML
 
 import database
 from database import db_connect
@@ -81,7 +104,6 @@ login_manager.init_app(app)
 login_manager.login_view = "login"
 
 logo_path = os.path.join(app.root_path, "static", "logo.png")
-print(f"{logo_path=}")
 
 
 ############## Login/Logout ##############
@@ -1192,10 +1214,11 @@ def finalize_proposal():
     )
 
     # Convert HTML to PDF in memory
-    pdf_bytes = HTML(
-        string=html_str,
-        base_url=app.root_path,
-    ).write_pdf()
+    with suppress_c_warnings():
+        pdf_bytes = HTML(
+            string=html_str,
+            base_url=app.root_path,
+        ).write_pdf()
 
     # upload_file_type = filename.filename.split(".")[-1]
     upload_file_name = f"{session['project_id']}-Proposal-{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
@@ -1713,4 +1736,6 @@ def get_today_date(value):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    # Fetches the environment variable. If it doesn't exist, it defaults to "False" for safety.
+    is_debug = os.getenv("FLASK_DEBUG", "False").lower() in ("true", "1", "t")
+    app.run(host="0.0.0.0", debug=is_debug)
