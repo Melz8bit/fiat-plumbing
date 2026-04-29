@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Fiat Plumbing - Certificate of Liability</title>
+
+    {% include 'bootstrap.html' %}
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+
+        .table-pending {
+            background-color: #fff9e6;
+        }
+
+        .portal-link {
+            font-size: 0.85em;
+            max-width: 200px;
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'nav.html' %}
+
+    <div class="container-fluid pt-4 px-4">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Certificate of Liability</h2>
+            <span class="text-muted">
+                Coverage Period:
+                <strong>{{ coverage_start.strftime('%B %Y') }}</strong>
+                &ndash;
+                <strong>{{ coverage_end.strftime('%B %Y') }}</strong>
+            </span>
+        </div>
+
+        <!-- Toggle pending / all -->
+        <div class="mb-3 d-flex align-items-center gap-3">
+            {% if show_all %}
+            <a href="{{ url_for('admin_coi') }}" class="btn btn-outline-secondary btn-sm">
+                Show Pending Only
+            </a>
+            <span class="text-muted small">Showing all departments</span>
+            {% else %}
+            <a href="{{ url_for('admin_coi', show_all='true') }}" class="btn btn-outline-secondary btn-sm">
+                Show All
+            </a>
+            <span class="text-muted small">
+                Showing {{ departments|length }} pending
+                &mdash; departments not submitted in the current coverage period
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Main send form -->
+        <form method="POST" action="{{ url_for('admin_coi_send') }}" id="coiSendForm">
+            {{ edit_form.hidden_tag() }}
+            <input type="hidden" name="action" value="send">
+            <input type="hidden" name="show_all" value="{{ 'true' if show_all else 'false' }}">
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle mb-0" id="coiTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center" style="width: 42px;">
+                                <input type="checkbox" class="form-check-input" id="selectAll" title="Select all">
+                            </th>
+                            <th>Entity</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Method</th>
+                            <th>Portal / Website</th>
+                            <th>Date Sent</th>
+                            <th>Sent Via</th>
+                            <th>Notes</th>
+                            <th class="text-center" style="width: 60px;">Edit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if departments|length == 0 %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                {% if show_all %}
+                                No departments found.
+                                {% else %}
+                                All departments are up to date for this coverage period.
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        {% for dept in departments %}
+                        {% set is_pending = dept['date_sent'] is none or dept['date_sent'] < coverage_start %}
+                        <tr class="{{ 'table-pending' if is_pending else '' }}">
+                            <td class="text-center">
+                                <input type="checkbox"
+                                       class="form-check-input dept-checkbox"
+                                       name="selected_depts"
+                                       value="{{ dept['id'] }}">
+                            </td>
+                            <td>{{ dept['entity'] }}</td>
+                            <td>{{ dept['primary_phone'] or '—' }}</td>
+                            <td>{{ dept['primary_email'] or '—' }}</td>
+                            <td>
+                                {% if dept['submission_method'] == 'Portal' %}
+                                <span class="badge bg-info text-dark">Portal</span>
+                                {% elif dept['submission_method'] == 'Email' %}
+                                <span class="badge bg-primary">Email</span>
+                                {% else %}
+                                {{ dept['submission_method'] or '—' }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if dept['web_portal'] %}
+                                <a href="{{ dept['web_portal'] }}" target="_blank" rel="noopener"
+                                   class="portal-link" title="{{ dept['web_portal'] }}">
+                                    {{ dept['web_portal'] }}
+                                </a>
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ dept['date_sent'].strftime('%m/%d/%Y') if dept['date_sent'] else '—' }}
+                            </td>
+                            <td>{{ dept['sent_via'] or '—' }}</td>
+                            <td>{{ dept['notes'] or '—' }}</td>
+                            <td class="text-center">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary btn-edit-dept"
+                                        data-id="{{ dept['id'] }}"
+                                        data-entity="{{ dept['entity'] | e }}"
+                                        data-phone="{{ dept['primary_phone'] | e or '' }}"
+                                        data-email="{{ dept['primary_email'] | e or '' }}"
+                                        data-portal="{{ dept['web_portal'] | e or '' }}"
+                                        data-method="{{ dept['submission_method'] | e or '' }}"
+                                        data-notes="{{ dept['notes'] | e or '' }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editDeptModal"
+                                        title="Edit">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Send button -->
+            <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+                <span class="text-muted small" id="selectedCount">0 selected</span>
+                <button type="submit" class="btn btn-primary" id="btnSend">
+                    <i class="fa-solid fa-paper-plane me-1"></i> Send Selected
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Edit Department Modal -->
+    <div class="modal fade" id="editDeptModal" tabindex="-1"
+         aria-labelledby="editDeptModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDeptModalLabel">Edit Department</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{{ url_for('admin_coi_send') }}" id="editDeptForm">
+                    {{ edit_form.hidden_tag() }}
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="show_all" value="{{ 'true' if show_all else 'false' }}">
+
+                    <div class="modal-body">
+                        {{ edit_form.dept_id(id="editDeptId") }}
+
+                        <div class="mb-3">
+                            {{ edit_form.entity.label(class="form-label fw-semibold") }}
+                            {{ edit_form.entity(class="form-control", id="editEntity") }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ edit_form.primary_phone.label(class="form-label") }}
+                                {{ edit_form.primary_phone(class="form-control", id="editPhone") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ edit_form.submission_method.label(class="form-label") }}
+                                {{ edit_form.submission_method(class="form-select", id="editMethod") }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ edit_form.primary_email.label(class="form-label") }}
+                            {{ edit_form.primary_email(class="form-control", id="editEmail") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ edit_form.web_portal.label(class="form-label") }}
+                            {{ edit_form.web_portal(class="form-control", id="editPortal", placeholder="https://") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ edit_form.notes.label(class="form-label") }}
+                            {{ edit_form.notes(class="form-control", id="editNotes") }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        {{ edit_form.coi_edit_submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% include 'flash_message.html' %}
+
+    <script>
+        // Select all / deselect all
+        const selectAllCb = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.dept-checkbox');
+        const countLabel = document.getElementById('selectedCount');
+
+        function updateCount() {
+            const n = document.querySelectorAll('.dept-checkbox:checked').length;
+            countLabel.textContent = n === 0 ? '0 selected' : `${n} selected`;
+        }
+
+        selectAllCb.addEventListener('change', function () {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateCount();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function () {
+                if (!this.checked) selectAllCb.checked = false;
+                else if (document.querySelectorAll('.dept-checkbox:checked').length === checkboxes.length) {
+                    selectAllCb.checked = true;
+                }
+                updateCount();
+            });
+        });
+
+        // Pre-fill edit modal using Bootstrap's show.bs.modal event
+        // event.relatedTarget is the button that triggered the modal
+        document.getElementById('editDeptModal').addEventListener('show.bs.modal', function (event) {
+            const btn = event.relatedTarget;
+            document.getElementById('editDeptId').value = btn.dataset.id;
+            document.getElementById('editEntity').value  = btn.dataset.entity;
+            document.getElementById('editPhone').value   = btn.dataset.phone;
+            document.getElementById('editEmail').value   = btn.dataset.email;
+            document.getElementById('editPortal').value  = btn.dataset.portal;
+            document.getElementById('editNotes').value   = btn.dataset.notes;
+
+            const sel = document.getElementById('editMethod');
+            for (let opt of sel.options) {
+                opt.selected = opt.value === btn.dataset.method;
+            }
+        });
+    </script>
+
+</body>
+
+</html>

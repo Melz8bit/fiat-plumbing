@@ -3,10 +3,14 @@ import ast
 import base64
 import json
 import os
+import smtplib
 import sys
 import urllib.parse
 from contextlib import contextmanager
 from datetime import datetime, date, timedelta
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from flask import (
     Flask,
     flash,
@@ -80,6 +84,7 @@ from forms import (
     ProposalInstallmentsForm,
     ProposalNotesForm,
     PermitsAddForm,
+    COIEditForm,
 )
 from models import users
 
@@ -93,6 +98,11 @@ FIAT_PLUMBING = {
     "email": "afiat@aol.com",
 }
 DAYS_UNTIL_DUE = 30
+
+AOL_EMAIL = os.getenv("AOL_EMAIL")
+AOL_APP_PASSWORD = os.getenv("AOL_APP_PASSWORD")
+COI_STATE_LICENSE_KEY = os.getenv("COI_STATE_LICENSE_KEY")
+COI_LOCAL_BIZ_TAX_KEY = os.getenv("COI_LOCAL_BIZ_TAX_KEY")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
@@ -1305,6 +1315,7 @@ def finalize_proposal():
             upload_file_name,
         )
     except Exception as e:
+        print(f"Proposal upload error: {e}")
         flash("Error: Unable to upload the proposal to documents")
         return render_template(
             "proposal_print.html",
@@ -1503,6 +1514,168 @@ def update_permit_status():
             return jsonify({"error": str(e)}), 500
 
         return jsonify({"error": "Invalid request"}), 400
+
+
+############## Admin - COI ##############
+def get_coverage_period():
+    today = date.today()
+    if today.month >= 3:
+        coverage_start = date(today.year, 3, 1)
+    else:
+        coverage_start = date(today.year - 1, 3, 1)
+    coverage_end = date(coverage_start.year + 1, 3, 31)
+    return coverage_start, coverage_end
+
+
+def send_coi_email(dept, coverage_start):
+    coverage_folder = f"{coverage_start.year}-{coverage_start.year + 1}"
+    entity_name = dept["entity"]
+    recipient = dept["primary_email"]
+
+    html_body = f"""
+    <html><body>
+    <p>Dear {entity_name},</p>
+    <p>Please find attached our Certificate of Liability Insurance, State License,
+    and Local Business Tax Receipt for the {coverage_folder} coverage period.</p>
+    <p>Should you have any questions or require additional information, please do not
+    hesitate to contact us.</p>
+    <p>Best regards,<br>
+    <strong>{FIAT_PLUMBING["company_name"]}</strong><br>
+    {FIAT_PLUMBING["phone_number"]}<br>
+    {FIAT_PLUMBING["email"]}</p>
+    </body></html>
+    """
+
+    msg = MIMEMultipart("mixed")
+    msg["From"] = AOL_EMAIL
+    msg["To"] = recipient
+    msg["Subject"] = f"Certificate of Liability Insurance — {entity_name}"
+    msg.attach(MIMEText(html_body, "html"))
+
+    attachments = [
+        (
+            f"company-docs/certificates-of-liability/{coverage_folder}/{entity_name}.pdf",
+            f"{entity_name} - COI.pdf",
+        ),
+        (COI_STATE_LICENSE_KEY, "State License.pdf"),
+        (COI_LOCAL_BIZ_TAX_KEY, "Local Business Tax.pdf"),
+    ]
+
+    for s3_key, display_name in attachments:
+        response = download_file(s3_key)
+        pdf_bytes = response["Body"].read()
+        part = MIMEApplication(pdf_bytes, Name=display_name)
+        part["Content-Disposition"] = f'attachment; filename="{display_name}"'
+        msg.attach(part)
+
+    # with smtplib.SMTP("smtp.aol.com", 587, timeout=10) as smtp:
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.login(AOL_EMAIL, AOL_APP_PASSWORD)
+        smtp.sendmail(AOL_EMAIL, recipient, msg.as_string())
+
+
+@app.route("/admin/coi", methods=["GET"])
+@login_required
+def admin_coi():
+    user = database.get_user(session["user_id"])
+    show_all = request.args.get("show_all", "false").lower() == "true"
+    coverage_start, coverage_end = get_coverage_period()
+    departments = database.get_coi_departments(
+        pending_only=not show_all,
+        coverage_start=coverage_start,
+    )
+    edit_form = COIEditForm()
+    return render_template(
+        "admin_coi.html",
+        user=user,
+        departments=departments,
+        show_all=show_all,
+        coverage_start=coverage_start,
+        coverage_end=coverage_end,
+        edit_form=edit_form,
+    )
+
+
+@app.route("/admin/coi/send", methods=["POST"])
+@login_required
+def admin_coi_send():
+    action = request.form.get("action")
+    show_all = request.form.get("show_all", "false")
+    coverage_start, _ = get_coverage_period()
+
+    if action == "edit":
+        edit_form = COIEditForm()
+        if edit_form.validate_on_submit():
+            if not edit_form.dept_id.data:
+                flash("Invalid department — please try again.")
+                return redirect(url_for("admin_coi", show_all=show_all))
+            fields = {
+                "entity": edit_form.entity.data,
+                "primary_phone": edit_form.primary_phone.data,
+                "primary_email": edit_form.primary_email.data,
+                "web_portal": edit_form.web_portal.data,
+                "submission_method": edit_form.submission_method.data,
+                "notes": edit_form.notes.data,
+            }
+            try:
+                database.update_coi_department(edit_form.dept_id.data, fields)
+                flash("Department updated successfully.")
+            except Exception as e:
+                flash("Error updating department. Please try again.")
+                print(f"COI update error: {e}")
+        else:
+            for errors in edit_form.errors.values():
+                flash(errors[0])
+
+    elif action == "send":
+        selected_ids = request.form.getlist("selected_depts")
+        if not selected_ids:
+            flash("No departments selected.")
+            return redirect(url_for("admin_coi", show_all=show_all))
+
+        all_depts = database.get_coi_departments(
+            pending_only=False, coverage_start=coverage_start
+        )
+        id_to_dept = {str(d["id"]): d for d in all_depts}
+
+        email_successes = []
+        email_failures = []
+        portal_ids = []
+
+        for dept_id in selected_ids:
+            dept = id_to_dept.get(dept_id)
+            if not dept:
+                continue
+            if dept["submission_method"] == "Portal":
+                portal_ids.append(dept_id)
+            else:
+                if not dept["primary_email"]:
+                    email_failures.append(f"{dept['entity']} (no email on file)")
+                    continue
+                try:
+                    send_coi_email(dept, coverage_start)
+                    database.mark_coi_sent([dept_id], dept["primary_email"])
+                    email_successes.append(dept["entity"])
+                except Exception as e:
+                    print(f"COI email error for {dept['entity']}: {e}")
+                    email_failures.append(dept["entity"])
+
+        if portal_ids:
+            try:
+                database.mark_coi_sent(portal_ids, "Portal")
+                flash(f"Marked {len(portal_ids)} portal submission(s) as sent.")
+            except Exception as e:
+                flash("Error marking portal submissions as sent.")
+                print(f"Portal mark error: {e}")
+
+        if email_successes:
+            flash(f"Email sent to: {', '.join(email_successes)}.")
+        if email_failures:
+            flash(f"Failed to send to: {', '.join(email_failures)}.")
+
+    return redirect(url_for("admin_coi", show_all=show_all))
 
 
 ############## Helper Methods ##############
