@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Approval Workflow
+
+- For multi-step features or non-trivial changes, present a plan and wait for explicit approval before implementing.
+- Do not over-implement: stick to the scope requested. If you discover related work, ask first.
+
 ## Commands
 
 **Run the development server:**
@@ -72,3 +77,16 @@ This is a single-file Flask application (`app.py`) for Fiat Plumbing — an inte
 - `zip_code_county` supports address auto-fill by zip code
 
 **Jinja2 template filters** registered in `app.py`: `format_currency`, `calculate_due_date`, `get_today_date`.
+
+## Flask Conventions
+
+### Modal & Form Patterns
+
+- Avoid hidden-field approaches that depend on modal open/close timing for passing IDs (e.g., `dept_id`). Prefer URL parameters or server-rendered context.
+- Use Bootstrap's `show.bs.modal` event with `event.relatedTarget` to pre-fill modal fields from the triggering button's `data-*` attributes.
+- For edit modals, set the form `action` URL dynamically in the `show.bs.modal` handler so the ID travels in the URL, not a hidden field.
+- Test modal interactions end-to-end after changes.
+
+## Terminology
+
+- "TODO list" / "task list" refers to the Claude Code `TodoWrite` task list UI, not code `# TODO` comments. Use `TodoWrite` for tracking multi-step work.
