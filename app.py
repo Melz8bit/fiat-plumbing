@@ -1539,7 +1539,7 @@ def send_coi_email(dept, coverage_start):
     and Local Business Tax Receipt for Fiat Plumbing & General Contractor, Inc. for the {coverage_folder} coverage period.</p>
     <p>Should you have any questions or require additional information, please do not
     hesitate to contact us.</p>
-    <p></p>
+    <br>
     <p>Thank you,<br>
     <strong>{FIAT_PLUMBING["company_name"]}</strong><br>
     {FIAT_PLUMBING["phone_number"]}<br>
@@ -1574,8 +1574,7 @@ def send_coi_email(dept, coverage_start):
         except Exception as e:
             raise Exception(f"Missing file in S3: {s3_key}")
 
-    # with smtplib.SMTP("smtp.aol.com", 587, timeout=10) as smtp:
-    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as smtp:
+    with smtplib.SMTP("smtp.aol.com", 587, timeout=10) as smtp:
         smtp.ehlo()
         smtp.starttls()
         smtp.login(AOL_EMAIL, AOL_APP_PASSWORD)
