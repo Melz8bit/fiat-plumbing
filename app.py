@@ -155,7 +155,8 @@ def login():
             "login.html",
             login_form=login_form,
         )
-    except:
+    except Exception as e:
+        print(f"Login error: {e}")
         return redirect(url_for("login"))
 
 
@@ -954,12 +955,17 @@ def apply_payment(form):
     }
 
     # Invoice Application Data
-    invoice_id_list = [int(x) for x in request.form.getlist("invoice_id")]
-    payment_applied_list = [float(x) for x in request.form.getlist("amount_applied")]
-    payment_remaining_list = [
-        float(x) for x in request.form.getlist("amount_remaining")
-    ]
-    invoice_status_list = request.form.getlist("invoice_status")
+    try:
+        invoice_id_list = [int(x) for x in request.form.getlist("invoice_id")]
+        payment_applied_list = [float(x) for x in request.form.getlist("amount_applied")]
+        payment_remaining_list = [
+            float(x) for x in request.form.getlist("amount_remaining")
+        ]
+        invoice_status_list = request.form.getlist("invoice_status")
+    except (ValueError, TypeError) as e:
+        print(f"Payment form data error: {e}")
+        flash("Invalid payment data submitted. Please try again.")
+        return redirect(url_for("project_view", project_id=session["project_id"]))
 
     database.insert_payment(payment_information)
 

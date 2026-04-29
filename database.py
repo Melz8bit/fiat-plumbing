@@ -107,7 +107,9 @@ def get_user(user_id):
     try:
         sqlQuery = "SELECT * FROM users WHERE users.user_id = :user_id;"
 
-        query_params = {"user_id": user_id}
+        query_params = {
+            "user_id": user_id,
+        }
 
         with engine.connect() as connection:
             user = connection.execute(text(sqlQuery), query_params).first()
@@ -122,7 +124,9 @@ def get_user_password(email):
     try:
         sqlQuery = "SELECT password FROM users WHERE users.email = :email"
 
-        query_params = {"email": email}
+        query_params = {
+            "email": email,
+        }
 
         with engine.connect() as connection:
             password = connection.execute(text(sqlQuery), query_params).first()[0]
@@ -137,7 +141,9 @@ def get_user_from_email(email):
     try:
         sqlQuery = "SELECT * FROM users WHERE users.email = :email"
 
-        query_params = {"email": email}
+        query_params = {
+            "email": email,
+        }
 
         with engine.connect() as connection:
             results = connection.execute(text(sqlQuery), query_params)
@@ -604,10 +610,7 @@ def get_project_notes(project_id):
 
         with engine.connect() as connection:
             notes = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                notes_dict = notes.mappings().all()
-            except:
-                notes_dict = ""
+            notes_dict = notes.mappings().all()
 
         return notes_dict
 
@@ -658,10 +661,7 @@ def get_project_invoices(project_id):
 
         with engine.connect() as connection:
             invoices = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                invoices_dict = invoices.mappings().all()
-            except:
-                invoices_dict = ""
+            invoices_dict = invoices.mappings().all()
 
         return invoices_dict
 
@@ -1489,10 +1489,7 @@ def get_project_fixtures(project_id):
 
         with engine.connect() as connection:
             fixtures = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                fixtures_dict = fixtures.mappings().all()
-            except:
-                fixtures_dict = ""
+            fixtures_dict = fixtures.mappings().all()
 
         return fixtures_dict
 
@@ -1518,10 +1515,7 @@ def get_proposal_fixtures(project_id, proposal_id=0):
 
         with engine.connect() as connection:
             fixtures = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                fixtures_dict = fixtures.mappings().all()
-            except:
-                fixtures_dict = ""
+            fixtures_dict = fixtures.mappings().all()
 
         return fixtures_dict
 
@@ -1618,10 +1612,7 @@ def get_proposal_installments(project_id, proposal_id=0):
 
         with engine.connect() as connection:
             installments = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                installments_dict = installments.mappings().all()
-            except:
-                installments_dict = ""
+            installments_dict = installments.mappings().all()
 
         # if not installments_dict:
         #     sqlQuery = (
@@ -1712,10 +1703,7 @@ def get_proposal_notes(project_id, proposal_id=0):
 
         with engine.connect() as connection:
             notes = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                notes_dict = notes.mappings().all()
-            except:
-                notes_dict = ""
+            notes_dict = notes.mappings().all()
 
         return notes_dict
 
@@ -1782,10 +1770,7 @@ def get_proposal_fixture_notes(project_id, proposal_id=0):
 
         with engine.connect() as connection:
             notes = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                proposal_notes_dict = notes.mappings().all()
-            except:
-                proposal_notes_dict = ""
+            proposal_notes_dict = notes.mappings().all()
 
         return proposal_notes_dict
 
@@ -2272,11 +2257,7 @@ def get_permit_add_information():
 
         with engine.connect() as connection:
             permit_req_info = connection.execute(text(f"{sqlQuery}"))
-
-            try:
-                permit_req_info_mappings = permit_req_info.mappings().all()
-            except:
-                permit_req_info_mappings = ""
+            permit_req_info_mappings = permit_req_info.mappings().all()
 
         return permit_req_info_mappings
 
@@ -2302,10 +2283,7 @@ def get_project_permits(project_id):
 
         with engine.connect() as connection:
             permits = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                permits_dict = permits.mappings().all()
-            except:
-                permits_dict = ""
+            permits_dict = permits.mappings().all()
 
         return permits_dict
 
@@ -2331,10 +2309,7 @@ def get_permit_by_id(permit_id):
 
         with engine.connect() as connection:
             permits = connection.execute(text(f"{sqlQuery}"), query_params)
-            try:
-                permits_dict = permits.mappings().first()
-            except:
-                permits_dict = ""
+            permits_dict = permits.mappings().first()
 
         return permits_dict
 
@@ -2458,10 +2433,7 @@ def get_master_permit(project_id):
 
         with engine.connect() as connection:
             master_permit = connection.execute(text(f"{sqlQuery}"), queryParams)
-            try:
-                master_permit_dict = master_permit.mappings().all()[0]
-            except:
-                master_permit_dict = ""
+            master_permit_dict = master_permit.mappings().first()
 
         return master_permit_dict
 
@@ -2484,10 +2456,7 @@ def get_plumbing_permit(project_id):
 
         with engine.connect() as connection:
             plumbing_permit = connection.execute(text(f"{sqlQuery}"), queryParams)
-            try:
-                plumbing_permit_dict = plumbing_permit.mappings().all()[0]
-            except:
-                plumbing_permit_dict = ""
+            plumbing_permit_dict = plumbing_permit.mappings().first()
 
         return plumbing_permit_dict
 
@@ -2532,10 +2501,7 @@ def get_all_permits():
 
         with engine.connect() as connection:
             plumbing_permit = connection.execute(text(f"{sqlQuery}"))
-            try:
-                plumbing_permit_dict = plumbing_permit.mappings().all()
-            except:
-                plumbing_permit_dict = ""
+            plumbing_permit_dict = plumbing_permit.mappings().all()
 
         return plumbing_permit_dict
 
