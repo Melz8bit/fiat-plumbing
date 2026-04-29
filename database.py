@@ -105,12 +105,12 @@ def get_projects_finance_summary():
 ############## User Queries ##############
 def get_user(user_id):
     try:
-        sqlQuery = f"""
-                SELECT * FROM users WHERE users.user_id = '{user_id}'; 
-            """
+        sqlQuery = "SELECT * FROM users WHERE users.user_id = :user_id;"
+
+        query_params = {"user_id": user_id}
 
         with engine.connect() as connection:
-            user = connection.execute(text(f"{sqlQuery}")).first()
+            user = connection.execute(text(sqlQuery), query_params).first()
 
         return user
     except Exception as e:
@@ -120,14 +120,12 @@ def get_user(user_id):
 
 def get_user_password(email):
     try:
-        sqlQuery = f"""
-                SELECT password
-                FROM users
-                WHERE users.email = '{email}'
-            """
+        sqlQuery = "SELECT password FROM users WHERE users.email = :email"
+
+        query_params = {"email": email}
 
         with engine.connect() as connection:
-            password = connection.execute(text(f"{sqlQuery}")).first()[0]
+            password = connection.execute(text(sqlQuery), query_params).first()[0]
 
         return password
     except Exception as e:
@@ -137,14 +135,12 @@ def get_user_password(email):
 
 def get_user_from_email(email):
     try:
-        sqlQuery = f"""
-                SELECT *
-                FROM users
-                WHERE users.email = '{email}'
-            """
+        sqlQuery = "SELECT * FROM users WHERE users.email = :email"
+
+        query_params = {"email": email}
 
         with engine.connect() as connection:
-            results = connection.execute(text(f"{sqlQuery}"))
+            results = connection.execute(text(sqlQuery), query_params)
             user_dict = results.mappings().all()[0]
 
         return user_dict
