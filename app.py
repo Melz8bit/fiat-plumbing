@@ -1534,12 +1534,12 @@ def send_coi_email(dept, coverage_start):
 
     html_body = f"""
     <html><body>
-    <p>Dear {entity_name},</p>
-    <p>Please find attached our Certificate of Liability Insurance, State License,
-    and Local Business Tax Receipt for the {coverage_folder} coverage period.</p>
+    <p>Hello,</p>
+    <p>Please see attached Certificate of Liability Insurance, State License,
+    and Local Business Tax Receipt for Fiat Plumbing & General Contractor, Inc. for the {coverage_folder} coverage period.</p>
     <p>Should you have any questions or require additional information, please do not
     hesitate to contact us.</p>
-    <p>Best regards,<br>
+    <p>Thank you,<br>
     <strong>{FIAT_PLUMBING["company_name"]}</strong><br>
     {FIAT_PLUMBING["phone_number"]}<br>
     {FIAT_PLUMBING["email"]}</p>
@@ -1549,7 +1549,9 @@ def send_coi_email(dept, coverage_start):
     msg = MIMEMultipart("mixed")
     msg["From"] = AOL_EMAIL
     msg["To"] = recipient
-    msg["Subject"] = f"Certificate of Liability Insurance — {entity_name}"
+    msg["Subject"] = (
+        f"Fiat Plumbing & General Contractor, Inc. - Certificate of Liability Insurance Renewal {coverage_folder} — {entity_name}"
+    )
     msg.attach(MIMEText(html_body, "html"))
 
     attachments = [
@@ -1557,16 +1559,19 @@ def send_coi_email(dept, coverage_start):
             f"company-docs/certificates-of-liability/{coverage_folder}/{entity_name}.pdf",
             f"{entity_name} - COI.pdf",
         ),
-        (COI_STATE_LICENSE_KEY, "State License.pdf"),
-        (COI_LOCAL_BIZ_TAX_KEY, "Local Business Tax.pdf"),
+        (COI_STATE_LICENSE_KEY, "Fiat Plumbing - State License.pdf"),
+        (COI_LOCAL_BIZ_TAX_KEY, "Fiat Plumbing - Local Business Tax.pdf"),
     ]
 
     for s3_key, display_name in attachments:
-        response = download_file(s3_key)
-        pdf_bytes = response["Body"].read()
-        part = MIMEApplication(pdf_bytes, Name=display_name)
-        part["Content-Disposition"] = f'attachment; filename="{display_name}"'
-        msg.attach(part)
+        try:
+            response = download_file(s3_key)
+            pdf_bytes = response["Body"].read()
+            part = MIMEApplication(pdf_bytes, Name=display_name)
+            part["Content-Disposition"] = f'attachment; filename="{display_name}"'
+            msg.attach(part)
+        except Exception as e:
+            raise Exception(f"Missing file in S3: {s3_key}")
 
     # with smtplib.SMTP("smtp.aol.com", 587, timeout=10) as smtp:
     with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as smtp:

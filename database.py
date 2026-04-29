@@ -2478,6 +2478,85 @@ def get_city_state_county(zip_code):
         return ""
 
 
+############## COI Admin Queries ##############
+def get_coi_departments(pending_only=False, coverage_start=None):
+    try:
+        if pending_only and coverage_start:
+            sqlQuery = """
+                SELECT *
+                FROM fl_building_departments
+                WHERE date_sent IS NULL OR date_sent < :coverage_start
+                ORDER BY entity;
+            """
+            query_params = {"coverage_start": coverage_start}
+        else:
+            sqlQuery = """
+                SELECT *
+                FROM fl_building_departments
+                ORDER BY entity;
+            """
+            query_params = {}
+
+        with engine.connect() as connection:
+            results = connection.execute(text(sqlQuery), query_params)
+            return results.mappings().all()
+
+    except Exception as e:
+        print("Database Error:", e)
+        return []
+
+
+def update_coi_department(dept_id, fields):
+    try:
+        sqlQuery = """
+            UPDATE fl_building_departments
+            SET entity = :entity,
+                primary_phone = :primary_phone,
+                primary_email = :primary_email,
+                web_portal = :web_portal,
+                submission_method = :submission_method,
+                notes = :notes
+            WHERE id = :id;
+        """
+        query_params = {
+            "id": int(dept_id),
+            "entity": fields["entity"],
+            "primary_phone": fields["primary_phone"] or None,
+            "primary_email": fields["primary_email"] or None,
+            "web_portal": fields["web_portal"] or None,
+            "submission_method": fields["submission_method"],
+            "notes": fields["notes"] or None,
+        }
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), query_params)
+            connection.commit()
+
+    except Exception as e:
+        print("Database Error:", e)
+        raise e
+
+
+def mark_coi_sent(dept_ids, sent_via):
+    try:
+        sqlQuery = """
+            UPDATE fl_building_departments
+            SET date_sent = CURRENT_DATE,
+                sent_via = :sent_via
+            WHERE id = :id;
+        """
+        with engine.connect() as connection:
+            for dept_id in dept_ids:
+                connection.execute(
+                    text(sqlQuery),
+                    {"id": int(dept_id), "sent_via": sent_via},
+                )
+            connection.commit()
+
+    except Exception as e:
+        print("Database Error:", e)
+        raise e
+
+
 def get_project_statuses():
     try:
         sqlQuery = (
