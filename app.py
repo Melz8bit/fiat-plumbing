@@ -283,14 +283,19 @@ def account():
     change_password_form = ChangePasswordForm()
     update_email_form = UpdateEmailForm()
 
-    if change_password_form.change_password_submit.data and change_password_form.validate():
+    if (
+        change_password_form.change_password_submit.data
+        and change_password_form.validate()
+    ):
         current_password = change_password_form.current_password.data
         stored_password = database.get_user_password(user.email)
 
         if not check_password_hash(stored_password, current_password):
             flash("Current password is incorrect.")
         else:
-            new_hash = generate_password_hash(change_password_form.new_password.data, "scrypt")
+            new_hash = generate_password_hash(
+                change_password_form.new_password.data, "scrypt"
+            )
             try:
                 database.update_user_password(user.email, new_hash)
                 flash("Password updated successfully.")
@@ -986,6 +991,7 @@ def apply_payment(form):
 
 
 @app.route("/apply_payment/<project_id>", methods=["GET", "POST"])
+@login_required
 def apply_payment_ajax(project_id):
     payment_form = ApplyPaymentForm().data
     payment_applied_info = []
@@ -1243,7 +1249,7 @@ def finalize_proposal():
     logo_data = get_encoded_logo()
 
     # Access data from the dictionary
-    project_info = update_proposal_data("project", data["projectInfo"])
+    project_info = ast.literal_eval(data["projectInfo"])
     project_id = project_info["project_id"]
 
     plans_date = datetime.strptime(data["plansDate"], "%m/%d/%Y").date()
@@ -1509,33 +1515,6 @@ def installments_total(installments):
     total = sum(installment["installment_amount"] for installment in installments)
     return total
 
-
-def update_proposal_data(data_type, proposal_data) -> list:
-    if data_type == "client" or data_type == "project":
-        # remove the curly braces from the string
-        string = proposal_data.strip("{}")
-
-        # split the string into key-value pairs
-        pairs = string.split(", ")
-
-        # use a dictionary comprehension to create
-        # the dictionary, converting the values to
-        # integers and removing the quotes from the keys
-        fixed_list = {
-            key[1:-1]: value[1:-1]
-            for key, value in (pair.split(": ") for pair in pairs)
-        }
-
-        return fixed_list
-
-    proposal_data = proposal_data.replace("}, {", "}}, {{")[1:-1]
-    temp = list(proposal_data.split("}, {"))
-    fixed_list = []
-    for x in temp:
-        x = x.replace("'", '"')
-        fixed_list.append(json.loads(x))
-
-    return fixed_list
 
 
 @app.route("/clear_proposal_draft/<project_id>", methods=["POST"])
