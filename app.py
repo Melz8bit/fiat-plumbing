@@ -874,7 +874,6 @@ def get_project_invoice_items(invoices):
     else:
         invoices = []
 
-    print(f"{payment_info=}")
     return invoice_items
 
 
@@ -957,7 +956,9 @@ def apply_payment(form):
     # Invoice Application Data
     try:
         invoice_id_list = [int(x) for x in request.form.getlist("invoice_id")]
-        payment_applied_list = [float(x) for x in request.form.getlist("amount_applied")]
+        payment_applied_list = [
+            float(x) for x in request.form.getlist("amount_applied")
+        ]
         payment_remaining_list = [
             float(x) for x in request.form.getlist("amount_remaining")
         ]
@@ -1152,7 +1153,6 @@ def add_project_permit(permit_add_form):
 @app.route("/project/<project_id>/documents", methods=["GET", "POST"])
 @login_required
 def get_project_documents(project_id):
-    print(request.method)
     documents = database.get_project_docs(project_id)
     document_form = DocumentUploadForm()
     return render_template(
@@ -1520,7 +1520,6 @@ def fixtures_total(fixtures):
 def installments_total(installments):
     total = sum(installment["installment_amount"] for installment in installments)
     return total
-
 
 
 @app.route("/clear_proposal_draft/<project_id>", methods=["POST"])

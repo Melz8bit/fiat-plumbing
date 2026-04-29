@@ -156,7 +156,6 @@ def get_user_from_email(email):
 
 
 def create_user(user_info):
-    print(f"{user_info=}")
     try:
         sqlQuery = (
             "INSERT INTO users (user_id, first_name, last_name, email, password)"
@@ -670,33 +669,6 @@ def get_project_invoices(project_id):
         return ""
 
 
-# def get_open_invoices(project_id, invoice_number):
-#     try:
-#         sqlQuery = (
-#             "SELECT *"
-#             + " FROM project_invoices"
-#             + " WHERE project_id = :project_id AND invoice_number <= :invoice_number AND invoice_status != 'Paid';"
-#         )
-
-#         query_params = {
-#             "project_id": project_id,
-#             "invoice_number": int(invoice_number),
-#         }
-
-#         with engine.connect() as connection:
-#             invoices = connection.execute(text(f"{sqlQuery}"), query_params)
-#             try:
-#                 invoices_dict = invoices.mappings().all()
-#             except:
-#                 invoices_dict = ""
-
-#         return invoices_dict
-
-#     except Exception as e:
-#         print("Database Error:", e)
-#         return ""
-
-
 def get_invoice(project_id, invoice_number):
     try:
         sqlQuery = (
@@ -811,8 +783,6 @@ def get_invoice_payments_total(invoice_id):
             invoice_items = connection.execute(text(f"{sqlQuery}"), query_params)
             invoice_items_dict = invoice_items.mappings().all()[0]
 
-            # print(f"{invoice_items_dict=}")
-
             return float(invoice_items_dict["sum"])
             # return invoice_items_dict
 
@@ -890,8 +860,6 @@ def apply_payment(invoice_info):
         with engine.connect() as connection:
             result = connection.execute(text(f"{sqlQuery}"), query_params)
             connection.commit()
-
-        # print("Payment added")
 
     except Exception as e:
         print("Database Error:", e)
@@ -1216,30 +1184,6 @@ def update_installment_status(
     except Exception as e:
         print("Database Error:", e)
         return ""
-    # try:
-    #     if phase_update:
-    #         query = f"""UPDATE project_invoices
-    #                     SET installment_status = %s, installment_status_date = %s
-    #                     WHERE project_id = %s AND installment_number = %s AND installment_status = %s;
-    #                 """
-    #         query_params = (
-    #             installment_status,
-    #             datetime.now().strftime("%Y-%m-%d"),
-    #             project_id,
-    #             installment_number,
-    #             "Pending",
-    #         )
-    #     mycursor.execute(query, query_params)
-    #     connection.commit()
-
-    #     # insert_note(
-    #     #     project_id,
-    #     #     f"Installment #{installment_number} status updated: {installment_status}",
-    #     #     user_id,
-    #     # )
-
-    # except MySQLdb.Error as e:
-    #     print("MySQL Error:", e)
 
 
 ############## Document Queries ##############
