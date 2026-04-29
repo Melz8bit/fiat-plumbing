@@ -64,6 +64,8 @@ from forms import (
     SignUpForm,
     ResetPasswordForm,
     ForgotPasswordForm,
+    ChangePasswordForm,
+    UpdateEmailForm,
     ProjectForm,
     ProjectNotesForm,
     MasterPermitForm,
@@ -270,6 +272,66 @@ def reset_password(token):
     return render_template(
         "reset_password.html",
         reset_password_form=reset_password_form,
+    )
+
+
+############## Account ##############
+@app.route("/account", methods=["GET", "POST"])
+@login_required
+def account():
+    user = database.get_user(session["user_id"])
+    change_password_form = ChangePasswordForm()
+    update_email_form = UpdateEmailForm()
+
+    if change_password_form.change_password_submit.data and change_password_form.validate():
+        current_password = change_password_form.current_password.data
+        stored_password = database.get_user_password(user.email)
+
+        if not check_password_hash(stored_password, current_password):
+            flash("Current password is incorrect.")
+        else:
+            new_hash = generate_password_hash(change_password_form.new_password.data, "scrypt")
+            try:
+                database.update_user_password(user.email, new_hash)
+                flash("Password updated successfully.")
+                return redirect(url_for("account"))
+            except Exception as e:
+                flash("An error occurred updating your password. Please try again.")
+                print(f"Error updating password: {e}")
+
+    if update_email_form.update_email_submit.data and update_email_form.validate():
+        current_password = update_email_form.current_password.data
+        stored_password = database.get_user_password(user.email)
+
+        if not check_password_hash(stored_password, current_password):
+            flash("Current password is incorrect.")
+        else:
+            new_email = update_email_form.new_email.data
+            existing = database.get_user_from_email(new_email)
+            if existing:
+                flash("That email address is already in use.")
+            else:
+                try:
+                    database.update_user_email(user.user_id, new_email)
+                    flash("Email updated successfully.")
+                    return redirect(url_for("account"))
+                except Exception as e:
+                    flash("An error occurred updating your email. Please try again.")
+                    print(f"Error updating email: {e}")
+
+    for error in list(change_password_form.errors.values()):
+        if change_password_form.change_password_submit.data:
+            flash(error[0])
+
+    for error in list(update_email_form.errors.values()):
+        if update_email_form.update_email_submit.data:
+            flash(error[0])
+
+    return render_template(
+        "account.html",
+        user=user,
+        change_password_form=change_password_form,
+        update_email_form=update_email_form,
     )
 
 

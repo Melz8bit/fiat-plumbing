@@ -1,0 +1,86 @@
+<html>
+
+<head>
+    <title>Fiat Plumbing - Account</title>
+
+    {% include 'bootstrap.html' %}
+
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    {% include 'nav.html' %}
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Account Settings</h2>
+
+        <div class="row g-4">
+            <!-- Change Password -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Change Password</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ change_password_form.hidden_tag() }}
+
+                            <div class="mb-3">
+                                {{ change_password_form.current_password.label(class="form-label") }}
+                                {{ change_password_form.current_password(class="form-control", placeholder="Current password") }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ change_password_form.new_password.label(class="form-label") }}
+                                {{ change_password_form.new_password(class="form-control", placeholder="New password") }}
+                                <div class="form-text">Min 8 characters with a number, uppercase letter, and special character (- # $ . % & * !)</div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ change_password_form.confirm_password.label(class="form-label") }}
+                                {{ change_password_form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                            </div>
+
+                            {{ change_password_form.change_password_submit(class="btn btn-primary") }}
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Email -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Update Email</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Current email: <strong>{{ user.email }}</strong></p>
+                        <form method="POST">
+                            {{ update_email_form.hidden_tag() }}
+
+                            <div class="mb-3">
+                                {{ update_email_form.new_email.label(class="form-label") }}
+                                {{ update_email_form.new_email(class="form-control", placeholder="New email address") }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ update_email_form.current_password.label(class="form-label") }}
+                                {{ update_email_form.current_password(class="form-control", placeholder="Enter your password to confirm") }}
+                            </div>
+
+                            {{ update_email_form.update_email_submit(class="btn btn-primary") }}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'flash_message.html' %}
+</body>
+
+</html>

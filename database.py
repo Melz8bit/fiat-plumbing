@@ -204,6 +204,30 @@ def update_user_password(email, new_password_hash):
         raise e
 
 
+def update_user_email(user_id, new_email):
+    try:
+        sqlQuery = """
+            UPDATE users
+            SET email = :email
+            WHERE user_id = :user_id;
+        """
+
+        query_params = {
+            "email": new_email,
+            "user_id": user_id,
+        }
+
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), query_params)
+            connection.commit()
+
+        print("User email updated successfully")
+
+    except Exception as e:
+        print(f"Database error: {e}")
+        raise e
+
+
 ############## Client Queries ##############
 def get_client(client_id):
     try:

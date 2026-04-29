@@ -158,6 +158,40 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField("Reset Password")
 
 
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField(
+        "Current Password",
+        validators=[DataRequired()],
+    )
+    new_password = PasswordField(
+        "New Password",
+        validators=[
+            DataRequired(),
+            password_check,
+        ],
+    )
+    confirm_password = PasswordField(
+        "Confirm New Password",
+        validators=[
+            DataRequired(),
+            EqualTo("new_password", message="Passwords must match."),
+        ],
+    )
+    change_password_submit = SubmitField("Update Password")
+
+
+class UpdateEmailForm(FlaskForm):
+    current_password = PasswordField(
+        "Current Password",
+        validators=[DataRequired()],
+    )
+    new_email = EmailField(
+        "New Email",
+        validators=[DataRequired(), Email()],
+    )
+    update_email_submit = SubmitField("Update Email")
+
+
 class ClientForm(FlaskForm):
     name = StringField("Client Name", validators=[DataRequired()])
     address = StringField("Address", validators=[DataRequired()])
