@@ -1598,82 +1598,82 @@ def admin_coi():
     )
 
 
+@app.route("/admin/coi/update/<int:dept_id>", methods=["POST"])
+@login_required
+def admin_coi_update(dept_id):
+    show_all = request.form.get("show_all", "false")
+    edit_form = COIEditForm()
+    if edit_form.validate_on_submit():
+        fields = {
+            "entity": edit_form.entity.data,
+            "primary_phone": edit_form.primary_phone.data,
+            "primary_email": edit_form.primary_email.data,
+            "web_portal": edit_form.web_portal.data,
+            "submission_method": edit_form.submission_method.data,
+            "notes": edit_form.notes.data,
+        }
+        try:
+            database.update_coi_department(dept_id, fields)
+            flash("Department updated successfully.")
+        except Exception as e:
+            flash("Error updating department. Please try again.")
+            print(f"COI update error: {e}")
+    else:
+        for errors in edit_form.errors.values():
+            flash(errors[0])
+    return redirect(url_for("admin_coi", show_all=show_all))
+
+
 @app.route("/admin/coi/send", methods=["POST"])
 @login_required
 def admin_coi_send():
-    action = request.form.get("action")
     show_all = request.form.get("show_all", "false")
     coverage_start, _ = get_coverage_period()
 
-    if action == "edit":
-        edit_form = COIEditForm()
-        if edit_form.validate_on_submit():
-            if not edit_form.dept_id.data:
-                flash("Invalid department — please try again.")
-                return redirect(url_for("admin_coi", show_all=show_all))
-            fields = {
-                "entity": edit_form.entity.data,
-                "primary_phone": edit_form.primary_phone.data,
-                "primary_email": edit_form.primary_email.data,
-                "web_portal": edit_form.web_portal.data,
-                "submission_method": edit_form.submission_method.data,
-                "notes": edit_form.notes.data,
-            }
-            try:
-                database.update_coi_department(edit_form.dept_id.data, fields)
-                flash("Department updated successfully.")
-            except Exception as e:
-                flash("Error updating department. Please try again.")
-                print(f"COI update error: {e}")
+    selected_ids = request.form.getlist("selected_depts")
+    if not selected_ids:
+        flash("No departments selected.")
+        return redirect(url_for("admin_coi", show_all=show_all))
+
+    all_depts = database.get_coi_departments(
+        pending_only=False, coverage_start=coverage_start
+    )
+    id_to_dept = {str(d["id"]): d for d in all_depts}
+
+    email_successes = []
+    email_failures = []
+    portal_ids = []
+
+    for dept_id in selected_ids:
+        dept = id_to_dept.get(dept_id)
+        if not dept:
+            continue
+        if dept["submission_method"] == "Portal":
+            portal_ids.append(dept_id)
         else:
-            for errors in edit_form.errors.values():
-                flash(errors[0])
-
-    elif action == "send":
-        selected_ids = request.form.getlist("selected_depts")
-        if not selected_ids:
-            flash("No departments selected.")
-            return redirect(url_for("admin_coi", show_all=show_all))
-
-        all_depts = database.get_coi_departments(
-            pending_only=False, coverage_start=coverage_start
-        )
-        id_to_dept = {str(d["id"]): d for d in all_depts}
-
-        email_successes = []
-        email_failures = []
-        portal_ids = []
-
-        for dept_id in selected_ids:
-            dept = id_to_dept.get(dept_id)
-            if not dept:
+            if not dept["primary_email"]:
+                email_failures.append(f"{dept['entity']} (no email on file)")
                 continue
-            if dept["submission_method"] == "Portal":
-                portal_ids.append(dept_id)
-            else:
-                if not dept["primary_email"]:
-                    email_failures.append(f"{dept['entity']} (no email on file)")
-                    continue
-                try:
-                    send_coi_email(dept, coverage_start)
-                    database.mark_coi_sent([dept_id], dept["primary_email"])
-                    email_successes.append(dept["entity"])
-                except Exception as e:
-                    print(f"COI email error for {dept['entity']}: {e}")
-                    email_failures.append(dept["entity"])
-
-        if portal_ids:
             try:
-                database.mark_coi_sent(portal_ids, "Portal")
-                flash(f"Marked {len(portal_ids)} portal submission(s) as sent.")
+                send_coi_email(dept, coverage_start)
+                database.mark_coi_sent([dept_id], dept["primary_email"])
+                email_successes.append(dept["entity"])
             except Exception as e:
-                flash("Error marking portal submissions as sent.")
-                print(f"Portal mark error: {e}")
+                print(f"COI email error for {dept['entity']}: {e}")
+                email_failures.append(dept["entity"])
 
-        if email_successes:
-            flash(f"Email sent to: {', '.join(email_successes)}.")
-        if email_failures:
-            flash(f"Failed to send to: {', '.join(email_failures)}.")
+    if portal_ids:
+        try:
+            database.mark_coi_sent(portal_ids, "Portal")
+            flash(f"Marked {len(portal_ids)} portal submission(s) as sent.")
+        except Exception as e:
+            flash("Error marking portal submissions as sent.")
+            print(f"Portal mark error: {e}")
+
+    if email_successes:
+        flash(f"Email sent to: {', '.join(email_successes)}.")
+    if email_failures:
+        flash(f"Failed to send to: {', '.join(email_failures)}.")
 
     return redirect(url_for("admin_coi", show_all=show_all))
 

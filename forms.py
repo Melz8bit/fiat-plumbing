@@ -501,3 +501,17 @@ class PermitsAddForm(FlaskForm):
         "Expiration Date",
     )
     permit_add_submit = SubmitField("Submit")
+
+
+class COIEditForm(FlaskForm):
+    entity = StringField("Entity", validators=[DataRequired()])
+    primary_phone = StringField("Primary Phone")
+    primary_email = EmailField("Primary Email")
+    web_portal = StringField("Web Portal URL")
+    submission_method = SelectField(
+        "Submission Method",
+        choices=[("Email", "Email"), ("Portal", "Portal")],
+        validators=[DataRequired()],
+    )
+    notes = TextAreaField("Notes", render_kw={"style": "resize:none; height: 80px;"})
+    coi_edit_submit = SubmitField("Save Changes")

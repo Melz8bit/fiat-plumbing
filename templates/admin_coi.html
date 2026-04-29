@@ -175,14 +175,11 @@
                     <h5 class="modal-title" id="editDeptModalLabel">Edit Department</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="POST" action="{{ url_for('admin_coi_send') }}" id="editDeptForm">
+                <form method="POST" action="" id="editDeptForm">
                     {{ edit_form.hidden_tag() }}
-                    <input type="hidden" name="action" value="edit">
                     <input type="hidden" name="show_all" value="{{ 'true' if show_all else 'false' }}">
 
                     <div class="modal-body">
-                        {{ edit_form.dept_id(id="editDeptId") }}
-
                         <div class="mb-3">
                             {{ edit_form.entity.label(class="form-label fw-semibold") }}
                             {{ edit_form.entity(class="form-control", id="editEntity") }}
@@ -251,7 +248,7 @@
         // event.relatedTarget is the button that triggered the modal
         document.getElementById('editDeptModal').addEventListener('show.bs.modal', function (event) {
             const btn = event.relatedTarget;
-            document.getElementById('editDeptId').value = btn.dataset.id;
+            document.getElementById('editDeptForm').action = `/admin/coi/update/${btn.dataset.id}`;
             document.getElementById('editEntity').value  = btn.dataset.entity;
             document.getElementById('editPhone').value   = btn.dataset.phone;
             document.getElementById('editEmail').value   = btn.dataset.email;
