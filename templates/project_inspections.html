@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <!-- Add Inspection button -->
+        <div class="text-end mt-2">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInspectionModal">
+                Add Inspection
+            </button>
+
+            <!-- Modal -->
+            <div class="modal fade" id="addInspectionModal" data-bs-backdrop="static" data-bs-keyboard="false"
+                tabindex="-1" aria-labelledby="addInspectionModalHeader" aria-hidden="true">
+                {% include 'inspection_modal.html' %}
+            </div>
+        </div>
+
+        <table class="table table-striped mt-2">
+            <thead>
+                <tr>
+                    <th>Building Dept</th>
+                    <th>Type</th>
+                    <th class="text-center">Scheduled Date</th>
+                    <th class="text-center">Scheduled Time</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Status Date</th>
+                    <th>Notes</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if inspections|length == 0 %}
+                <tr>
+                    <td class="text-center" colspan="100%">
+                        No inspections have been added
+                    </td>
+                </tr>
+                {% else %}
+                {% for inspection in inspections %}
+                <tr>
+                    <td>{{ inspection['building_dept_name'] or '—' }}</td>
+                    <td>{{ inspection['inspection_type'] or '—' }}</td>
+                    <td class="text-center">
+                        {{ inspection['scheduled_date'].strftime('%m/%d/%Y') if inspection['scheduled_date'] else '—' }}
+                    </td>
+                    <td class="text-center">
+                        {{ inspection['scheduled_time'].strftime('%I:%M %p') if inspection['scheduled_time'] else '—' }}
+                    </td>
+                    <td class="text-center">
+                        <div id="lblInspectionStatus{{ inspection['id'] }}">
+                            {{ inspection['status'] or '—' }}
+                        </div>
+                        <select id="selectInspectionStatus{{ inspection['id'] }}"
+                            class="form-select form-select-sm d-none" name="inspection_status">
+                            <option selected disabled value="">Select Status</option>
+                            {% for option in inspection_add_form.status %}
+                            {% if not loop.first %}
+                            {{ option }}
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="text-center">
+                        {{ inspection['status_date'].strftime('%m/%d/%Y') if inspection['status_date'] else '—' }}
+                    </td>
+                    <td>{{ inspection['notes'] or '—' }}</td>
+                    <td>
+                        <div class="d-flex justify-content-around">
+                            <button id="btnUpdateSaveInspection{{ inspection['id'] }}"
+                                class="btn btn-primary btn-sm"
+                                onclick="updateInspection({{ inspection['id'] }})"
+                                type="button">Update</button>
+                            <button id="btnCancelInspectionUpdate{{ inspection['id'] }}"
+                                class="btn btn-secondary btn-sm d-none"
+                                type="button"
+                                onclick="resetInspectionUpdate({{ inspection['id'] }})">Cancel</button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+
+</body>
+
+</html>

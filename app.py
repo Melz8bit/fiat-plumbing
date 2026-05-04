@@ -84,6 +84,7 @@ from forms import (
     ProposalInstallmentsForm,
     ProposalNotesForm,
     PermitsAddForm,
+    InspectionAddForm,
     COIEditForm,
 )
 from models import users
@@ -675,6 +676,7 @@ def project_view(project_id, new_project=False):
     project_status_form = ProjectStatusForm()
     invoice_create_form = InvoiceCreateForm()
     permit_add_form = PermitsAddForm()
+    inspection_add_form = InspectionAddForm()
     document_form = DocumentUploadForm()
 
     project_amount_owed = get_project_amount_owed(project_id)
@@ -729,6 +731,15 @@ def project_view(project_id, new_project=False):
             return add_project_permit(permit_add_form)
         else:
             print(f"{permit_add_form.errors=}")
+
+        # Add Inspection
+        if (
+            inspection_add_form.validate_on_submit()
+            and inspection_add_form.inspection_add_submit.data
+        ):
+            return add_project_inspection(inspection_add_form)
+        else:
+            print(f"{inspection_add_form.errors=}")
 
         # Upload Document
         if (
@@ -1480,6 +1491,59 @@ def view_invoice(project_id, invoice_number):
         invoice_total=invoice_total,
         installment_number=invoice_number,
     )
+
+
+@app.route("/project/<project_id>/inspections")
+@login_required
+def get_project_inspections_tab(project_id):
+    inspections = database.get_project_inspections(project_id)
+    inspection_add_form = InspectionAddForm()
+    building_dept_urls = {
+        str(dept.id): dept.web_portal for dept in database.get_building_departments_list()
+    }
+    return render_template(
+        "project_inspections.html",
+        inspections=inspections,
+        inspection_add_form=inspection_add_form,
+        building_dept_urls=building_dept_urls,
+    )
+
+
+def add_project_inspection(inspection_add_form):
+    inspection_info = {
+        "project_id": session["project_id"],
+        "building_dept_id": inspection_add_form.building_dept.data["id"] if inspection_add_form.building_dept.data else None,
+        "inspection_type": inspection_add_form.inspection_type.data,
+        "scheduled_date": inspection_add_form.scheduled_date.data,
+        "scheduled_time": inspection_add_form.scheduled_time.data,
+        "status": inspection_add_form.status.data,
+        "status_date": inspection_add_form.status_date.data,
+        "notes": inspection_add_form.notes.data,
+    }
+    result = database.add_inspection(inspection_info)
+    flash(result)
+    session["active_tab"] = "inspections"
+    return redirect(url_for("project_view", project_id=session["project_id"]))
+
+
+@app.route("/project/inspections/update-status", methods=["POST"])
+@login_required
+def update_inspection_status():
+    if request.is_json:
+        data = request.get_json()
+        inspection_id = data.get("inspection_id")
+        new_status = data.get("new_status")
+
+        if not inspection_id or not new_status:
+            return jsonify({"error": "Missing inspection ID or status"}), 400
+
+        try:
+            database.update_inspection_status(inspection_id, new_status)
+            return jsonify({"success": True, "message": "Inspection status updated successfully"}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"error": "Invalid request"}), 400
 
 
 @app.route("/project/permits/update-permit-status", methods=["POST"])

@@ -14,6 +14,7 @@ from wtforms import (
     SubmitField,
     TextAreaField,
     IntegerField,
+    TimeField,
 )
 from flask_wtf.file import FileField, FileRequired
 from wtforms.validators import (
@@ -33,6 +34,7 @@ from database import (
     get_fixtures,
     get_installment_categories,
     get_permit_add_information,
+    get_building_departments_list,
 )
 
 STATE_OPTIONS = [
@@ -501,6 +503,32 @@ class PermitsAddForm(FlaskForm):
         "Expiration Date",
     )
     permit_add_submit = SubmitField("Submit")
+
+
+class InspectionAddForm(FlaskForm):
+    building_dept = QuerySelectField(
+        "Building Department",
+        query_factory=get_building_departments_list,
+        get_label="entity",
+        allow_blank=True,
+        blank_text="Select Department",
+        get_pk=lambda x: x.id,
+    )
+    inspection_type = StringField("Inspection Type", default="Plumbing")
+    scheduled_date = DateField("Scheduled Date")
+    scheduled_time = TimeField("Scheduled Time")
+    status = SelectField(
+        "Status",
+        validators=[DataRequired()],
+        choices=["Scheduled", "Passed", "Failed", "Re-inspection Required"],
+    )
+    status_date = DateField(
+        "Status Date",
+        validators=[DataRequired()],
+        default=datetime.date.today,
+    )
+    notes = TextAreaField("Notes", render_kw={"style": "resize:none; height: 80px;"})
+    inspection_add_submit = SubmitField("Submit")
 
 
 class COIEditForm(FlaskForm):

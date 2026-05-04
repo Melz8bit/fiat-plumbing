@@ -2454,6 +2454,88 @@ def get_all_permits():
         return ""
 
 
+############## Inspections ##############
+def get_building_departments_list():
+    try:
+        sqlQuery = """
+            SELECT id, entity, web_portal
+            FROM fl_building_departments
+            ORDER BY entity;
+        """
+        with engine.connect() as connection:
+            results = connection.execute(text(sqlQuery))
+            return results.mappings().all()
+    except Exception as e:
+        print("Database Error:", e)
+        return []
+
+
+def get_project_inspections(project_id):
+    try:
+        sqlQuery = """
+            SELECT project_inspections.*, fl_building_departments.entity AS building_dept_name
+            FROM project_inspections
+            LEFT JOIN fl_building_departments
+                ON project_inspections.building_dept_id = fl_building_departments.id
+            WHERE project_inspections.project_id = :project_id
+            ORDER BY project_inspections.created_at DESC;
+        """
+        query_params = {"project_id": project_id}
+        with engine.connect() as connection:
+            results = connection.execute(text(sqlQuery), query_params)
+            return results.mappings().all()
+    except Exception as e:
+        print("Database Error:", e)
+        return []
+
+
+def add_inspection(inspection_info):
+    try:
+        sqlQuery = """
+            INSERT INTO project_inspections
+                (project_id, building_dept_id, inspection_type, scheduled_date, scheduled_time, status, status_date, notes)
+            VALUES
+                (:project_id, :building_dept_id, :inspection_type, :scheduled_date, :scheduled_time, :status, :status_date, :notes);
+        """
+        query_params = {
+            "project_id": inspection_info["project_id"],
+            "building_dept_id": inspection_info["building_dept_id"],
+            "inspection_type": inspection_info["inspection_type"],
+            "scheduled_date": inspection_info["scheduled_date"],
+            "scheduled_time": inspection_info["scheduled_time"],
+            "status": inspection_info["status"],
+            "status_date": inspection_info["status_date"],
+            "notes": inspection_info["notes"],
+        }
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), query_params)
+            connection.commit()
+        return "Inspection successfully added"
+    except Exception as e:
+        print("Database Error:", e)
+        return "Error: Unable to add inspection"
+
+
+def update_inspection_status(inspection_id, status):
+    try:
+        sqlQuery = """
+            UPDATE project_inspections
+            SET status = :status, status_date = :status_date
+            WHERE id = :inspection_id;
+        """
+        query_params = {
+            "status": status,
+            "status_date": date.today(),
+            "inspection_id": inspection_id,
+        }
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), query_params)
+            connection.commit()
+    except Exception as e:
+        print("Database Error:", e)
+        raise e
+
+
 ############## Misc. Queries ##############
 def get_city_state_county(zip_code):
     try:

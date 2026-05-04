@@ -208,20 +208,16 @@
                     data-url="{{ url_for('get_project_permits', project_id=project['project_id']) }}">Permits</button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="inspections-tab" data-bs-toggle="tab"
+                    data-bs-target="#inspections-tab-pane" type="button" role="tab"
+                    aria-controls="inspections-tab-pane" aria-selected="false"
+                    data-url="{{ url_for('get_project_inspections_tab', project_id=project['project_id']) }}">Inspections</button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane"
                     type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="false"
                     data-url="{{ url_for('get_project_documents', project_id=project['project_id']) }}">Documents</button>
             </li>
-            <!-- 
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="inspections-tab" data-bs-toggle="tab"
-                    data-bs-target="#inspections-tab-pane" type="button" role="tab" aria-controls="inspections-tab-pane"
-                    aria-selected="false">Inspections</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-tab-pane"
-                    type="button" role="tab" aria-controls="documents-tab-pane" aria-selected="false">Documents</button>
-            </li> -->
         </ul>
 
         <!-- Subsections -->
@@ -256,6 +252,11 @@
 
             <!-- Permits -->
             <div class="tab-pane fade" id="permits-tab-pane" role="tabpanel" aria-labelledby="permits-tab" tabindex="0">
+            </div>
+
+            <!-- Inspections -->
+            <div class="tab-pane fade" id="inspections-tab-pane" role="tabpanel" aria-labelledby="inspections-tab"
+                tabindex="0">
             </div>
 
             <!-- Documents -->
@@ -481,6 +482,73 @@
             lblPermitStatus.classList.remove("d-none");
             selectPermitStatus.classList.add("d-none");
         }
+
+        // Inspection Update
+        function updateInspection(inspectionID) {
+            const btnUpdate = document.getElementById("btnUpdateSaveInspection" + inspectionID);
+            const btnCancel = document.getElementById("btnCancelInspectionUpdate" + inspectionID);
+            const lblStatus = document.getElementById("lblInspectionStatus" + inspectionID);
+            const selectStatus = document.getElementById("selectInspectionStatus" + inspectionID);
+
+            if (btnUpdate.innerText === "Update") {
+                btnUpdate.innerText = "Save";
+                btnCancel.classList.remove("d-none");
+                lblStatus.classList.add("d-none");
+                selectStatus.classList.remove("d-none");
+            } else {
+                const newStatus = selectStatus.value;
+                fetch('/project/inspections/update-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ inspection_id: inspectionID, new_status: newStatus }),
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            lblStatus.innerText = newStatus;
+                            resetInspectionUpdate(inspectionID);
+                        } else {
+                            alert("Failed to update status: " + result.error);
+                            resetInspectionUpdate(inspectionID);
+                        }
+                    })
+                    .catch(() => {
+                        alert("An error occurred. Please try again.");
+                        resetInspectionUpdate(inspectionID);
+                    });
+                selectStatus.value = '';
+            }
+        }
+
+        function resetInspectionUpdate(inspectionID) {
+            const btnUpdate = document.getElementById("btnUpdateSaveInspection" + inspectionID);
+            const btnCancel = document.getElementById("btnCancelInspectionUpdate" + inspectionID);
+            const lblStatus = document.getElementById("lblInspectionStatus" + inspectionID);
+            const selectStatus = document.getElementById("selectInspectionStatus" + inspectionID);
+
+            btnUpdate.innerText = "Update";
+            btnCancel.classList.add("d-none");
+            lblStatus.classList.remove("d-none");
+            selectStatus.classList.add("d-none");
+        }
+
+        // Inspection modal Go button
+        document.addEventListener("change", function (e) {
+            if (e.target && e.target.id === "building_dept") {
+                const goLink = document.getElementById("inspectionGoLink");
+                if (!goLink) return;
+                const portal = e.target.options[e.target.selectedIndex].getAttribute("data-portal");
+                if (portal) {
+                    goLink.href = portal;
+                    goLink.classList.remove("disabled");
+                    goLink.removeAttribute("disabled");
+                } else {
+                    goLink.href = "#";
+                    goLink.classList.add("disabled");
+                    goLink.setAttribute("disabled", "true");
+                }
+            }
+        });
     </script>
 
     <script>
