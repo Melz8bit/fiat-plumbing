@@ -1676,7 +1676,7 @@ def admin_coi_send():
             print(f"Portal mark error: {e}")
 
     if email_successes:
-        flash(f"Email sent to: {', '.join(email_successes)}.")
+        flash(f"Email sent to {len(email_successes)} department(s).")
     if email_failures:
         flash(f"Failed to send to: {', '.join(email_failures)}.")
 

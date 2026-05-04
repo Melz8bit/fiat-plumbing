@@ -15,15 +15,6 @@
             background-color: #fff9e6;
         }
 
-        .portal-link {
-            font-size: 0.85em;
-            max-width: 200px;
-            display: inline-block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            vertical-align: middle;
-        }
     </style>
 </head>
 
@@ -59,6 +50,17 @@
                 &mdash; departments not submitted in the current coverage period
             </span>
             {% endif %}
+        </div>
+
+        <!-- Search / filter controls -->
+        <div class="d-flex gap-2 mb-3 align-items-center flex-wrap">
+            <input type="text" id="entitySearch" class="form-control form-control-sm" style="max-width: 260px;"
+                   placeholder="Search entity...">
+            <div class="btn-group btn-group-sm" id="methodFilter">
+                <button type="button" class="btn btn-outline-secondary active" data-method="">All</button>
+                <button type="button" class="btn btn-outline-secondary" data-method="Email">Email</button>
+                <button type="button" class="btn btn-outline-secondary" data-method="Portal">Portal</button>
+            </div>
         </div>
 
         <!-- Main send form -->
@@ -121,8 +123,8 @@
                             <td>
                                 {% if dept['web_portal'] %}
                                 <a href="{{ dept['web_portal'] }}" target="_blank" rel="noopener"
-                                   class="portal-link" title="{{ dept['web_portal'] }}">
-                                    {{ dept['web_portal'] }}
+                                   title="{{ dept['web_portal'] }}">
+                                    View Portal
                                 </a>
                                 {% else %}
                                 —
@@ -138,11 +140,11 @@
                                         class="btn btn-sm btn-outline-secondary btn-edit-dept"
                                         data-id="{{ dept['id'] }}"
                                         data-entity="{{ dept['entity'] | e }}"
-                                        data-phone="{{ dept['primary_phone'] | e or '' }}"
-                                        data-email="{{ dept['primary_email'] | e or '' }}"
-                                        data-portal="{{ dept['web_portal'] | e or '' }}"
-                                        data-method="{{ dept['submission_method'] | e or '' }}"
-                                        data-notes="{{ dept['notes'] | e or '' }}"
+                                        data-phone="{{ (dept['primary_phone'] or '') | e }}"
+                                        data-email="{{ (dept['primary_email'] or '') | e }}"
+                                        data-portal="{{ (dept['web_portal'] or '') | e }}"
+                                        data-method="{{ (dept['submission_method'] or '') | e }}"
+                                        data-notes="{{ (dept['notes'] or '') | e }}"
                                         data-bs-toggle="modal"
                                         data-bs-target="#editDeptModal"
                                         title="Edit">
@@ -241,6 +243,33 @@
                     selectAllCb.checked = true;
                 }
                 updateCount();
+            });
+        });
+
+        // Entity search + method filter
+        let activeMethod = '';
+
+        function applyFilters() {
+            const search = document.getElementById('entitySearch').value.toLowerCase();
+            document.querySelectorAll('#coiTable tbody tr').forEach(row => {
+                if (row.cells.length === 1) return; // empty-state row
+                const entity = row.cells[1].textContent.toLowerCase();
+                const methodBtn = row.querySelector('[data-bs-toggle="modal"]');
+                const method = methodBtn ? methodBtn.dataset.method : '';
+                const matchSearch = !search || entity.includes(search);
+                const matchMethod = !activeMethod || method === activeMethod;
+                row.style.display = matchSearch && matchMethod ? '' : 'none';
+            });
+        }
+
+        document.getElementById('entitySearch').addEventListener('input', applyFilters);
+
+        document.querySelectorAll('#methodFilter button').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('#methodFilter button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                activeMethod = this.dataset.method;
+                applyFilters();
             });
         });
 
