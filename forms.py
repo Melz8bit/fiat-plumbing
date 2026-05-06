@@ -290,20 +290,26 @@ class DocumentUploadForm(FlaskForm):
     document_type = SelectField(
         "Type",
         validators=[DataRequired()],
-        choices=get_document_types(),
     )
     upload_file = FileField(validators=[FileRequired()])
     comment = StringField("Comment")
     upload_document_submit = SubmitField("Upload")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.document_type.choices = get_document_types()
 
 
 class ProjectStatusForm(FlaskForm):
     project_status = SelectField(
         "Project Status",
         validators=[DataRequired()],
-        choices=get_project_statuses(),
     )
     project_status_update_submit = SubmitField("Update")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.project_status.choices = get_project_statuses()
 
 
 class InvoicePaymentForm(FlaskForm):
@@ -402,7 +408,6 @@ class ProposalFixturesForm(FlaskForm):
     fixtures = SelectField(
         "Fixtures",
         validators=[DataRequired()],
-        choices=get_fixtures(),
     )
     fixture_quantity = IntegerField(
         "Quantity",
@@ -415,6 +420,10 @@ class ProposalFixturesForm(FlaskForm):
     fixture_is_cost = BooleanField(
         "Cost?",
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fixtures.choices = get_fixtures()
 
 
 class ProposalFixtureNotesForm(FlaskForm):
@@ -440,7 +449,6 @@ class ProposalInstallmentsForm(FlaskForm):
     installments = SelectField(
         "Installment Category",
         validators=[DataRequired()],
-        choices=get_installment_categories(),
     )
     installment_amount = DecimalField(
         "Installment Amount $",
@@ -451,6 +459,10 @@ class ProposalInstallmentsForm(FlaskForm):
         validators=[DataRequired()],
         render_kw={"readonly": ""},
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.installments.choices = get_installment_categories()
 
 
 class ProposalNotesForm(FlaskForm):

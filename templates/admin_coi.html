@@ -84,13 +84,25 @@
                             <th>Date Sent</th>
                             <th>Sent Via</th>
                             <th>Notes</th>
+                            <th class="text-center" style="width: 60px;">
+                                State Lic<br>
+                                <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_state_license" checked title="Select all State License">
+                            </th>
+                            <th class="text-center" style="width: 50px;">
+                                BTR<br>
+                                <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_btr" checked title="Select all BTR">
+                            </th>
+                            <th class="text-center" style="width: 50px;">
+                                COI<br>
+                                <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_coi" checked title="Select all COI">
+                            </th>
                             <th class="text-center" style="width: 60px;">Edit</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if departments|length == 0 %}
                         <tr>
-                            <td colspan="10" class="text-center text-muted py-4">
+                            <td colspan="13" class="text-center text-muted py-4">
                                 {% if show_all %}
                                 No departments found.
                                 {% else %}
@@ -135,6 +147,15 @@
                             </td>
                             <td>{{ dept['sent_via'] or '—' }}</td>
                             <td>{{ dept['notes'] or '—' }}</td>
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input doc-checkbox" name="doc_state_license" value="{{ dept['id'] }}" checked>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input doc-checkbox" name="doc_btr" value="{{ dept['id'] }}" checked>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input doc-checkbox" name="doc_coi" value="{{ dept['id'] }}" checked>
+                            </td>
                             <td class="text-center">
                                 <button type="button"
                                         class="btn btn-sm btn-outline-secondary btn-edit-dept"
@@ -243,6 +264,16 @@
                     selectAllCb.checked = true;
                 }
                 updateCount();
+            });
+        });
+
+        // Select all per document type column
+        document.querySelectorAll('.select-all-doc').forEach(headerCb => {
+            headerCb.addEventListener('change', function () {
+                const docName = this.dataset.doc;
+                document.querySelectorAll(`.doc-checkbox[name="${docName}"]`).forEach(cb => {
+                    cb.checked = this.checked;
+                });
             });
         });
 

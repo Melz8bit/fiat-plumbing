@@ -154,7 +154,46 @@
         </h2>
         <div id="collapseInspections" class="accordion-collapse collapse" data-bs-parent="#accordianHomePage">
             <div class="accordion-body">
-                Coming Soon
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Project ID</th>
+                            <th>Project Name</th>
+                            <th>Building Dept</th>
+                            <th>Type</th>
+                            <th class="text-center">Scheduled Date</th>
+                            <th class="text-center">Scheduled Time</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Status Date</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        {% for inspection in inspections_summary %}
+                        <tr>
+                            <td>{{ inspection['project_id'] }}</td>
+                            <td>{{ inspection['project_name'] or '—' }}</td>
+                            <td>{{ inspection['building_dept_name'] or '—' }}</td>
+                            <td>{{ inspection['inspection_type'] or '—' }}</td>
+                            <td class="text-center">
+                                {{ inspection['scheduled_date'].strftime('%m/%d/%Y') if inspection['scheduled_date'] else '—' }}
+                            </td>
+                            <td class="text-center">
+                                {{ inspection['scheduled_time'].strftime('%I:%M %p') if inspection['scheduled_time'] else '—' }}
+                            </td>
+                            <td class="text-center">{{ inspection['status'] or '—' }}</td>
+                            <td class="text-center">
+                                {{ inspection['status_date'].strftime('%m/%d/%Y') if inspection['status_date'] else '—' }}
+                            </td>
+                            <td>{{ inspection['notes'] or '—' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td class="text-center" colspan="100%">No inspections found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

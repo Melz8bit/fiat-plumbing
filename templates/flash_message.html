@@ -1,29 +1,25 @@
 {% with messages = get_flashed_messages() %}
 {% if messages %}
-{% for message in messages %}
-<div class="toast bg-light position-absolute top-0 start-50 translate-middle-x" role="status" aria-live="polite"
-    aria-atomic="true">
-    <div class=" toast-header">
-        <!-- <img src="/static/clock.png" class="rounded me-2" alt="Paw in clock logo" height="24" width="24"> -->
-        <strong class="me-auto">Message</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1100;">
+    {% for message in messages %}
+    <div class="toast bg-light" role="status" aria-live="polite" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Message</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            {{ message }}
+        </div>
     </div>
-    <div class="toast-body">
-        {{ message }}
-    </div>
+    {% endfor %}
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const toastElList = [].slice.call(document.querySelectorAll('.toast'));
-        const toastList = toastElList.map(function (toastEl) {
-            const toast = new bootstrap.Toast(toastEl, {
-                // You can add options here, like autohide: true
-            });
-            toast.show();
+        document.querySelectorAll('.toast').forEach(function (toastEl) {
+            new bootstrap.Toast(toastEl).show();
         });
     });
 </script>
-{% endfor %}
 {% endif %}
 {% endwith %}

@@ -100,8 +100,8 @@ FIAT_PLUMBING = {
 }
 DAYS_UNTIL_DUE = 30
 
-AOL_EMAIL = os.getenv("AOL_EMAIL")
-AOL_APP_PASSWORD = os.getenv("AOL_APP_PASSWORD")
+GMAIL_EMAIL = os.getenv("GMAIL_EMAIL")
+GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
 COI_STATE_LICENSE_KEY = os.getenv("COI_STATE_LICENSE_KEY")
 COI_LOCAL_BIZ_TAX_KEY = os.getenv("COI_LOCAL_BIZ_TAX_KEY")
 
@@ -224,6 +224,35 @@ def logout():
 
 
 ############## Password Reset ##############
+def send_reset_email(recipient, reset_url):
+    html_body = f"""
+    <html><body>
+    <p>Hello,</p>
+    <p>We received a request to reset your password for your Fiat Plumbing account.
+    Click the link below to set a new password. This link expires in 1 hour.</p>
+    <p><a href="{reset_url}">Reset My Password</a></p>
+    <p>If you did not request a password reset, you can ignore this email.</p>
+    <br>
+    <p>Thank you,<br>
+    <strong>{FIAT_PLUMBING["company_name"]}</strong><br>
+    {FIAT_PLUMBING["phone_number"]}<br>
+    {FIAT_PLUMBING["email"]}</p>
+    </body></html>
+    """
+
+    msg = MIMEMultipart("mixed")
+    msg["From"] = GMAIL_EMAIL
+    msg["To"] = recipient
+    msg["Subject"] = "Fiat Plumbing — Password Reset Request"
+    msg.attach(MIMEText(html_body, "html"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.login(GMAIL_EMAIL, GMAIL_APP_PASSWORD)
+        smtp.sendmail(GMAIL_EMAIL, recipient, msg.as_string())
+
+
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
     forgot_password_form = ForgotPasswordForm()
@@ -233,19 +262,17 @@ def forgot_password():
         user = database.get_user_from_email(email)
 
         if user:
-            # Generate secure token
             token = serializer.dumps(email, salt="password-reset-salt")
             reset_url = url_for("reset_password", token=token, _external=True)
+            try:
+                send_reset_email(email, reset_url)
+            except Exception as e:
+                print(f"Password reset email error: {e}")
 
-            # TODO: Integrate your email sending logic here
-            # send_reset_email(email, reset_url)
-
-            print(f"Reset URL for {email}: {reset_url}")  # For local testing
-
-            flash(
-                "If an account with that email exists, a password reset link has been sent."
-            )
-            return redirect(url_for("login"))
+        flash(
+            "If an account with that email exists, a password reset link has been sent."
+        )
+        return redirect(url_for("login"))
 
     return render_template(
         "forgot_password.html", forgot_password_form=forgot_password_form
@@ -369,6 +396,7 @@ def main():
     status_summary_values = [item["count"] for item in status_counts]
 
     finance_counts = database.get_projects_finance_summary()
+    inspections_summary = database.get_all_inspections()
 
     return render_template(
         "home.html",
@@ -379,6 +407,7 @@ def main():
         status_summary_values=status_summary_values,
         finance_counts=finance_counts,
         permits_summary=permits_summary,
+        inspections_summary=inspections_summary,
     )
 
 
@@ -1499,7 +1528,8 @@ def get_project_inspections_tab(project_id):
     inspections = database.get_project_inspections(project_id)
     inspection_add_form = InspectionAddForm()
     building_dept_urls = {
-        str(dept.id): dept.web_portal for dept in database.get_building_departments_list()
+        str(dept.id): dept.web_portal
+        for dept in database.get_building_departments_list()
     }
     return render_template(
         "project_inspections.html",
@@ -1512,7 +1542,11 @@ def get_project_inspections_tab(project_id):
 def add_project_inspection(inspection_add_form):
     inspection_info = {
         "project_id": session["project_id"],
-        "building_dept_id": inspection_add_form.building_dept.data["id"] if inspection_add_form.building_dept.data else None,
+        "building_dept_id": (
+            inspection_add_form.building_dept.data["id"]
+            if inspection_add_form.building_dept.data
+            else None
+        ),
         "inspection_type": inspection_add_form.inspection_type.data,
         "scheduled_date": inspection_add_form.scheduled_date.data,
         "scheduled_time": inspection_add_form.scheduled_time.data,
@@ -1539,7 +1573,15 @@ def update_inspection_status():
 
         try:
             database.update_inspection_status(inspection_id, new_status)
-            return jsonify({"success": True, "message": "Inspection status updated successfully"}), 200
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "message": "Inspection status updated successfully",
+                    }
+                ),
+                200,
+            )
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
@@ -1591,7 +1633,7 @@ def get_coverage_period():
     return coverage_start, coverage_end
 
 
-def send_coi_email(dept, coverage_start):
+def send_coi_email(dept, coverage_start, docs):
     coverage_folder = f"{coverage_start.year}-{coverage_start.year + 1}"
     entity_name = dept["entity"]
     recipient = dept["primary_email"]
@@ -1612,21 +1654,27 @@ def send_coi_email(dept, coverage_start):
     """
 
     msg = MIMEMultipart("mixed")
-    msg["From"] = AOL_EMAIL
+    msg["From"] = GMAIL_EMAIL
     msg["To"] = recipient
     msg["Subject"] = (
         f"Fiat Plumbing & General Contractor, Inc. - Certificate of Liability Insurance Renewal {coverage_folder} — {entity_name}"
     )
     msg.attach(MIMEText(html_body, "html"))
 
-    attachments = [
-        (
-            f"company-docs/certificates-of-liability/{coverage_folder}/{entity_name}.pdf",
-            f"{entity_name} - COI.pdf",
-        ),
-        (COI_STATE_LICENSE_KEY, "Fiat Plumbing - State License.pdf"),
-        (COI_LOCAL_BIZ_TAX_KEY, "Fiat Plumbing - Local Business Tax.pdf"),
-    ]
+    attachments = []
+    if docs.get("coi"):
+        attachments.append(
+            (
+                f"company-docs/certificates-of-liability/{coverage_folder}/{entity_name}.pdf",
+                f"{entity_name} - COI.pdf",
+            )
+        )
+    if docs.get("state_license"):
+        attachments.append((COI_STATE_LICENSE_KEY, "Fiat Plumbing - State License.pdf"))
+    if docs.get("btr"):
+        attachments.append(
+            (COI_LOCAL_BIZ_TAX_KEY, "Fiat Plumbing - Local Business Tax.pdf")
+        )
 
     for s3_key, display_name in attachments:
         try:
@@ -1638,11 +1686,11 @@ def send_coi_email(dept, coverage_start):
         except Exception as e:
             raise Exception(f"Missing file in S3: {s3_key}")
 
-    with smtplib.SMTP("smtp.aol.com", 587, timeout=10) as smtp:
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as smtp:
         smtp.ehlo()
         smtp.starttls()
-        smtp.login(AOL_EMAIL, AOL_APP_PASSWORD)
-        smtp.sendmail(AOL_EMAIL, recipient, msg.as_string())
+        smtp.login(GMAIL_EMAIL, GMAIL_APP_PASSWORD)
+        smtp.sendmail(GMAIL_EMAIL, recipient, msg.as_string())
 
 
 @app.route("/admin/coi", methods=["GET"])
@@ -1704,6 +1752,10 @@ def admin_coi_send():
         flash("No departments selected.")
         return redirect(url_for("admin_coi", show_all=show_all))
 
+    doc_coi_ids = set(request.form.getlist("doc_coi"))
+    doc_state_license_ids = set(request.form.getlist("doc_state_license"))
+    doc_btr_ids = set(request.form.getlist("doc_btr"))
+
     all_depts = database.get_coi_departments(
         pending_only=False, coverage_start=coverage_start
     )
@@ -1723,8 +1775,16 @@ def admin_coi_send():
             if not dept["primary_email"]:
                 email_failures.append(f"{dept['entity']} (no email on file)")
                 continue
+            docs = {
+                "coi": dept_id in doc_coi_ids,
+                "state_license": dept_id in doc_state_license_ids,
+                "btr": dept_id in doc_btr_ids,
+            }
+            if not any(docs.values()):
+                email_failures.append(f"{dept['entity']} (no documents selected)")
+                continue
             try:
-                send_coi_email(dept, coverage_start)
+                send_coi_email(dept, coverage_start, docs)
                 database.mark_coi_sent([dept_id], dept["primary_email"])
                 email_successes.append(dept["entity"])
             except Exception as e:

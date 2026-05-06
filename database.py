@@ -2470,6 +2470,26 @@ def get_building_departments_list():
         return []
 
 
+def get_all_inspections():
+    try:
+        sqlQuery = """
+            SELECT project_inspections.*, fl_building_departments.entity AS building_dept_name,
+                   projects.name AS project_name
+            FROM project_inspections
+            LEFT JOIN fl_building_departments
+                ON project_inspections.building_dept_id = fl_building_departments.id
+            LEFT JOIN projects
+                ON project_inspections.project_id = projects.project_id
+            ORDER BY project_inspections.scheduled_date DESC NULLS LAST, project_inspections.created_at DESC;
+        """
+        with engine.connect() as connection:
+            results = connection.execute(text(sqlQuery))
+            return results.mappings().all()
+    except Exception as e:
+        print("Database Error:", e)
+        return []
+
+
 def get_project_inspections(project_id):
     try:
         sqlQuery = """
