@@ -1,5 +1,6 @@
 import boto3
 import io
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -38,27 +39,21 @@ def upload_file(file_to_upload, upload_file_name):
         )
         return True
     except Exception as e:
-        print(f"S3 ERROR: {type(e).__name__} - {e}")
+        logging.error("S3 upload error: %s - %s", type(e).__name__, e)
         return False
 
 
 def upload_proposal(pdf_bytes, project_id, upload_file_name):
     try:
         # ---- Upload to S3 ----
-        # s3_client = boto3.client("s3")
         bucket = BUCKET_NAME
         key = secure_filename(upload_file_name)
 
         s3_client.upload_fileobj(io.BytesIO(pdf_bytes), bucket, key)
 
-        # # Optional: signed URL for immediate download
-        # signed_url = s3_client.generate_presigned_url(
-        #     "get_object", Params={"Bucket": BUCKET_NAME, "Key": key}, ExpiresIn=3600
-        # )
-
         return "Proposal finalized and saved to documents."
     except Exception as e:
-        print(f"Something went wrong - {e}")
+        logging.error("S3 proposal upload error: %s", e)
         return "Error: Proposal document was not created"
 
 
