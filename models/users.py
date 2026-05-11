@@ -2,7 +2,6 @@ from flask_login import UserMixin
 from sqlalchemy import Column, Text
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from database import Base
 
 
 class Users(UserMixin):

@@ -2,16 +2,17 @@ import os
 import uuid
 from datetime import datetime, date, timedelta
 
-import MySQLdb
+import logging
+
 from dotenv import load_dotenv
-from flask_login import UserMixin
-from sqlalchemy import create_engine, text, insert
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy import create_engine, text
 from werkzeug.utils import secure_filename
 
 # from supabase import create_client, Client
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 TODAY = datetime.today().strftime("%Y-%m-%d")
 
@@ -23,19 +24,8 @@ host: str = os.environ.get("SUPABASE_HOST")
 DB_CONNECTION_STRING = f"postgresql+psycopg2://{url}:{password}@{host}:5432/{db_name}"
 engine = create_engine(DB_CONNECTION_STRING)
 
-Base = declarative_base()
-
-
 def db_connect():
-    # connection2 = engine.connect()
     return engine
-
-
-def create_session(engine):
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    return session
 
 
 def get_results(sqlQuery):
@@ -48,7 +38,7 @@ def get_results(sqlQuery):
             results = connection.execute(text(sqlQuery)).all()
         return results
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -71,7 +61,7 @@ def get_projects_status_summary():
         return projects_status_summary_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -98,7 +88,7 @@ def get_projects_finance_summary():
         return projects_finance__dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -116,7 +106,7 @@ def get_user(user_id):
 
         return user
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -133,7 +123,7 @@ def get_user_password(email):
 
         return row[0] if row else None
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -150,7 +140,7 @@ def get_user_from_email(email):
 
         return user_dict
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -173,10 +163,9 @@ def create_user(user_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("User created")
-
+        logger.info("User created")
     except Exception as e:
-        print("User Creation Database Error:", e)
+        logger.error("User Creation Database Error: %s", e)
         return None
 
 
@@ -197,10 +186,9 @@ def update_user_password(email, new_password_hash):
             connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("User password updated successfully")
-
+        logger.info("User password updated successfully")
     except Exception as e:
-        print(f"Database error: {e}")
+        logger.error("Database error: %s", e)
         raise e
 
 
@@ -221,10 +209,9 @@ def update_user_email(user_id, new_email):
             connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("User email updated successfully")
-
+        logger.info("User email updated successfully")
     except Exception as e:
-        print(f"Database error: {e}")
+        logger.error("Database error: %s", e)
         raise e
 
 
@@ -243,7 +230,7 @@ def get_client(client_id):
         return dict(row) if row else None
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -259,7 +246,7 @@ def get_client_poc(client_id):
 
         return poc_dict
     except Exception as e:
-        print("get_client_poc() - Database Error:", e)
+        logger.error("get_client_poc() - Database Error: %s", e)
         return None
 
 
@@ -289,7 +276,7 @@ def get_all_clients(user_role):
 
         return clients_dict
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -314,12 +301,11 @@ def create_client(client_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Client created")
-
+        logger.info("Client created")
         # create_client_poc(client_info)
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -341,10 +327,9 @@ def create_client_poc(client_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Client POC created")
-
+        logger.info("Client POC created")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -371,8 +356,7 @@ def update_client(client_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Client updated")
-
+        logger.info("Client updated")
         # POC Update
         if client_info["poc_exists"]:
             sqlQuery = (
@@ -392,12 +376,12 @@ def update_client(client_info):
                 result = connection.execute(text(sqlQuery), query_params)
                 connection.commit()
 
-            print("Client POC updated")
+            logger.info("Client POC updated")
         else:
             create_client_poc(client_info)
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -434,7 +418,7 @@ def get_all_projects(user_role):
         return projects_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -458,7 +442,7 @@ def get_project(project_id):
         return dict(row) if row else None
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -484,10 +468,9 @@ def create_project(project_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Project created")
-
+        logger.info("Project created")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -513,7 +496,7 @@ def get_client_projects(client_id):
         return projects_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -535,7 +518,7 @@ def get_max_project_id():
         return max_id
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -566,8 +549,7 @@ def update_project_status(project_id, project_status, user_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Project status updated")
-
+        logger.info("Project status updated")
         #     insert_note(project_id, f"Project status updated: {project_status}", user_id)
 
         #     if "Phase" in project_status:
@@ -582,7 +564,7 @@ def update_project_status(project_id, project_status, user_id):
         #         # )
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -609,7 +591,7 @@ def get_project_notes(project_id):
         return notes_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -631,11 +613,11 @@ def add_project_note(note_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Note added")
+        logger.info("Note added")
         return "Note added successfully"
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return "Error: Unable to add note"
 
 
@@ -660,7 +642,7 @@ def get_project_invoices(project_id):
         return invoices_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -683,7 +665,7 @@ def get_invoice(project_id, invoice_number):
         return invoice_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -709,7 +691,7 @@ def get_invoice_items(project_id, invoice_number):
         return project_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -729,7 +711,7 @@ def get_all_invoice_items(project_id):
             result = connection.execute(text(sqlQuery), query_params)
             return result.mappings().all()
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -753,7 +735,7 @@ def get_open_invoice_items(project_id, invoice_number):
         return invoice_items_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -777,7 +759,7 @@ def get_open_invoices(project_id):
         return open_invoices_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -799,7 +781,7 @@ def get_invoice_payments_total(invoice_id):
         return float(row["sum"] or 0) if row else 0.0
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return 0.0
 
 
@@ -823,10 +805,9 @@ def insert_payment(payment_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Payment added")
-
+        logger.info("Payment added")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -848,9 +829,7 @@ def invoice_received_amount(invoice_id):
             return result[0]
 
     except Exception as e:
-        print("Database Error:", e)
-
-
+        logger.error("Database Error: %s", e)
 def apply_payment(invoice_info):
     amount_received = invoice_received_amount(invoice_info["invoice_id"])
     # Update the invoice information
@@ -874,7 +853,7 @@ def apply_payment(invoice_info):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
     # Insert the payment line items
@@ -897,10 +876,9 @@ def apply_payment(invoice_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Payment added")
-
+        logger.info("Payment added")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -917,7 +895,7 @@ def get_project_payment_id(invoice_info):
             return result[0]
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -941,7 +919,7 @@ def get_project_payments(project_id):
         return project_payments_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -961,7 +939,7 @@ def get_payment_installments(project_id):
         return payment_installments_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -983,7 +961,7 @@ def get_invoice_payments(invoice_id):
         return invoice_payments_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1006,7 +984,7 @@ def get_installment_number(project_id, installment_id):
         return installment_number.first()[0]
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -1029,7 +1007,7 @@ def get_next_invoice_number(project_id):
         return (curr_inv or 0) + 1
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -1072,11 +1050,9 @@ def create_invoice(selected_invoices, project_id):
                 result = connection.execute(text(sqlQuery), query_params)
                 connection.commit()
 
-            print("Installment updated")
-
+            logger.info("Installment updated")
         except Exception as e:
-            print("Database Error:", e)
-
+            logger.error("Database Error: %s", e)
         # Invoice Items Append
         try:
             sqlQuery = (
@@ -1095,10 +1071,9 @@ def create_invoice(selected_invoices, project_id):
                 result = connection.execute(text(sqlQuery), query_params)
                 connection.commit()
 
-            print("Invoice items appended")
+            logger.info("Invoice items appended")
         except Exception as e:
-            print("Database Error:", e)
-
+            logger.error("Database Error: %s", e)
     # Get Invoice Total
     try:
         invoice_items = get_invoice_items(project_id, next_invoice_number)
@@ -1107,8 +1082,7 @@ def create_invoice(selected_invoices, project_id):
             invoice_total += item["item_amount"]
 
     except Exception as e:
-        print("Database Error:", e)
-
+        logger.error("Database Error: %s", e)
     # Invoice Create
     try:
         sqlQuery = (
@@ -1133,12 +1107,11 @@ def create_invoice(selected_invoices, project_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Invoice created")
-
+        logger.info("Invoice created")
         return "Invoice created successfully"
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return "Error: Unable to create invoice"
 
 
@@ -1162,7 +1135,7 @@ def get_project_installments(project_id):
         return installments_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1187,10 +1160,9 @@ def update_installment_status(
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Installment updated")
-
+        logger.info("Installment updated")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1217,7 +1189,7 @@ def get_project_docs(project_id):
         return documents_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1240,11 +1212,11 @@ def upload_document(project_id, document_type, comment, user_id, filename):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Document uploaded")
+        logger.info("Document uploaded")
         return "Document uploaded successfully"
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return "Error: Document was not uploaded"
 
     #     # insert_note(
@@ -1268,7 +1240,7 @@ def get_document_types():
         return doc_types_list
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1290,7 +1262,7 @@ def search(search_by, search_criteria):
                 return search_universal(search_criteria)
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1316,7 +1288,7 @@ def search_universal(search_criteria):
         return search_results_dict
 
     except Exception as e:
-        print("Universal Search Error:", e)
+        logger.error("Universal Search Error: %s", e)
         return []
 
 
@@ -1421,7 +1393,7 @@ def get_fixtures():
         return fixtures_list
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1446,7 +1418,7 @@ def get_project_fixtures(project_id):
         return fixtures_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -1472,7 +1444,7 @@ def get_proposal_fixtures(project_id, proposal_id=0):
         return fixtures_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -1499,10 +1471,9 @@ def add_proposal_fixture(fixture_data):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Fixture added")
-
+        logger.info("Fixture added")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1520,10 +1491,9 @@ def delete_proposal_fixture(fixture_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Fixture deleted")
-
+        logger.info("Fixture deleted")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1545,7 +1515,7 @@ def get_installment_categories():
         return installments_list
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1587,7 +1557,7 @@ def get_proposal_installments(project_id, proposal_id=0):
         return installments_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -1611,10 +1581,9 @@ def add_proposal_installment(installment_data):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Installment added")
-
+        logger.info("Installment added")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1630,10 +1599,9 @@ def delete_proposal_installment(installment_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Installment deleted")
-
+        logger.info("Installment deleted")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1658,7 +1626,7 @@ def get_proposal_notes(project_id, proposal_id=0):
         return notes_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -1678,10 +1646,9 @@ def add_proposal_note(note_data):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Note added")
-
+        logger.info("Note added")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1697,10 +1664,9 @@ def delete_proposal_note(note_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Note deleted")
-
+        logger.info("Note deleted")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1725,7 +1691,7 @@ def get_proposal_fixture_notes(project_id, proposal_id=0):
         return proposal_notes_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -1745,10 +1711,9 @@ def add_proposal_fixture_note(note_data):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Fixture note added")
-
+        logger.info("Fixture note added")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1764,10 +1729,9 @@ def delete_proposal_fixture_note(fixture_note_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Fixture note deleted")
-
+        logger.info("Fixture note deleted")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1785,10 +1749,9 @@ def create_proposal(project_id, user_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Proposal created")
-
+        logger.info("Proposal created")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
     # Get next proposal ID value
@@ -1808,7 +1771,7 @@ def create_proposal(project_id, user_id):
             proposal_id = proposal_id.first()[0]
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
     # Update fixture temp table with proposal_id
@@ -1829,7 +1792,7 @@ def create_proposal(project_id, user_id):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
     # Update installment temp table with proposal_id
@@ -1850,7 +1813,7 @@ def create_proposal(project_id, user_id):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
     # Update note temp table with proposal_id
@@ -1871,7 +1834,7 @@ def create_proposal(project_id, user_id):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
     # Create note in project
@@ -1888,7 +1851,7 @@ def create_proposal(project_id, user_id):
         return proposal_id
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -1917,7 +1880,7 @@ def proposal_fixture_temp_table(project_id):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
     # Delete data from fixtures temp table
@@ -1930,10 +1893,9 @@ def proposal_fixture_temp_table(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
-            print("Fixtures moved from temp table")
-
+            logger.info("Fixtures moved from temp table")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1955,7 +1917,7 @@ def proposal_fixture_note_temp_table(project_id):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
     # Delete data from notes temp table
@@ -1968,10 +1930,9 @@ def proposal_fixture_note_temp_table(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
-            print("Fixture notes moved from temp table")
-
+            logger.info("Fixture notes moved from temp table")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -1993,7 +1954,7 @@ def proposal_installment_temp_table(project_id):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
     # Delete data from installments temp table
@@ -2006,10 +1967,9 @@ def proposal_installment_temp_table(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
-            print("Installments moved from temp table")
-
+            logger.info("Installments moved from temp table")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2031,7 +1991,7 @@ def proposal_note_temp_table(project_id):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
     # Delete data from notes temp table
@@ -2044,10 +2004,9 @@ def proposal_note_temp_table(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
-            print("Notes moved from temp table")
-
+            logger.info("Notes moved from temp table")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2069,7 +2028,7 @@ def update_proposal_items_id(project_id, proposal_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
     try:
@@ -2085,7 +2044,7 @@ def update_proposal_items_id(project_id, proposal_id):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
     try:
@@ -2100,10 +2059,9 @@ def update_proposal_items_id(project_id, proposal_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Proposal items updated")
-
+        logger.info("Proposal items updated")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2128,10 +2086,9 @@ def proposal_clear_fixture_temp(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
-            print("Fixtures temp table cleared")
-
+            logger.info("Fixtures temp table cleared")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2149,10 +2106,9 @@ def proposal_clear_fixture_note_temp(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
-            print("Fixture notes temp table cleared")
-
+            logger.info("Fixture notes temp table cleared")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2170,10 +2126,9 @@ def proposal_clear_installment_temp(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
-            print("Installments temp table cleared")
-
+            logger.info("Installments temp table cleared")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2191,10 +2146,9 @@ def proposal_clear_note_temp(project_id):
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
-            print("Notes temp table cleared")
-
+            logger.info("Notes temp table cleared")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2212,7 +2166,7 @@ def get_permit_add_information():
         return permit_req_info_mappings
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2238,7 +2192,7 @@ def get_project_permits(project_id):
         return permits_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -2264,7 +2218,7 @@ def get_permit_by_id(permit_id):
         return permits_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -2293,12 +2247,11 @@ def add_permit(permit_info):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Permit added")
-
+        logger.info("Permit added")
         return "Permit successfully added"
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return "Error: Unable to add permit"
 
 
@@ -2335,10 +2288,9 @@ def update_permit(permit_id, status, user_id):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Permit updated")
-
+        logger.info("Permit updated")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2365,7 +2317,7 @@ def permit_follow_up_date(status_date, city_county_id):
         return follow_up_date
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -2388,7 +2340,7 @@ def get_master_permit(project_id):
         return master_permit_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -2411,7 +2363,7 @@ def get_plumbing_permit(project_id):
         return plumbing_permit_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -2435,10 +2387,9 @@ def insert_master_permit(project_id, permit_number):
             result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
-        print("Master permit inserted")
-
+        logger.info("Master permit inserted")
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2456,7 +2407,7 @@ def get_all_permits():
         return plumbing_permit_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2479,7 +2430,7 @@ def get_permit_dashboard_summary():
             result = connection.execute(text(sqlQuery), query_params)
             return result.mappings().all()
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2495,7 +2446,7 @@ def get_building_departments_list():
             results = connection.execute(text(sqlQuery))
             return results.mappings().all()
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2515,7 +2466,7 @@ def get_all_inspections():
             results = connection.execute(text(sqlQuery))
             return results.mappings().all()
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2534,7 +2485,7 @@ def get_project_inspections(project_id):
             results = connection.execute(text(sqlQuery), query_params)
             return results.mappings().all()
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2561,7 +2512,7 @@ def add_inspection(inspection_info):
             connection.commit()
         return "Inspection successfully added"
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return "Error: Unable to add inspection"
 
 
@@ -2581,7 +2532,7 @@ def update_inspection_status(inspection_id, status):
             connection.execute(text(sqlQuery), query_params)
             connection.commit()
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         raise e
 
 
@@ -2604,7 +2555,7 @@ def get_city_state_county(zip_code):
         return city_state_zip_dict
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return None
 
 
@@ -2632,7 +2583,7 @@ def get_coi_departments(pending_only=False, coverage_start=None):
             return results.mappings().all()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
 
 
@@ -2662,7 +2613,7 @@ def update_coi_department(dept_id, fields):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         raise e
 
 
@@ -2683,7 +2634,7 @@ def mark_coi_sent(dept_ids, sent_via):
             connection.commit()
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         raise e
 
 
@@ -2703,5 +2654,5 @@ def get_project_statuses():
         return statuses
 
     except Exception as e:
-        print("Database Error:", e)
+        logger.error("Database Error: %s", e)
         return []
