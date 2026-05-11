@@ -719,6 +719,26 @@ def get_invoice_items(project_id, invoice_number):
         return ""
 
 
+def get_all_invoice_items(project_id):
+    try:
+        sqlQuery = """
+            SELECT pii.*, pi.installment_description, pi.installment_amount
+            FROM project_invoice_items pii
+            INNER JOIN project_installments pi
+                ON pii.project_id = pi.project_id
+                AND pii.installment_number = pi.installment_number
+            WHERE pii.project_id = :project_id
+            ORDER BY pii.invoice_number;
+        """
+        query_params = {"project_id": project_id}
+        with engine.connect() as connection:
+            result = connection.execute(text(sqlQuery), query_params)
+            return result.mappings().all()
+    except Exception as e:
+        print("Database Error:", e)
+        return []
+
+
 def get_open_invoice_items(project_id, invoice_number):
     try:
         sqlQuery = (
@@ -2452,6 +2472,29 @@ def get_all_permits():
     except Exception as e:
         print("Database Error:", e)
         return ""
+
+
+def get_permit_dashboard_summary():
+    try:
+        sqlQuery = """
+            SELECT
+                project_id,
+                MAX(CASE WHEN type = 'Plumbing' THEN permit_number END) AS plumbing_permit_number,
+                MAX(CASE WHEN type = 'Plumbing' THEN status END) AS plumbing_permit_status,
+                TO_CHAR(MAX(CASE WHEN type = 'Plumbing' THEN status_date END), 'MM/DD/YYYY') AS plumbing_permit_status_date,
+                MAX(CASE WHEN type = 'Master' THEN permit_number END) AS master_permit_number,
+                MAX(CASE WHEN type = 'Master' THEN status END) AS master_permit_status,
+                TO_CHAR(MAX(CASE WHEN type = 'Master' THEN status_date END), 'MM/DD/YYYY') AS master_permit_status_date
+            FROM project_permits
+            GROUP BY project_id;
+        """
+        query_params = {}
+        with engine.connect() as connection:
+            result = connection.execute(text(sqlQuery), query_params)
+            return result.mappings().all()
+    except Exception as e:
+        print("Database Error:", e)
+        return []
 
 
 ############## Inspections ##############

@@ -118,8 +118,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-logo_path = os.path.join(app.root_path, "static", "logo.png")
-
 
 ############## Login/Logout ##############
 @login_manager.unauthorized_handler
@@ -145,13 +143,9 @@ def login():
             email = login_form.email.data
             password = login_form.password.data
 
-            login_form.email.data = ""
-            login_form.password.data = ""
-
             user_db_password = database.get_user_password(email)
 
             if user_db_password:
-                # user_db_password = user_db_password[0]
                 if check_password_hash(user_db_password, password):
                     user_dict = database.get_user_from_email(email)
                     user = users.Users(user_dict)
@@ -171,7 +165,7 @@ def login():
             login_form=login_form,
         )
     except Exception as e:
-        print(f"Login error: {e}")
+        app.logger.error("Login error: %s", e)
         return redirect(url_for("login"))
 
 
@@ -208,7 +202,7 @@ def sign_up():
 
                 return redirect(url_for("login"))
             except Exception as e:
-                print(f"{e=}")
+                app.logger.error("Sign-up error: %s", e)
 
     for error in list(signup_form.errors.values()):
         flash(error[0])
@@ -271,7 +265,7 @@ def forgot_password():
             try:
                 send_reset_email(email, reset_url)
             except Exception as e:
-                print(f"Password reset email error: {e}")
+                app.logger.error("Password reset email error: %s", e)
 
         flash(
             "If an account with that email exists, a password reset link has been sent."
@@ -307,7 +301,7 @@ def reset_password(token):
             return redirect(url_for("login"))
         except Exception as e:
             flash("An error occurred updated your password. Please try again.")
-            print(f"Error updating password: {e}")
+            app.logger.error("Error updating password: %s", e)
 
     for error in list(reset_password_form.errors.values()):
         flash(error[0])
@@ -345,7 +339,7 @@ def account():
                 return redirect(url_for("account"))
             except Exception as e:
                 flash("An error occurred updating your password. Please try again.")
-                print(f"Error updating password: {e}")
+                app.logger.error("Error updating password: %s", e)
 
     if update_email_form.update_email_submit.data and update_email_form.validate():
         current_password = update_email_form.current_password.data
@@ -365,7 +359,7 @@ def account():
                     return redirect(url_for("account"))
                 except Exception as e:
                     flash("An error occurred updating your email. Please try again.")
-                    print(f"Error updating email: {e}")
+                    app.logger.error("Error updating email: %s", e)
 
     for error in list(change_password_form.errors.values()):
         if change_password_form.change_password_submit.data:
@@ -390,9 +384,7 @@ def main():
     user = database.get_user(session["user_id"])
     clients = database.get_all_clients(user.role)
     projects = database.get_all_projects(user.role)
-    permits = database.get_all_permits()
-
-    permits_summary = get_permit_dashboard_summary(permits)
+    permits_summary = database.get_permit_dashboard_summary()
 
     # Graph data
     status_counts = database.get_projects_status_summary()
@@ -413,49 +405,6 @@ def main():
         permits_summary=permits_summary,
         inspections_summary=inspections_summary,
     )
-
-
-def get_permit_dashboard_summary(raw_permits):
-    summary_dict = {}
-
-    for permit in raw_permits:
-        project_id = permit.get("project_id")
-
-        # 1. Initialize the project in our tracking dictionary if it doesn't exist yet
-        if project_id not in summary_dict:
-            summary_dict[project_id] = {
-                "project_id": project_id,
-                "plumbing_permit_number": None,
-                "plumbing_permit_status": None,
-                "plumbing_permit_status_date": None,
-                "master_permit_number": None,
-                "master_permit_status": None,
-                "master_permit_status_date": None,
-            }
-
-        # 2. Safely format the date to a string (e.g., '02/17/2026') for the UI
-        status_date = permit.get("status_date")
-        formatted_date = status_date.strftime("%m/%d/%Y") if status_date else None
-
-        # 3. Map the data based on the permit type
-        permit_type = permit.get("type")
-
-        if permit_type == "Plumbing":
-            summary_dict[project_id]["plumbing_permit_number"] = permit.get(
-                "permit_number"
-            )
-            summary_dict[project_id]["plumbing_permit_status"] = permit.get("status")
-            summary_dict[project_id]["plumbing_permit_status_date"] = formatted_date
-
-        elif permit_type == "Master":
-            summary_dict[project_id]["master_permit_number"] = permit.get(
-                "permit_number"
-            )
-            summary_dict[project_id]["master_permit_status"] = permit.get("status")
-            summary_dict[project_id]["master_permit_status_date"] = formatted_date
-
-    # 4. Convert our grouping dictionary back into a flat list of dictionaries
-    return list(summary_dict.values())
 
 
 ############## Client ##############
@@ -509,25 +458,15 @@ def create_client():
 
     if form.validate_on_submit():
         name = form.name.data
-        form.name.data = ""
         address = form.address.data
-        form.address.data = ""
         city = form.city.data
-        form.city.data = ""
         state = form.state.data
-        form.state.data = ""
         zip_code = form.zip_code.data
-        form.zip_code.data = ""
         website = form.website.data
-        form.website.data = ""
         phone_number = form.phone_number.data
-        form.phone_number.data = ""
         poc_name = form.poc_name.data
-        form.poc_name.data = ""
         poc_phone_number = form.poc_phone_number.data
-        form.poc_phone_number.data = ""
         poc_email = form.poc_email.data
-        form.poc_email.data = ""
 
         client_info = {
             "name": name,
@@ -585,25 +524,15 @@ def edit_client(client_id):
 
     if form.validate_on_submit():
         name = form.name.data
-        form.name.data = ""
         address = form.address.data
-        form.address.data = ""
         city = form.city.data
-        form.city.data = ""
         state = form.state.data
-        form.state.data = ""
         zip_code = form.zip_code.data
-        form.zip_code.data = ""
         website = form.website.data
-        form.website.data = ""
         phone_number = form.phone_number.data
-        form.phone_number.data = ""
         poc_name = form.poc_name.data
-        form.poc_name.data = ""
         poc_phone_number = form.poc_phone_number.data
-        form.poc_phone_number.data = ""
         poc_email = form.poc_email.data
-        form.poc_email.data = ""
 
         client_info = {
             "client_id": client_id,
@@ -689,7 +618,6 @@ def project_view(project_id, new_project=False):
     user = database.get_user(session["user_id"])
     project = database.get_project(project_id)
     client = database.get_client(project["client_id"])
-    session["project_id"] = project_id
 
     if new_project:
         flash("Project has been created")
@@ -724,7 +652,7 @@ def project_view(project_id, new_project=False):
                 )
             return redirect(url_for("project_view", project_id=project["project_id"]))
         else:
-            print(f"{project_status_form.errors=}")
+            app.logger.debug("project_status_form errors: %s", project_status_form.errors)
 
         # Add Project Note
         if (
@@ -733,7 +661,7 @@ def project_view(project_id, new_project=False):
         ):
             return project_note_add(project_notes_form, project_id)
         else:
-            print(f"{project_notes_form.errors=}")
+            app.logger.debug("project_notes_form errors: %s", project_notes_form.errors)
 
         # Create invoice
         if (
@@ -743,45 +671,46 @@ def project_view(project_id, new_project=False):
             return project_invoice_create(
                 request.form.getlist("installment_select"),
                 request.form.getlist("billed_amount"),
+                project_id,
             )
         else:
-            print(f"{invoice_create_form.errors=}")
+            app.logger.debug("invoice_create_form errors: %s", invoice_create_form.errors)
 
         # Apply payment
         if (
             apply_payment_form.validate_on_submit()
             and apply_payment_form.apply_payment.data
         ):
-            return apply_payment(apply_payment_form)
+            return apply_payment(apply_payment_form, project_id)
         else:
-            print(f"{apply_payment_form.errors=}")
+            app.logger.debug("apply_payment_form errors: %s", apply_payment_form.errors)
 
         # Add Permit
         if (
             permit_add_form.validate_on_submit()
             and permit_add_form.permit_add_submit.data
         ):
-            return add_project_permit(permit_add_form)
+            return add_project_permit(permit_add_form, project_id)
         else:
-            print(f"{permit_add_form.errors=}")
+            app.logger.debug("permit_add_form errors: %s", permit_add_form.errors)
 
         # Add Inspection
         if (
             inspection_add_form.validate_on_submit()
             and inspection_add_form.inspection_add_submit.data
         ):
-            return add_project_inspection(inspection_add_form)
+            return add_project_inspection(inspection_add_form, project_id)
         else:
-            print(f"{inspection_add_form.errors=}")
+            app.logger.debug("inspection_add_form errors: %s", inspection_add_form.errors)
 
         # Upload Document
         if (
             document_form.validate_on_submit()
             and document_form.upload_document_submit.data
         ):
-            return upload_project_document(document_form)
+            return upload_project_document(document_form, project_id)
         else:
-            print(f"{document_form.errors=}")
+            app.logger.debug("document_form errors: %s", document_form.errors)
 
     tab = session.pop("active_tab", None)
 
@@ -866,11 +795,7 @@ def get_project_installments(project_id):
 
 
 def get_project_installment_total(installments):
-    # Get project total amount
-    project_total = 0
-    for installment in installments:
-        project_total += installment["installment_amount"]
-    return project_total
+    return sum(installment["installment_amount"] for installment in installments)
 
 
 def get_project_payments_total(project_id):
@@ -884,7 +809,7 @@ def get_project_payments_total(project_id):
 def get_project_invoices(project_id):
     invoices = database.get_project_invoices(project_id)
     installments = database.get_project_installments(project_id)
-    invoice_items = get_project_invoice_items(invoices)
+    invoice_items = get_project_invoice_items(invoices, project_id)
     invoice_status_form = InvoiceStatusUpdateForm()
     invoice_create_form = InvoiceCreateForm()
 
@@ -899,21 +824,21 @@ def get_project_invoices(project_id):
     )
 
 
-def get_project_invoice_items(invoices):
+def get_project_invoice_items(invoices, project_id):
     invoice_items = {}
+    if not invoices:
+        return invoice_items
 
-    for invoice in invoices:
-        invoice_item = database.get_invoice_items(
-            session["project_id"], invoice["invoice_number"]
-        )
-        if invoice_item:
-            invoice_items[invoice_item[0]["invoice_number"]] = invoice_item
+    all_items = database.get_all_invoice_items(project_id)
+    for item in all_items:
+        key = item["invoice_number"]
+        invoice_items.setdefault(key, []).append(item)
 
     return invoice_items
 
 
-def project_invoice_create(selected_installments, billed_invoice_amount):
-    installments = database.get_project_installments(session["project_id"])
+def project_invoice_create(selected_installments, billed_invoice_amount, project_id):
+    installments = database.get_project_installments(project_id)
 
     selected_invoices = []
     while "0" in billed_invoice_amount:
@@ -936,12 +861,10 @@ def project_invoice_create(selected_installments, billed_invoice_amount):
             )
         )
 
-    is_invoice_created = database.create_invoice(
-        selected_invoices, session["project_id"]
-    )
+    is_invoice_created = database.create_invoice(selected_invoices, project_id)
     session["active_tab"] = "invoices"
     flash(is_invoice_created)
-    return redirect(url_for("project_view", project_id=session["project_id"]))
+    return redirect(url_for("project_view", project_id=project_id))
 
 
 # Project Payments
@@ -968,7 +891,7 @@ def get_project_payments(project_id):
 
 
 # Store payment information in the database - finalize application of payment
-def apply_payment(form):
+def apply_payment(form, project_id):
     # Payment Information Data
     payment_method = form.payment_method.data
     check_number = form.check_number.data
@@ -977,7 +900,7 @@ def apply_payment(form):
     payment_note = form.payment_note.data
 
     payment_information = {
-        "project_id": session["project_id"],
+        "project_id": project_id,
         "payment_method": payment_method,
         "check_number": check_number,
         "payment_amount": payment_amount,
@@ -996,19 +919,17 @@ def apply_payment(form):
         ]
         invoice_status_list = request.form.getlist("invoice_status")
     except (ValueError, TypeError) as e:
-        print(f"Payment form data error: {e}")
+        app.logger.error("Payment form data error: %s", e)
         flash("Invalid payment data submitted. Please try again.")
-        return redirect(url_for("project_view", project_id=session["project_id"]))
+        return redirect(url_for("project_view", project_id=project_id))
 
     database.insert_payment(payment_information)
 
-    for invoice_id, applied_amount, remaining_amount, invoice_status in list(
-        zip(
-            invoice_id_list,
-            payment_applied_list,
-            payment_remaining_list,
-            invoice_status_list,
-        )
+    for invoice_id, applied_amount, remaining_amount, invoice_status in zip(
+        invoice_id_list,
+        payment_applied_list,
+        payment_remaining_list,
+        invoice_status_list,
     ):
         if applied_amount > 0:
             payment = {
@@ -1017,16 +938,14 @@ def apply_payment(form):
                 "payment_remaining": remaining_amount,
                 "invoice_status": invoice_status,
                 "date_received": date_received,
-                "project_id": session["project_id"],
+                "project_id": project_id,
                 "check_number": check_number,
             }
             database.apply_payment(payment)
 
-    # database.insert_payment(payment_information)
-
     session["active_tab"] = "payments"
     flash("Payment applied")
-    return redirect(url_for("project_view", project_id=session["project_id"]))
+    return redirect(url_for("project_view", project_id=project_id))
 
 
 @app.route("/apply_payment/<project_id>", methods=["GET", "POST"])
@@ -1137,7 +1056,7 @@ def apply_payment_ajax(project_id):
 
 def get_project_amount_owed(project_id):
     open_invoices = database.get_open_invoices(project_id)
-    return sum([invoice["payment_remaining"] for invoice in open_invoices])
+    return sum(invoice["payment_remaining"] for invoice in open_invoices)
 
 
 # Permits
@@ -1160,15 +1079,13 @@ def get_project_permits(project_id):
     )
 
 
-def add_project_permit(permit_add_form):
+def add_project_permit(permit_add_form, project_id):
     permit_info = {
-        "project_id": session["project_id"],
+        "project_id": project_id,
         "permit_number": permit_add_form.permit_number.data,
         "type": permit_add_form.permit_type.data,
         "status": permit_add_form.permit_status.data,
         "status_date": permit_add_form.permit_status_date.data,
-        # "follow_up_date": None,
-        # "follow_up_date": permit_add_form.follow_up_date.data,
         "user_id": session["user_id"],
         "note": permit_add_form.permit_note.data,
         "city_county_id": permit_add_form.city_county.data["id"],
@@ -1178,7 +1095,7 @@ def add_project_permit(permit_add_form):
 
     flash(is_permit_added)
     session["active_tab"] = "permits"
-    return redirect(url_for("project_view", project_id=session["project_id"]))
+    return redirect(url_for("project_view", project_id=project_id))
 
 
 # Documents
@@ -1194,7 +1111,7 @@ def get_project_documents(project_id):
     )
 
 
-def upload_project_document(document_upload_form):
+def upload_project_document(document_upload_form, project_id):
     file_storage_obj = document_upload_form.upload_file.data
     document_type = str(document_upload_form.document_type.data).strip()
     comment = document_upload_form.comment.data
@@ -1205,7 +1122,7 @@ def upload_project_document(document_upload_form):
 
     # 3. Construct and SECURE the filename immediately
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    raw_name = f"{session['project_id']}_{document_type}_{timestamp}.{ext}"
+    raw_name = f"{project_id}_{document_type}_{timestamp}.{ext}"
     safe_name = secure_filename(raw_name)
 
     # 4. Upload to S3
@@ -1213,7 +1130,7 @@ def upload_project_document(document_upload_form):
 
     if success:
         database.upload_document(
-            session["project_id"],
+            project_id,
             document_type,
             comment,
             session["user_id"],
@@ -1223,13 +1140,8 @@ def upload_project_document(document_upload_form):
     else:
         flash("S3 Upload Failed")
 
-    document_upload_form.document_type.data = ""
-    document_upload_form.comment.data = ""
-    document_upload_form.upload_file.data = ""
-
     session["active_tab"] = "documents"
-    # flash(is_document_uploaded)
-    return redirect(url_for("project_view", project_id=session["project_id"]))
+    return redirect(url_for("project_view", project_id=project_id))
 
 
 # Project Proposal
@@ -1331,7 +1243,7 @@ def finalize_proposal():
         ).write_pdf()
 
     # upload_file_type = filename.filename.split(".")[-1]
-    upload_file_name = f"{session['project_id']}-Proposal-{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+    upload_file_name = f"{project_id}-Proposal-{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
 
     try:
         # Add document to S3 bucket
@@ -1341,7 +1253,7 @@ def finalize_proposal():
             upload_file_name,
         )
     except Exception as e:
-        print(f"Proposal upload error: {e}")
+        app.logger.error("Proposal upload error: %s", e)
         flash("Error: Unable to upload the proposal to documents")
         return render_template(
             "proposal_print.html",
@@ -1357,7 +1269,7 @@ def finalize_proposal():
 
     # Add information to documents table
     database.upload_document(
-        session["project_id"],
+        project_id,
         "Proposal",
         "",
         session["user_id"],
@@ -1406,21 +1318,13 @@ def project_add(client_id=None):
 
     if form.validate_on_submit():
         project_id = form.project_id.data
-        form.project_id.data = ""
         name = form.name.data.title()
-        form.name.data = ""
         client = int(form.client.data)
-        form.client.data = ""
         address = form.address.data.title()
-        form.address.data = ""
         city = form.city.data
-        form.city.data = ""
         state = form.state.data
-        form.state.data = ""
         zip_code = form.zip_code.data
-        form.zip_code.data = ""
         county = form.county.data
-        form.county.data = ""
 
         project_info = {
             "project_id": project_id,
@@ -1436,7 +1340,7 @@ def project_add(client_id=None):
         database.create_project(project_info)
         note_info = {
             "project_id": project_id,
-            "comment": f"Project Created",
+            "comment": "Project Created",
             "user_id": session["user_id"],
         }
         database.add_project_note(note_info)
@@ -1526,9 +1430,9 @@ def get_project_inspections_tab(project_id):
     )
 
 
-def add_project_inspection(inspection_add_form):
+def add_project_inspection(inspection_add_form, project_id):
     inspection_info = {
-        "project_id": session["project_id"],
+        "project_id": project_id,
         "building_dept_id": (
             inspection_add_form.building_dept.data["id"]
             if inspection_add_form.building_dept.data
@@ -1544,7 +1448,7 @@ def add_project_inspection(inspection_add_form):
     result = database.add_inspection(inspection_info)
     flash(result)
     session["active_tab"] = "inspections"
-    return redirect(url_for("project_view", project_id=session["project_id"]))
+    return redirect(url_for("project_view", project_id=project_id))
 
 
 @app.route("/project/inspections/update-status", methods=["POST"])
@@ -1711,7 +1615,7 @@ def admin_coi_update(dept_id):
             flash("Department updated successfully.")
         except Exception as e:
             flash("Error updating department. Please try again.")
-            print(f"COI update error: {e}")
+            app.logger.error("COI update error: %s", e)
     else:
         for errors in edit_form.errors.values():
             flash(errors[0])
@@ -1765,7 +1669,7 @@ def admin_coi_send():
                 database.mark_coi_sent([dept_id], dept["primary_email"])
                 email_successes.append(dept["entity"])
             except Exception as e:
-                print(f"COI email error for {dept['entity']}: {e}")
+                app.logger.error("COI email error for %s: %s", dept['entity'], e)
                 email_failures.append(dept["entity"])
 
     if portal_ids:
@@ -1774,7 +1678,7 @@ def admin_coi_send():
             flash(f"Marked {len(portal_ids)} portal submission(s) as sent.")
         except Exception as e:
             flash("Error marking portal submissions as sent.")
-            print(f"Portal mark error: {e}")
+            app.logger.error("Portal mark error: %s", e)
 
     if email_successes:
         flash(f"Email sent to {len(email_successes)} department(s).")
@@ -1785,12 +1689,6 @@ def admin_coi_send():
 
 
 ############## Helper Methods ##############
-def update_invoice_status(project_id, installment_number, installment_status):
-    database.update_installment_status(
-        project_id, installment_number, installment_status, session["user_id"]
-    )
-
-
 def fixtures_total(fixtures):
     total = sum(fixture["total_per_fixture"] for fixture in fixtures)
     return total
@@ -1827,7 +1725,7 @@ def get_encoded_logo():
         with open(path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode("utf-8")
     except FileNotFoundError:
-        print(f"Warning: Logo not found at {path}")
+        app.logger.warning("Logo not found at %s", path)
         return ""
 
 
@@ -1949,7 +1847,6 @@ def get_all_proposal_fixture_notes(project_id):
 @app.route("/deleteProposalFixture/<fixture_id>/<project_id>", methods=["POST"])
 @login_required
 def delete_proposal_fixture(fixture_id, project_id):
-    # database.add_proposal_fixture(fixture_id, table_name="project_proposal_fixtures")
     database.delete_proposal_fixture(fixture_id)
     return get_all_proposal_fixtures(project_id)
 
