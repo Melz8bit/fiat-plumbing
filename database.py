@@ -45,7 +45,7 @@ def get_results(sqlQuery):
         # results = cursor.fetchall()
 
         with engine.connect() as connection:
-            results = connection.execute(text(f"{sqlQuery}")).all()
+            results = connection.execute(text(sqlQuery)).all()
         return results
     except Exception as e:
         print("Database Error:", e)
@@ -65,7 +65,7 @@ def get_projects_status_summary():
             """
 
         with engine.connect() as connection:
-            projects = connection.execute(text(f"{sqlQuery}"))
+            projects = connection.execute(text(sqlQuery))
             projects_status_summary_dict = projects.mappings().all()
 
         return projects_status_summary_dict
@@ -92,7 +92,7 @@ def get_projects_finance_summary():
             """
 
         with engine.connect() as connection:
-            projects = connection.execute(text(f"{sqlQuery}"))
+            projects = connection.execute(text(sqlQuery))
             projects_finance__dict = projects.mappings().all()
 
         return projects_finance__dict
@@ -170,7 +170,7 @@ def create_user(user_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("User created")
@@ -238,7 +238,7 @@ def get_client(client_id):
         }
 
         with engine.connect() as connection:
-            row = connection.execute(text(f"{sqlQuery}"), queryParams).mappings().first()
+            row = connection.execute(text(sqlQuery), queryParams).mappings().first()
 
         return dict(row) if row else None
 
@@ -255,7 +255,7 @@ def get_client_poc(client_id):
         }
 
         with engine.connect() as connection:
-            poc_dict = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
+            poc_dict = connection.execute(text(sqlQuery), query_params).mappings().first()
 
         return poc_dict
     except Exception as e:
@@ -284,7 +284,7 @@ def get_all_clients(user_role):
             )
 
         with engine.connect() as connection:
-            clients = connection.execute(text(f"{sqlQuery}"))
+            clients = connection.execute(text(sqlQuery))
             clients_dict = clients.mappings().all()
 
         return clients_dict
@@ -311,7 +311,7 @@ def create_client(client_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Client created")
@@ -338,7 +338,7 @@ def create_client_poc(client_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Client POC created")
@@ -368,7 +368,7 @@ def update_client(client_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Client updated")
@@ -389,7 +389,7 @@ def update_client(client_info):
             }
 
             with engine.connect() as connection:
-                result = connection.execute(text(f"{sqlQuery}"), query_params)
+                result = connection.execute(text(sqlQuery), query_params)
                 connection.commit()
 
             print("Client POC updated")
@@ -428,7 +428,7 @@ def get_all_projects(user_role):
             """
 
         with engine.connect() as connection:
-            projects = connection.execute(text(f"{sqlQuery}"))
+            projects = connection.execute(text(sqlQuery))
             projects_dict = projects.mappings().all()
 
         return projects_dict
@@ -453,7 +453,7 @@ def get_project(project_id):
         }
 
         with engine.connect() as connection:
-            row = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
+            row = connection.execute(text(sqlQuery), query_params).mappings().first()
 
         return dict(row) if row else None
 
@@ -481,7 +481,7 @@ def create_project(project_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Project created")
@@ -505,7 +505,7 @@ def get_client_projects(client_id):
         }
 
         with engine.connect() as connection:
-            projects = connection.execute(text(f"{sqlQuery}"), query_params)
+            projects = connection.execute(text(sqlQuery), query_params)
             projects_dict = ""
             if projects:
                 projects_dict = projects.mappings().all()
@@ -526,7 +526,7 @@ def get_max_project_id():
             """
 
         with engine.connect() as connection:
-            max_id = connection.execute(text(f"{sqlQuery}"))
+            max_id = connection.execute(text(sqlQuery))
             max_id = max_id.mappings().first()["max"]
 
         if not max_id:
@@ -563,7 +563,7 @@ def update_project_status(project_id, project_status, user_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Project status updated")
@@ -603,7 +603,7 @@ def get_project_notes(project_id):
         }
 
         with engine.connect() as connection:
-            notes = connection.execute(text(f"{sqlQuery}"), query_params)
+            notes = connection.execute(text(sqlQuery), query_params)
             notes_dict = notes.mappings().all()
 
         return notes_dict
@@ -628,7 +628,7 @@ def add_project_note(note_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Note added")
@@ -654,7 +654,7 @@ def get_project_invoices(project_id):
         }
 
         with engine.connect() as connection:
-            invoices = connection.execute(text(f"{sqlQuery}"), query_params)
+            invoices = connection.execute(text(sqlQuery), query_params)
             invoices_dict = invoices.mappings().all()
 
         return invoices_dict
@@ -678,7 +678,7 @@ def get_invoice(project_id, invoice_number):
         }
 
         with engine.connect() as connection:
-            invoice_dict = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
+            invoice_dict = connection.execute(text(sqlQuery), query_params).mappings().first()
 
         return invoice_dict
 
@@ -703,7 +703,7 @@ def get_invoice_items(project_id, invoice_number):
         }
 
         with engine.connect() as connection:
-            project = connection.execute(text(f"{sqlQuery}"), query_params)
+            project = connection.execute(text(sqlQuery), query_params)
             project_dict = project.mappings().all()
 
         return project_dict
@@ -747,7 +747,7 @@ def get_open_invoice_items(project_id, invoice_number):
         }
 
         with engine.connect() as connection:
-            invoice_items = connection.execute(text(f"{sqlQuery}"), query_params)
+            invoice_items = connection.execute(text(sqlQuery), query_params)
             invoice_items_dict = invoice_items.mappings().all()
 
         return invoice_items_dict
@@ -771,7 +771,7 @@ def get_open_invoices(project_id):
         }
 
         with engine.connect() as connection:
-            open_invoices = connection.execute(text(f"{sqlQuery}"), query_params)
+            open_invoices = connection.execute(text(sqlQuery), query_params)
             open_invoices_dict = open_invoices.mappings().all()
 
         return open_invoices_dict
@@ -794,7 +794,7 @@ def get_invoice_payments_total(invoice_id):
         }
 
         with engine.connect() as connection:
-            row = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
+            row = connection.execute(text(sqlQuery), query_params).mappings().first()
 
         return float(row["sum"] or 0) if row else 0.0
 
@@ -820,7 +820,7 @@ def insert_payment(payment_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Payment added")
@@ -843,7 +843,7 @@ def invoice_received_amount(invoice_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params).first()
+            result = connection.execute(text(sqlQuery), query_params).first()
             connection.commit()
             return result[0]
 
@@ -870,7 +870,7 @@ def apply_payment(invoice_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -894,7 +894,7 @@ def apply_payment(invoice_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Payment added")
@@ -913,7 +913,7 @@ def get_project_payment_id(invoice_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params).first()
+            result = connection.execute(text(sqlQuery), query_params).first()
             return result[0]
 
     except Exception as e:
@@ -935,7 +935,7 @@ def get_project_payments(project_id):
         }
 
         with engine.connect() as connection:
-            project_payments = connection.execute(text(f"{sqlQuery}"), query_params)
+            project_payments = connection.execute(text(sqlQuery), query_params)
             project_payments_dict = project_payments.mappings().all()
 
         return project_payments_dict
@@ -955,7 +955,7 @@ def get_payment_installments(project_id):
         }
 
         with engine.connect() as connection:
-            payment_installments = connection.execute(text(f"{sqlQuery}"), query_params)
+            payment_installments = connection.execute(text(sqlQuery), query_params)
             payment_installments_dict = payment_installments.mappings().all()
 
         return payment_installments_dict
@@ -977,7 +977,7 @@ def get_invoice_payments(invoice_id):
         }
 
         with engine.connect() as connection:
-            invoice_payments = connection.execute(text(f"{sqlQuery}"), query_params)
+            invoice_payments = connection.execute(text(sqlQuery), query_params)
             invoice_payments_dict = invoice_payments.mappings().all()
 
         return invoice_payments_dict
@@ -1001,7 +1001,7 @@ def get_installment_number(project_id, installment_id):
         }
 
         with engine.connect() as connection:
-            installment_number = connection.execute(text(f"{sqlQuery}"), query_params)
+            installment_number = connection.execute(text(sqlQuery), query_params)
 
         return installment_number.first()[0]
 
@@ -1023,7 +1023,7 @@ def get_next_invoice_number(project_id):
         }
 
         with engine.connect() as connection:
-            row = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
+            row = connection.execute(text(sqlQuery), query_params).mappings().first()
 
         curr_inv = row["curr_inv"] if row else None
         return (curr_inv or 0) + 1
@@ -1069,7 +1069,7 @@ def create_invoice(selected_invoices, project_id):
             }
 
             with engine.connect() as connection:
-                result = connection.execute(text(f"{sqlQuery}"), query_params)
+                result = connection.execute(text(sqlQuery), query_params)
                 connection.commit()
 
             print("Installment updated")
@@ -1092,7 +1092,7 @@ def create_invoice(selected_invoices, project_id):
             }
 
             with engine.connect() as connection:
-                result = connection.execute(text(f"{sqlQuery}"), query_params)
+                result = connection.execute(text(sqlQuery), query_params)
                 connection.commit()
 
             print("Invoice items appended")
@@ -1130,7 +1130,7 @@ def create_invoice(selected_invoices, project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Invoice created")
@@ -1156,7 +1156,7 @@ def get_project_installments(project_id):
         }
 
         with engine.connect() as connection:
-            installments = connection.execute(text(f"{sqlQuery}"), query_params)
+            installments = connection.execute(text(sqlQuery), query_params)
             installments_dict = installments.mappings().all()
 
         return installments_dict
@@ -1184,7 +1184,7 @@ def update_installment_status(
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Installment updated")
@@ -1211,7 +1211,7 @@ def get_project_docs(project_id):
         }
 
         with engine.connect() as connection:
-            documents = connection.execute(text(f"{sqlQuery}"), query_params)
+            documents = connection.execute(text(sqlQuery), query_params)
             documents_dict = documents.mappings().all()
 
         return documents_dict
@@ -1237,7 +1237,7 @@ def upload_document(project_id, document_type, comment, user_id, filename):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Document uploaded")
@@ -1261,7 +1261,7 @@ def get_document_types():
         )
 
         with engine.connect() as connection:
-            doc_types = connection.execute(text(f"{sqlQuery}"))
+            doc_types = connection.execute(text(sqlQuery))
             # doc_types_dict = doc_types.mappings().all()
             doc_types_list = [doc_type.document_type for doc_type in doc_types]
 
@@ -1310,7 +1310,7 @@ def search_universal(search_criteria):
         query_params = {"search_criteria": search_criteria}
 
         with engine.connect() as connection:
-            search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+            search_results = connection.execute(text(sqlQuery), query_params)
             search_results_dict = search_results.mappings().all()
 
         return search_results_dict
@@ -1334,7 +1334,7 @@ def search_property_address(search_criteria):
     }
 
     with engine.connect() as connection:
-        search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+        search_results = connection.execute(text(sqlQuery), query_params)
         prop_address_dict = search_results.mappings().all()
 
     return prop_address_dict
@@ -1355,7 +1355,7 @@ def search_project_id(search_criteria):
     }
 
     with engine.connect() as connection:
-        search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+        search_results = connection.execute(text(sqlQuery), query_params)
         project_id_temp = search_results.mappings().all()
 
     return project_id_temp
@@ -1375,7 +1375,7 @@ def search_client_name(search_criteria):
     }
 
     with engine.connect() as connection:
-        search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+        search_results = connection.execute(text(sqlQuery), query_params)
         client_name_dict = search_results.mappings().all()
 
     return client_name_dict
@@ -1395,7 +1395,7 @@ def search_job_name(search_criteria):
     }
 
     with engine.connect() as connection:
-        search_results = connection.execute(text(f"{sqlQuery}"), query_params)
+        search_results = connection.execute(text(sqlQuery), query_params)
         job_name_dict = search_results.mappings().all()
 
     return job_name_dict
@@ -1411,7 +1411,7 @@ def get_fixtures():
         )
 
         with engine.connect() as connection:
-            fixtures = connection.execute(text(f"{sqlQuery}"))
+            fixtures = connection.execute(text(sqlQuery))
             # fixtures_list = fixtures.mappings().all()
             fixtures_list = [
                 f"{fixture.fixture_abbreviation} - {fixture.fixture_name}"
@@ -1440,7 +1440,7 @@ def get_project_fixtures(project_id):
         )
 
         with engine.connect() as connection:
-            fixtures = connection.execute(text(f"{sqlQuery}"), query_params)
+            fixtures = connection.execute(text(sqlQuery), query_params)
             fixtures_dict = fixtures.mappings().all()
 
         return fixtures_dict
@@ -1466,7 +1466,7 @@ def get_proposal_fixtures(project_id, proposal_id=0):
         }
 
         with engine.connect() as connection:
-            fixtures = connection.execute(text(f"{sqlQuery}"), query_params)
+            fixtures = connection.execute(text(sqlQuery), query_params)
             fixtures_dict = fixtures.mappings().all()
 
         return fixtures_dict
@@ -1496,7 +1496,7 @@ def add_proposal_fixture(fixture_data):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Fixture added")
@@ -1517,7 +1517,7 @@ def delete_proposal_fixture(fixture_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Fixture deleted")
@@ -1536,7 +1536,7 @@ def get_installment_categories():
         )
 
         with engine.connect() as connection:
-            installments = connection.execute(text(f"{sqlQuery}"))
+            installments = connection.execute(text(sqlQuery))
             # installments_list = installments.mappings().all()
             installments_list = [
                 installment.installment_category for installment in installments
@@ -1563,7 +1563,7 @@ def get_proposal_installments(project_id, proposal_id=0):
         }
 
         with engine.connect() as connection:
-            installments = connection.execute(text(f"{sqlQuery}"), query_params)
+            installments = connection.execute(text(sqlQuery), query_params)
             installments_dict = installments.mappings().all()
 
         # if not installments_dict:
@@ -1578,7 +1578,7 @@ def get_proposal_installments(project_id, proposal_id=0):
         #     }
 
         #     with engine.connect() as connection:
-        #         installments = connection.execute(text(f"{sqlQuery}"), query_params)
+        #         installments = connection.execute(text(sqlQuery), query_params)
         #         try:
         #             installments_dict = installments.mappings().all()
         #         except:
@@ -1608,7 +1608,7 @@ def add_proposal_installment(installment_data):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Installment added")
@@ -1627,7 +1627,7 @@ def delete_proposal_installment(installment_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Installment deleted")
@@ -1652,7 +1652,7 @@ def get_proposal_notes(project_id, proposal_id=0):
         }
 
         with engine.connect() as connection:
-            notes = connection.execute(text(f"{sqlQuery}"), query_params)
+            notes = connection.execute(text(sqlQuery), query_params)
             notes_dict = notes.mappings().all()
 
         return notes_dict
@@ -1675,7 +1675,7 @@ def add_proposal_note(note_data):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Note added")
@@ -1694,7 +1694,7 @@ def delete_proposal_note(note_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Note deleted")
@@ -1719,7 +1719,7 @@ def get_proposal_fixture_notes(project_id, proposal_id=0):
         }
 
         with engine.connect() as connection:
-            notes = connection.execute(text(f"{sqlQuery}"), query_params)
+            notes = connection.execute(text(sqlQuery), query_params)
             proposal_notes_dict = notes.mappings().all()
 
         return proposal_notes_dict
@@ -1742,7 +1742,7 @@ def add_proposal_fixture_note(note_data):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Fixture note added")
@@ -1761,7 +1761,7 @@ def delete_proposal_fixture_note(fixture_note_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Fixture note deleted")
@@ -1782,7 +1782,7 @@ def create_proposal(project_id, user_id):
         sqlQuery = "INSERT INTO project_proposal (project_id)" + " VALUES (:project_id)"
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Proposal created")
@@ -1804,7 +1804,7 @@ def create_proposal(project_id, user_id):
         # }
 
         with engine.connect() as connection:
-            proposal_id = connection.execute(text(f"{sqlQuery}"), query_params)
+            proposal_id = connection.execute(text(sqlQuery), query_params)
             proposal_id = proposal_id.first()[0]
 
     except Exception as e:
@@ -1825,7 +1825,7 @@ def create_proposal(project_id, user_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -1846,7 +1846,7 @@ def create_proposal(project_id, user_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -1867,7 +1867,7 @@ def create_proposal(project_id, user_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -1913,7 +1913,7 @@ def proposal_fixture_temp_table(project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -1928,7 +1928,7 @@ def proposal_fixture_temp_table(project_id):
         """
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
             print("Fixtures moved from temp table")
 
@@ -1951,7 +1951,7 @@ def proposal_fixture_note_temp_table(project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -1966,7 +1966,7 @@ def proposal_fixture_note_temp_table(project_id):
         """
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
             print("Fixture notes moved from temp table")
 
@@ -1989,7 +1989,7 @@ def proposal_installment_temp_table(project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -2004,7 +2004,7 @@ def proposal_installment_temp_table(project_id):
         """
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
             print("Installments moved from temp table")
 
@@ -2027,7 +2027,7 @@ def proposal_note_temp_table(project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -2042,7 +2042,7 @@ def proposal_note_temp_table(project_id):
         """
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
             print("Notes moved from temp table")
 
@@ -2066,7 +2066,7 @@ def update_proposal_items_id(project_id, proposal_id):
         )
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
     except Exception as e:
         print("Database Error:", e)
@@ -2081,7 +2081,7 @@ def update_proposal_items_id(project_id, proposal_id):
         )
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
     except Exception as e:
@@ -2097,7 +2097,7 @@ def update_proposal_items_id(project_id, proposal_id):
         )
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Proposal items updated")
@@ -2126,7 +2126,7 @@ def proposal_clear_fixture_temp(project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
             print("Fixtures temp table cleared")
 
@@ -2147,7 +2147,7 @@ def proposal_clear_fixture_note_temp(project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
             print("Fixture notes temp table cleared")
 
@@ -2168,7 +2168,7 @@ def proposal_clear_installment_temp(project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
             print("Installments temp table cleared")
 
@@ -2189,7 +2189,7 @@ def proposal_clear_note_temp(project_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
             print("Notes temp table cleared")
 
@@ -2206,7 +2206,7 @@ def get_permit_add_information():
         )
 
         with engine.connect() as connection:
-            permit_req_info = connection.execute(text(f"{sqlQuery}"))
+            permit_req_info = connection.execute(text(sqlQuery))
             permit_req_info_mappings = permit_req_info.mappings().all()
 
         return permit_req_info_mappings
@@ -2232,7 +2232,7 @@ def get_project_permits(project_id):
         )
 
         with engine.connect() as connection:
-            permits = connection.execute(text(f"{sqlQuery}"), query_params)
+            permits = connection.execute(text(sqlQuery), query_params)
             permits_dict = permits.mappings().all()
 
         return permits_dict
@@ -2258,7 +2258,7 @@ def get_permit_by_id(permit_id):
         )
 
         with engine.connect() as connection:
-            permits = connection.execute(text(f"{sqlQuery}"), query_params)
+            permits = connection.execute(text(sqlQuery), query_params)
             permits_dict = permits.mappings().first()
 
         return permits_dict
@@ -2290,7 +2290,7 @@ def add_permit(permit_info):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Permit added")
@@ -2311,7 +2311,7 @@ def update_permit(permit_id, status, user_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             city_county_id = result.mappings().first()
             connection.commit()
 
@@ -2332,7 +2332,7 @@ def update_permit(permit_id, status, user_id):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Permit updated")
@@ -2356,7 +2356,7 @@ def permit_follow_up_date(status_date, city_county_id):
 
         with engine.connect() as connection:
             follow_up_days = connection.execute(
-                text(f"{sqlQuery}"),
+                text(sqlQuery),
                 query_params,
             ).first()
 
@@ -2382,7 +2382,7 @@ def get_master_permit(project_id):
         }
 
         with engine.connect() as connection:
-            master_permit = connection.execute(text(f"{sqlQuery}"), queryParams)
+            master_permit = connection.execute(text(sqlQuery), queryParams)
             master_permit_dict = master_permit.mappings().first()
 
         return master_permit_dict
@@ -2405,7 +2405,7 @@ def get_plumbing_permit(project_id):
         }
 
         with engine.connect() as connection:
-            plumbing_permit = connection.execute(text(f"{sqlQuery}"), queryParams)
+            plumbing_permit = connection.execute(text(sqlQuery), queryParams)
             plumbing_permit_dict = plumbing_permit.mappings().first()
 
         return plumbing_permit_dict
@@ -2432,7 +2432,7 @@ def insert_master_permit(project_id, permit_number):
         }
 
         with engine.connect() as connection:
-            result = connection.execute(text(f"{sqlQuery}"), query_params)
+            result = connection.execute(text(sqlQuery), query_params)
             connection.commit()
 
         print("Master permit inserted")
@@ -2450,7 +2450,7 @@ def get_all_permits():
         """
 
         with engine.connect() as connection:
-            plumbing_permit = connection.execute(text(f"{sqlQuery}"))
+            plumbing_permit = connection.execute(text(sqlQuery))
             plumbing_permit_dict = plumbing_permit.mappings().all()
 
         return plumbing_permit_dict
@@ -2599,7 +2599,7 @@ def get_city_state_county(zip_code):
         }
 
         with engine.connect() as connection:
-            city_state_zip_dict = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
+            city_state_zip_dict = connection.execute(text(sqlQuery), query_params).mappings().first()
 
         return city_state_zip_dict
 
@@ -2697,7 +2697,7 @@ def get_project_statuses():
         )
 
         with engine.connect() as connection:
-            project_statuses = connection.execute(text(f"{sqlQuery}"))
+            project_statuses = connection.execute(text(sqlQuery))
             statuses = [status.project_status for status in project_statuses]
 
         return statuses
