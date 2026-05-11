@@ -1,3 +1,4 @@
+import logging
 import mimetypes
 import ast
 import base64
@@ -109,6 +110,7 @@ COI_LOCAL_BIZ_TAX_KEY = os.getenv("COI_LOCAL_BIZ_TAX_KEY")
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
 csrf = CSRFProtect(app)
+logging.getLogger("database").setLevel(logging.DEBUG)
 serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 app.jinja_env.filters["jsonify"] = jsonify
 

@@ -8,8 +8,6 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from werkzeug.utils import secure_filename
 
-# from supabase import create_client, Client
-
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -30,12 +28,9 @@ def db_connect():
 
 def get_results(sqlQuery):
     try:
-        # cursor = connection.cursor(MySQLdb.cursors.DictCursor)
-        # cursor.execute(sqlQuery)
-        # results = cursor.fetchall()
-
         with engine.connect() as connection:
             results = connection.execute(text(sqlQuery)).all()
+
         return results
     except Exception as e:
         logger.error("Database Error: %s", e)
@@ -302,7 +297,6 @@ def create_client(client_info):
             connection.commit()
 
         logger.info("Client created")
-        # create_client_poc(client_info)
 
     except Exception as e:
         logger.error("Database Error: %s", e)
@@ -550,18 +544,6 @@ def update_project_status(project_id, project_status, user_id):
             connection.commit()
 
         logger.info("Project status updated")
-        #     insert_note(project_id, f"Project status updated: {project_status}", user_id)
-
-        #     if "Phase" in project_status:
-        #         installment_number = int(project_status[-1]) - 1
-
-        #         if installment_number <= 0:
-        #             return
-
-        #         # TODO: Replace this call if needed
-        #         # update_installment_status(
-        #         #     project_id, installment_number, "Ready", user_id, True
-        #         # )
 
     except Exception as e:
         logger.error("Database Error: %s", e)
@@ -925,7 +907,6 @@ def get_project_payments(project_id):
 
 def get_payment_installments(project_id):
     try:
-        # sqlQuery = "SELECT * FROM project_installments INNER JOIN project_payments ON project_installments.project_id = project_payments.project_id WHERE project_payments.project_id = :project_id;"
         sqlQuery = "select * from invoice_payments inner join project_invoices on invoice_payments.invoice_id = project_invoices.invoice_id where invoice_payments.project_id = :project_id;"
 
         query_params = {
@@ -945,9 +926,6 @@ def get_payment_installments(project_id):
 
 def get_invoice_payments(invoice_id):
     try:
-        # sqlQuery = (
-        #     "SELECT * " + " FROM invoice_payments" + " WHERE invoice_id = :invoice_id;"
-        # )
         sqlQuery = "SELECT * FROM invoice_payments INNER JOIN project_payments ON invoice_payments.project_payment_id = project_payments.project_payment_id WHERE invoice_payments.invoice_id = :invoice_id;"
 
         query_params = {
@@ -1219,10 +1197,6 @@ def upload_document(project_id, document_type, comment, user_id, filename):
         logger.error("Database Error: %s", e)
         return "Error: Document was not uploaded"
 
-    #     # insert_note(
-    #     #     project_id, f"{document_type} has been uploaded (Auto Note)", user_id
-    #     # )
-
 
 def get_document_types():
     try:
@@ -1234,7 +1208,6 @@ def get_document_types():
 
         with engine.connect() as connection:
             doc_types = connection.execute(text(sqlQuery))
-            # doc_types_dict = doc_types.mappings().all()
             doc_types_list = [doc_type.document_type for doc_type in doc_types]
 
         return doc_types_list
@@ -1384,7 +1357,6 @@ def get_fixtures():
 
         with engine.connect() as connection:
             fixtures = connection.execute(text(sqlQuery))
-            # fixtures_list = fixtures.mappings().all()
             fixtures_list = [
                 f"{fixture.fixture_abbreviation} - {fixture.fixture_name}"
                 for fixture in fixtures
@@ -1507,7 +1479,6 @@ def get_installment_categories():
 
         with engine.connect() as connection:
             installments = connection.execute(text(sqlQuery))
-            # installments_list = installments.mappings().all()
             installments_list = [
                 installment.installment_category for installment in installments
             ]
@@ -1535,24 +1506,6 @@ def get_proposal_installments(project_id, proposal_id=0):
         with engine.connect() as connection:
             installments = connection.execute(text(sqlQuery), query_params)
             installments_dict = installments.mappings().all()
-
-        # if not installments_dict:
-        #     sqlQuery = (
-        #         "SELECT *"
-        #         + " FROM project_proposal_installments"
-        #         + " WHERE project_id = :project_id AND proposal_id = 0 ORDER BY installment_id;"
-        #     )
-
-        #     query_params = {
-        #         "project_id": project_id,
-        #     }
-
-        #     with engine.connect() as connection:
-        #         installments = connection.execute(text(sqlQuery), query_params)
-        #         try:
-        #             installments_dict = installments.mappings().all()
-        #         except:
-        #             installments_dict = ""
 
         return installments_dict
 
@@ -1761,10 +1714,6 @@ def create_proposal(project_id, user_id):
             + " FROM project_proposal"
             + " WHERE project_id = :project_id;"
         )
-
-        # query_params = {
-        #     "project_id": project_id,
-        # }
 
         with engine.connect() as connection:
             proposal_id = connection.execute(text(sqlQuery), query_params)
