@@ -49,7 +49,7 @@ def get_results(sqlQuery):
         return results
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 ############## Landing Page Queries ##############
@@ -72,7 +72,7 @@ def get_projects_status_summary():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_projects_finance_summary():
@@ -99,7 +99,7 @@ def get_projects_finance_summary():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 ############## User Queries ##############
@@ -117,7 +117,7 @@ def get_user(user_id):
         return user
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_user_password(email):
@@ -129,12 +129,12 @@ def get_user_password(email):
         }
 
         with engine.connect() as connection:
-            password = connection.execute(text(sqlQuery), query_params).first()[0]
+            row = connection.execute(text(sqlQuery), query_params).first()
 
-        return password
+        return row[0] if row else None
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_user_from_email(email):
@@ -146,13 +146,12 @@ def get_user_from_email(email):
         }
 
         with engine.connect() as connection:
-            results = connection.execute(text(sqlQuery), query_params)
-            user_dict = results.mappings().all()[0]
+            user_dict = connection.execute(text(sqlQuery), query_params).mappings().first()
 
         return user_dict
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def create_user(user_info):
@@ -178,7 +177,7 @@ def create_user(user_info):
 
     except Exception as e:
         print("User Creation Database Error:", e)
-        return ""
+        return None
 
 
 def update_user_password(email, new_password_hash):
@@ -239,14 +238,13 @@ def get_client(client_id):
         }
 
         with engine.connect() as connection:
-            client = connection.execute(text(f"{sqlQuery}"), queryParams)
-            client_dict = dict(client.mappings().all()[0])
+            row = connection.execute(text(f"{sqlQuery}"), queryParams).mappings().first()
 
-        return client_dict
+        return dict(row) if row else None
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_client_poc(client_id):
@@ -257,14 +255,12 @@ def get_client_poc(client_id):
         }
 
         with engine.connect() as connection:
-            poc = connection.execute(text(f"{sqlQuery}"), query_params)
-
-            poc_dict = poc.mappings().all()[0]
+            poc_dict = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
 
         return poc_dict
     except Exception as e:
         print("get_client_poc() - Database Error:", e)
-        return ""
+        return None
 
 
 def get_all_clients(user_role):
@@ -294,7 +290,7 @@ def get_all_clients(user_role):
         return clients_dict
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def create_client(client_info):
@@ -324,7 +320,7 @@ def create_client(client_info):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def create_client_poc(client_info):
@@ -349,7 +345,7 @@ def create_client_poc(client_info):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def update_client(client_info):
@@ -402,7 +398,7 @@ def update_client(client_info):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_project_client(project_id):
@@ -439,7 +435,7 @@ def get_all_projects(user_role):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_project(project_id):
@@ -457,14 +453,13 @@ def get_project(project_id):
         }
 
         with engine.connect() as connection:
-            project = connection.execute(text(f"{sqlQuery}"), query_params)
-            project_dict = dict(project.mappings().all()[0])
+            row = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
 
-        return project_dict
+        return dict(row) if row else None
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def create_project(project_info):
@@ -493,7 +488,7 @@ def create_project(project_info):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_client_projects(client_id):
@@ -519,7 +514,7 @@ def get_client_projects(client_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_max_project_id():
@@ -541,7 +536,7 @@ def get_max_project_id():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_next_project_id():
@@ -588,7 +583,7 @@ def update_project_status(project_id, project_status, user_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 ############## Notes Queries ##############
@@ -615,7 +610,7 @@ def get_project_notes(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def add_project_note(note_info):
@@ -666,7 +661,7 @@ def get_project_invoices(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_invoice(project_id, invoice_number):
@@ -683,14 +678,13 @@ def get_invoice(project_id, invoice_number):
         }
 
         with engine.connect() as connection:
-            invoice = connection.execute(text(f"{sqlQuery}"), query_params)
-            invoice_dict = invoice.mappings().all()[0]
+            invoice_dict = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
 
         return invoice_dict
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_invoice_items(project_id, invoice_number):
@@ -716,7 +710,7 @@ def get_invoice_items(project_id, invoice_number):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_all_invoice_items(project_id):
@@ -760,7 +754,7 @@ def get_open_invoice_items(project_id, invoice_number):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_open_invoices(project_id):
@@ -784,7 +778,7 @@ def get_open_invoices(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_invoice_payments_total(invoice_id):
@@ -800,15 +794,13 @@ def get_invoice_payments_total(invoice_id):
         }
 
         with engine.connect() as connection:
-            invoice_items = connection.execute(text(f"{sqlQuery}"), query_params)
-            invoice_items_dict = invoice_items.mappings().all()[0]
+            row = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
 
-            return float(invoice_items_dict["sum"])
-            # return invoice_items_dict
+        return float(row["sum"] or 0) if row else 0.0
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return 0.0
 
 
 def insert_payment(payment_info):
@@ -835,7 +827,7 @@ def insert_payment(payment_info):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def invoice_received_amount(invoice_id):
@@ -883,7 +875,7 @@ def apply_payment(invoice_info):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
     # Insert the payment line items
     project_payment_id = get_project_payment_id(invoice_info)
@@ -909,7 +901,7 @@ def apply_payment(invoice_info):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_project_payment_id(invoice_info):
@@ -926,7 +918,7 @@ def get_project_payment_id(invoice_info):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_project_payments(project_id):
@@ -950,7 +942,7 @@ def get_project_payments(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_payment_installments(project_id):
@@ -970,7 +962,7 @@ def get_payment_installments(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_invoice_payments(invoice_id):
@@ -992,7 +984,7 @@ def get_invoice_payments(invoice_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_installment_number(project_id, installment_id):
@@ -1015,7 +1007,7 @@ def get_installment_number(project_id, installment_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_next_invoice_number(project_id):
@@ -1031,18 +1023,14 @@ def get_next_invoice_number(project_id):
         }
 
         with engine.connect() as connection:
-            max_invoice = connection.execute(text(f"{sqlQuery}"), query_params)
-            max_invoice = max_invoice.mappings().all()[0]["curr_inv"]
+            row = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
 
-            if not max_invoice:
-                max_invoice = 0
-
-        # return invoice_payments_dict
-        return max_invoice + 1
+        curr_inv = row["curr_inv"] if row else None
+        return (curr_inv or 0) + 1
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def create_invoice(selected_invoices, project_id):
@@ -1175,7 +1163,7 @@ def get_project_installments(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def update_installment_status(
@@ -1203,7 +1191,7 @@ def update_installment_status(
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 ############## Document Queries ##############
@@ -1230,7 +1218,7 @@ def get_project_docs(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def upload_document(project_id, document_type, comment, user_id, filename):
@@ -1281,7 +1269,7 @@ def get_document_types():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 ############## Search Queries ##############
@@ -1303,7 +1291,7 @@ def search(search_by, search_criteria):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def search_universal(search_criteria):
@@ -1434,7 +1422,7 @@ def get_fixtures():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_project_fixtures(project_id):
@@ -1515,7 +1503,7 @@ def add_proposal_fixture(fixture_data, table_name="tmp_project_proposal_fixtures
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def delete_proposal_fixture(fixture_id):
@@ -1536,7 +1524,7 @@ def delete_proposal_fixture(fixture_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_installment_categories():
@@ -1558,7 +1546,7 @@ def get_installment_categories():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_proposal_installments(project_id, proposal_id=0):
@@ -1629,7 +1617,7 @@ def add_proposal_installment(
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def delete_proposal_installment(installment_id):
@@ -1648,7 +1636,7 @@ def delete_proposal_installment(installment_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_proposal_notes(project_id, proposal_id=0):
@@ -1696,7 +1684,7 @@ def add_proposal_note(note_data):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def delete_proposal_note(note_id):
@@ -1715,7 +1703,7 @@ def delete_proposal_note(note_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_proposal_fixture_notes(project_id, proposal_id=0):
@@ -1763,7 +1751,7 @@ def add_proposal_fixture_note(note_data):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def delete_proposal_fixture_note(fixture_note_id):
@@ -1782,7 +1770,7 @@ def delete_proposal_fixture_note(fixture_note_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def create_proposal(project_id, user_id):
@@ -1803,7 +1791,7 @@ def create_proposal(project_id, user_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
     # Get next proposal ID value
     try:
@@ -1823,7 +1811,7 @@ def create_proposal(project_id, user_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
     # Update fixture temp table with proposal_id
     try:
@@ -1844,7 +1832,7 @@ def create_proposal(project_id, user_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
     # Update installment temp table with proposal_id
     try:
@@ -1865,7 +1853,7 @@ def create_proposal(project_id, user_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
     # Update note temp table with proposal_id
     try:
@@ -1886,7 +1874,7 @@ def create_proposal(project_id, user_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
     # Create note in project
     try:
@@ -1903,7 +1891,7 @@ def create_proposal(project_id, user_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def proposal_temp_tables_finalize(project_id):
@@ -1932,7 +1920,7 @@ def proposal_fixture_temp_table(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
     # Delete data from fixtures temp table
     try:
@@ -1948,7 +1936,7 @@ def proposal_fixture_temp_table(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def proposal_fixture_note_temp_table(project_id):
@@ -1970,7 +1958,7 @@ def proposal_fixture_note_temp_table(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
     # Delete data from notes temp table
     try:
@@ -1986,7 +1974,7 @@ def proposal_fixture_note_temp_table(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def proposal_installment_temp_table(project_id):
@@ -2008,7 +1996,7 @@ def proposal_installment_temp_table(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
     # Delete data from installments temp table
     try:
@@ -2024,7 +2012,7 @@ def proposal_installment_temp_table(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def proposal_note_temp_table(project_id):
@@ -2046,7 +2034,7 @@ def proposal_note_temp_table(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
     # Delete data from notes temp table
     try:
@@ -2062,7 +2050,7 @@ def proposal_note_temp_table(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def update_proposal_items_id(project_id, proposal_id):
@@ -2084,7 +2072,7 @@ def update_proposal_items_id(project_id, proposal_id):
             connection.commit()
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
     try:
         # Update installments table
@@ -2100,7 +2088,7 @@ def update_proposal_items_id(project_id, proposal_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
     try:
         # Update notes table
@@ -2118,7 +2106,7 @@ def update_proposal_items_id(project_id, proposal_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def proposal_clear_temp_tables(project_id):
@@ -2146,7 +2134,7 @@ def proposal_clear_fixture_temp(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def proposal_clear_fixture_note_temp(project_id):
@@ -2167,7 +2155,7 @@ def proposal_clear_fixture_note_temp(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def proposal_clear_installment_temp(project_id):
@@ -2188,7 +2176,7 @@ def proposal_clear_installment_temp(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def proposal_clear_note_temp(project_id):
@@ -2209,7 +2197,7 @@ def proposal_clear_note_temp(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 ############## Permit Queries ##############
@@ -2227,7 +2215,7 @@ def get_permit_add_information():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_project_permits(project_id):
@@ -2353,7 +2341,7 @@ def update_permit(permit_id, status, user_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def permit_follow_up_date(status_date, city_county_id):
@@ -2380,7 +2368,7 @@ def permit_follow_up_date(status_date, city_county_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_master_permit(project_id):
@@ -2403,7 +2391,7 @@ def get_master_permit(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def get_plumbing_permit(project_id):
@@ -2426,7 +2414,7 @@ def get_plumbing_permit(project_id):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 def insert_master_permit(project_id, permit_number):
@@ -2453,7 +2441,7 @@ def insert_master_permit(project_id, permit_number):
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_all_permits():
@@ -2471,7 +2459,7 @@ def get_all_permits():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
 
 
 def get_permit_dashboard_summary():
@@ -2613,14 +2601,13 @@ def get_city_state_county(zip_code):
         }
 
         with engine.connect() as connection:
-            city_state_zip = connection.execute(text(f"{sqlQuery}"), query_params)
-            city_state_zip_dict = city_state_zip.mappings().all()[0]
+            city_state_zip_dict = connection.execute(text(f"{sqlQuery}"), query_params).mappings().first()
 
         return city_state_zip_dict
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return None
 
 
 ############## COI Admin Queries ##############
@@ -2719,4 +2706,4 @@ def get_project_statuses():
 
     except Exception as e:
         print("Database Error:", e)
-        return ""
+        return []
