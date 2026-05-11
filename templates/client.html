@@ -19,6 +19,7 @@
 
 <body>
     {% include 'nav.html' %}
+    <main>
 
     <div class="container pt-4">
         <div class="row align-items-center mb-4">
@@ -39,48 +40,48 @@
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Address</span>
+                        <span class="input-group-text border-primary text-primary" id="client-address">Address</span>
                         <input type="text" class="form-control border-primary" value="{{ client['address'] }}"
-                            aria-label="address" aria-describedby="basic-addon1" readonly>
+                            aria-label="address" aria-describedby="client-address" readonly>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">City</span>
+                        <span class="input-group-text border-primary text-primary" id="client-city">City</span>
                         <input type="text" class="form-control border-primary" value="{{ client['city'] }}"
-                            aria-label="city" aria-describedby="basic-addon1" readonly>
+                            aria-label="city" aria-describedby="client-city" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">State</span>
+                        <span class="input-group-text border-primary text-primary" id="client-state">State</span>
                         <input type="text" class="form-control border-primary" value="{{ client['state'] }}"
-                            aria-label="state" aria-describedby="basic-addon1" readonly>
+                            aria-label="state" aria-describedby="client-state" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Zip Code</span>
+                        <span class="input-group-text border-primary text-primary" id="client-zip">Zip Code</span>
                         <input type="text" class="form-control border-primary" value="{{ client['zip_code'] }}"
-                            aria-label="zipCode" aria-describedby="basic-addon1" readonly>
+                            aria-label="zipCode" aria-describedby="client-zip" readonly>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Telephone</span>
+                        <span class="input-group-text border-primary text-primary" id="client-telephone">Telephone</span>
                         <input type="text" class="form-control border-primary" value="{{ client['phone_number'] }}"
-                            aria-label="telephone" aria-describedby="basic-addon1" readonly>
+                            aria-label="telephone" aria-describedby="client-telephone" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Website</span>
+                        <span class="input-group-text border-primary text-primary" id="client-website">Website</span>
                         <input type="text" class="form-control border-primary" value="{{ client['website'] }}"
-                            aria-label="website" aria-describedby="basic-addon1" readonly>
+                            aria-label="website" aria-describedby="client-website" readonly>
                     </div>
                 </div>
             </div>
@@ -93,26 +94,26 @@
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Name</span>
+                        <span class="input-group-text border-primary text-primary" id="client-poc-name">Name</span>
                         <input type="text" class="form-control border-primary" value="{{ client_poc['name'] }}"
-                            aria-label="contactName" aria-describedby="basic-addon1" readonly>
+                            aria-label="contactName" aria-describedby="client-poc-name" readonly>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Phone Number</span>
+                        <span class="input-group-text border-primary text-primary" id="client-poc-phone">Phone Number</span>
                         <input type="tel" class="form-control border-primary" value="{{ client_poc['telephone'] }}"
                             pattern="\([0-9]{3}) [0-9]{3}-[0-9]{4}" aria-label="phoneNumber"
-                            aria-describedby="basic-addon1" readonly>
+                            aria-describedby="client-poc-phone" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="basic-addon1">Email</span>
+                        <span class="input-group-text border-primary text-primary" id="client-poc-email">Email</span>
                         <input type="email" class="form-control border-primary" value="{{ client_poc['email'] }}"
-                            aria-label="email" aria-describedby="basic-addon1" readonly>
+                            aria-label="email" aria-describedby="client-poc-email" readonly>
                     </div>
                 </div>
             </div>
@@ -165,6 +166,7 @@
 
     </div>
 
+    </main>
 </body>
 
 </html>

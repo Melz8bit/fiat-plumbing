@@ -15,6 +15,7 @@
 
 <body>
     {% include 'nav.html' %}
+    <main>
 
     <div class="container pt-4">
         <div class="row d-flex align-items-center mb-4">
@@ -42,16 +43,16 @@
             <div class=" row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Contract #</span>
+                        <span class="input-group-text" id="proj-contract">Contract #</span>
                         <input type="text" class="form-control" value="{{ project['project_id'] }}" aria-label="address"
-                            aria-describedby="basic-addon1" readonly>
+                            aria-describedby="proj-contract" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Client</span>
+                        <span class="input-group-text" id="proj-client">Client</span>
                         <input type="text" class="form-control" value="{{ project['client_name'] }}"
-                            aria-label="address" aria-describedby="basic-addon1" readonly>
+                            aria-label="address" aria-describedby="proj-client" readonly>
                     </div>
                 </div>
             </div>
@@ -84,10 +85,10 @@
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Status Date</span>
+                        <span class="input-group-text" id="proj-status-date">Status Date</span>
                         <input type="text" class="form-control"
                             value="{{ project['status_date'].strftime('%m/%d/%Y') }}" aria-label="address"
-                            aria-describedby="basic-addon1" readonly>
+                            aria-describedby="proj-status-date" readonly>
                     </div>
                 </div>
             </div>
@@ -100,32 +101,32 @@
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Address</span>
+                        <span class="input-group-text" id="proj-address">Address</span>
                         <input type="text" class="form-control" value="{{ project['address'] }}" aria-label="address"
-                            aria-describedby="basic-addon1" readonly>
+                            aria-describedby="proj-address" readonly>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">City</span>
+                        <span class="input-group-text" id="proj-city">City</span>
                         <input type="text" class="form-control" value="{{ project['city'] }}" aria-label="city"
-                            aria-describedby="basic-addon1" readonly>
+                            aria-describedby="proj-city" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">State</span>
+                        <span class="input-group-text" id="proj-state">State</span>
                         <input type="text" class="form-control" value="{{ project['state'] }}" aria-label="state"
-                            aria-describedby="basic-addon1" readonly>
+                            aria-describedby="proj-state" readonly>
                     </div>
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Zip Code</span>
+                        <span class="input-group-text" id="proj-zip">Zip Code</span>
                         <input type="text" class="form-control" value="{{ project['zip_code'] }}" aria-label="zipCode"
-                            aria-describedby="basic-addon1" readonly>
+                            aria-describedby="proj-zip" readonly>
                     </div>
                 </div>
             </div>
@@ -139,9 +140,9 @@
                 <div class="col">
                     {% if master_permit %}
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Master Permit</span>
+                        <span class="input-group-text" id="proj-master-permit">Master Permit</span>
                         <input type="text" class="form-control" value="{{ master_permit['permit_number'] }}"
-                            aria-label="address" aria-describedby="basic-addon1" readonly>
+                            aria-label="address" aria-describedby="proj-master-permit" readonly>
                     </div>
                     {% else %}
                     <form method="POST">
@@ -157,9 +158,9 @@
                 </div>
                 <div class="col">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon1">Plumbing Permit</span>
+                        <span class="input-group-text" id="proj-plumbing-permit">Plumbing Permit</span>
                         <input type="text" class="form-control" value="{{ plumbing_permit['permit_number'] }}"
-                            aria-label="city" aria-describedby="basic-addon1" readonly>
+                            aria-label="city" aria-describedby="proj-plumbing-permit" readonly>
                         {% if not plumbing_permit %}
                         <button class="btn btn-outline-primary" type="button" id="button-addon2">Request</button>
                         {% endif %}
@@ -647,6 +648,7 @@
             });
         });
     </script>
+    </main>
 </body>
 
 </html>
