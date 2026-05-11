@@ -31,6 +31,7 @@ from flask_login import (
     login_user,
     logout_user,
 )
+from flask_wtf.csrf import CSRFProtect
 from itsdangerous import URLSafeTimedSerializer
 from num2words import num2words
 from sqlalchemy import null, select
@@ -107,6 +108,7 @@ COI_LOCAL_BIZ_TAX_KEY = os.getenv("COI_LOCAL_BIZ_TAX_KEY")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
+csrf = CSRFProtect(app)
 serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 app.jinja_env.filters["jsonify"] = jsonify
 
@@ -128,8 +130,10 @@ def unauthorized_callback():
 
 @login_manager.user_loader
 def load_user(user_id):
-    user = users.Users(database.get_user(user_id))
-    return user or None
+    user_dict = database.get_user(user_id)
+    if not user_dict:
+        return None
+    return users.Users(user_dict)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -184,11 +188,11 @@ def sign_up():
 
         if password != confirm:
             flash("Passwords do not match")
+            return render_template("sign_up.html", signup_form=signup_form)
 
         existing_user = database.get_user_from_email(email)
         if existing_user:
             flash("Email is already in use. Please choose another email.")
-
         else:
             password_hash = generate_password_hash(password, "scrypt")
             user_info = {
@@ -852,7 +856,7 @@ def get_project_fixtures(project_id):
 def get_project_installments(project_id):
     installments = database.get_project_installments(project_id)
     project_total = get_project_installment_total(installments)
-    payments_total = get_project_payments_total()
+    payments_total = get_project_payments_total(project_id)
     return render_template(
         "project_installments.html",
         installments=installments,
@@ -869,14 +873,9 @@ def get_project_installment_total(installments):
     return project_total
 
 
-def get_project_payments_total():
-    # Get total amount of payments received
-    project_payments = database.get_project_payments(session["project_id"])
-
-    payments_total = 0
-    for payment in project_payments:
-        payments_total += payment["payment_amount"]
-    return payments_total
+def get_project_payments_total(project_id):
+    project_payments = database.get_project_payments(project_id)
+    return sum(payment["payment_amount"] for payment in project_payments)
 
 
 # Project Invoices
@@ -901,38 +900,22 @@ def get_project_invoices(project_id):
 
 
 def get_project_invoice_items(invoices):
-    # Track payments made on invoices and invoice items
-    payment_info = {}
-    payments_received_total = {}
     invoice_items = {}
 
-    if invoices:
-        for invoice in invoices:
-            payment = database.get_invoice_payments(invoice["invoice_id"])
-
-            if payment:
-                payment_info[invoice["invoice_id"]] = payment
-                payments_received_total[invoice["invoice_id"]] = (
-                    database.get_invoice_payments_total(invoice["invoice_id"])
-                )
-
-            invoice_item = database.get_invoice_items(
-                session["project_id"], invoice["invoice_number"]
-            )
-            if invoice_item:
-                invoice_items[invoice_item[0]["invoice_number"]] = invoice_item
-    else:
-        invoices = []
+    for invoice in invoices:
+        invoice_item = database.get_invoice_items(
+            session["project_id"], invoice["invoice_number"]
+        )
+        if invoice_item:
+            invoice_items[invoice_item[0]["invoice_number"]] = invoice_item
 
     return invoice_items
 
 
 def project_invoice_create(selected_installments, billed_invoice_amount):
-    selected_installments = selected_installments
     installments = database.get_project_installments(session["project_id"])
 
     selected_invoices = []
-    billed_invoice_amount = billed_invoice_amount
     while "0" in billed_invoice_amount:
         billed_invoice_amount.remove("0")
 
@@ -967,7 +950,6 @@ def project_invoice_create(selected_installments, billed_invoice_amount):
 def get_project_payments(project_id):
     payments = database.get_project_payments(project_id)
     open_invoices = database.get_open_invoices(project_id)
-    project_payments = database.get_project_payments(project_id)
     project_amount_owed = get_project_amount_owed(project_id)
 
     payment_detail_form = InvoicePaymentForm()
@@ -978,7 +960,7 @@ def get_project_payments(project_id):
         project_id=project_id,
         payments=payments,
         open_invoices=open_invoices,
-        project_payments=project_payments,
+        project_payments=payments,
         payment_detail_form=payment_detail_form,
         apply_payment_form=apply_payment_form,
         project_amount_owed=project_amount_owed,
@@ -1147,10 +1129,10 @@ def apply_payment_ajax(project_id):
 
         payment_applied_info.append(payment_dict)
 
-        if check_amount_remaining == 0:
+        if check_amount_remaining <= 0:
             return jsonify(payment_applied_info)
 
-    return jsonify("")
+    return jsonify(payment_applied_info)
 
 
 def get_project_amount_owed(project_id):
@@ -1254,7 +1236,7 @@ def upload_project_document(document_upload_form):
 @app.route("/createProposalPDF/<project_id>")
 @app.route("/createProposalPDF/<project_id>/<plans_date>")
 @login_required
-def create_proposal_pdf(project_id, plans_date):
+def create_proposal_pdf(project_id, plans_date=None):
     project_info_temp = database.get_project(project_id)
     project_info = {}
     project_info["project_id"] = project_info_temp["project_id"]
@@ -1279,7 +1261,11 @@ def create_proposal_pdf(project_id, plans_date):
     proposal_total_words = num2words(proposal_total)
     proposal_total_words = proposal_total_words.replace(",", "")
 
-    plans_date = datetime.strptime(plans_date, "%Y-%m-%d").date()
+    try:
+        plans_date = datetime.strptime(plans_date, "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        flash("Invalid plans date.")
+        return redirect(url_for("project_view", project_id=project_id))
 
     return render_template(
         "proposal_print.html",
@@ -1488,10 +1474,11 @@ def project_add(client_id=None):
 @login_required
 def download_document(project_id, doc_filename):
     my_file = download_file(doc_filename)
+    safe_name = secure_filename(doc_filename)
     return Response(
         my_file["Body"].read(),
         mimetype=my_file["ContentType"],
-        headers={"Content-Disposition": f"attachment;filename={doc_filename}"},
+        headers={"Content-Disposition": f"attachment;filename={safe_name}"},
     )
 
 
@@ -1583,7 +1570,8 @@ def update_inspection_status():
                 200,
             )
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            app.logger.error("Error updating inspection status: %s", e)
+            return jsonify({"error": "An internal error occurred"}), 500
 
     return jsonify({"error": "Invalid request"}), 400
 
@@ -1599,27 +1587,16 @@ def update_permit_status():
         if not permit_id or not new_status:
             return jsonify({"error": "Missing permit ID or status"}), 400
 
+        permit = database.get_permit_by_id(permit_id)
+        if not permit:
+            return jsonify({"error": "Permit not found"}), 404
+
         try:
-            # Find the permit by ID
-            permit = database.get_permit_by_id(permit_id)
-            if permit:
-                # Update the status on the database
-                database.update_permit(permit_id, new_status, session["user_id"])
-                flash("Permit status updated successfully")
-                return (
-                    jsonify(
-                        {
-                            "success": True,
-                            "message": "Permit status updated successfully",
-                        }
-                    ),
-                    200,
-                )
-
+            database.update_permit(permit_id, new_status, session["user_id"])
+            return jsonify({"success": True, "message": "Permit status updated successfully"}), 200
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-        return jsonify({"error": "Invalid request"}), 400
+            app.logger.error("Error updating permit status: %s", e)
+            return jsonify({"error": "An internal error occurred"}), 500
 
 
 ############## Admin - COI ##############
@@ -1684,7 +1661,7 @@ def send_coi_email(dept, coverage_start, docs):
             part["Content-Disposition"] = f'attachment; filename="{display_name}"'
             msg.attach(part)
         except Exception as e:
-            raise Exception(f"Missing file in S3: {s3_key}")
+            raise Exception(f"Missing file in S3: {s3_key}") from e
 
     with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as smtp:
         smtp.ehlo()
@@ -1839,7 +1816,8 @@ def clear_proposal_installments(project_id):
         database.proposal_clear_installment_temp(project_id)
         return jsonify(success=True)
     except Exception as e:
-        return jsonify(success=False, error=str(e)), 500
+        app.logger.error("Error clearing proposal installments: %s", e)
+        return jsonify(success=False, error="An internal error occurred"), 500
 
 
 def get_encoded_logo():
@@ -2062,15 +2040,7 @@ def get_all_proposal_notes(project_id):
 
 @app.template_filter()
 def format_currency(value):
-    # locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
-    value = format(value, ",.2f")
-
-    if not value:
-        return "$0.00"
-        # return locale.currency(0, symbol=True, grouping=True)
-
-    return "$" + str(value)
-    # return locale.currency(value, symbol=True, grouping=True)
+    return "$" + format(value, ",.2f")
 
 
 @app.template_filter()

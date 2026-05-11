@@ -430,6 +430,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}',
                     },
                     body: JSON.stringify(data),
                 })
@@ -499,7 +500,7 @@
                 const newStatus = selectStatus.value;
                 fetch('/project/inspections/update-status', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
                     body: JSON.stringify({ inspection_id: inspectionID, new_status: newStatus }),
                 })
                     .then(response => response.json())

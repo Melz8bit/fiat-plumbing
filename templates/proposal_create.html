@@ -666,8 +666,11 @@
                                 clearInstallmentsUIOnly(); // Helper function below
                                 
                                 // Call a route to clear installments in the DB
-                                $.post("{{ url_for('clear_proposal_installments', project_id=project['project_id']) }}", function() {
-                                    initializeProposalMath(); // Recalculate with $0 installments
+                                $.ajax({
+                                    type: 'POST',
+                                    url: "{{ url_for('clear_proposal_installments', project_id=project['project_id']) }}",
+                                    headers: { 'X-CSRFToken': '{{ csrf_token() }}' },
+                                    success: function() { initializeProposalMath(); }
                                 });
 
                                 document.getElementById("fixture_select").selectedIndex = 0;
@@ -1164,6 +1167,17 @@
 
 
 
+            <!-- Flash-style Toast (matches site-wide flash_message.html) -->
+            <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1100;">
+                <div id="clientFlashToast" class="toast bg-light" role="status" aria-live="polite" aria-atomic="true">
+                    <div class="toast-header">
+                        <strong class="me-auto">Message</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div id="clientFlashBody" class="toast-body"></div>
+                </div>
+            </div>
+
             <!-- Toast Message -->
             <div class="toast-container position-fixed bottom-0 end-0 p-3">
                 <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -1189,6 +1203,11 @@
             <script>
                 function redirectToUrl() {
                     var plans_date = document.getElementById('plans_date').value;
+                    if (!plans_date) {
+                        document.getElementById('clientFlashBody').innerHTML = 'Please enter a plans date before viewing the PDF.';
+                        bootstrap.Toast.getOrCreateInstance(document.getElementById('clientFlashToast')).show();
+                        return;
+                    }
                     var url = "{{ url_for('create_proposal_pdf', project_id=project['project_id'], plans_date='TEMP' )}}";
                     url = url.replace('TEMP', encodeURIComponent(plans_date));
                     window.location.href = url;

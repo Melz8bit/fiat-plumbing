@@ -164,6 +164,3 @@ cython_debug/
 upload_test.py
 
 xx.env
-
-# Claude Code
-.claude/session-logs/

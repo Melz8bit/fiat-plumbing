@@ -314,10 +314,11 @@
 
                         $.ajax({
                             type: "POST",
-                            url: "/finalizeProposal", // Replace with your endpoint
+                            url: "/finalizeProposal",
                             headers: {
                                 'Accept': 'application/json',
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token() }}'
                             },
                             data: JSON.stringify(myData),
                             contentType: "application/json",
