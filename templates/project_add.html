@@ -55,11 +55,9 @@
                     </select>
                     {% else %}
                     <select class="form-select" name="client" id="client">
-                        {% for option in form.client %}
-                        {% if loop.first %}
                         <option value="" disabled selected>Select Client</option>
-                        {% endif %}
-                        {{ option }}
+                        {% for value, label in form.client.choices %}
+                        <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
                     </select>
                     {% endif %}
@@ -94,11 +92,9 @@
                         <div class="input-group mb-3">
                             {{ form.state.label(class="input-group-text") }}
                             <select class="form-select" name="state" id="state">
-                                {% for option in form.state %}
-                                {% if loop.first %}
                                 <option value="" disabled selected>Select State</option>
-                                {% endif %}
-                                {{ option }}
+                                {% for value, label in form.state.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
                         </div>

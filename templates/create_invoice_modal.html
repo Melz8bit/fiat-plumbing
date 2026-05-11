@@ -54,13 +54,6 @@
                                     installment['billed_amount'] | float)
                                     ) }}
                                 </div>
-                                <script>
-                                    function changeBilledAmount(installmentID, percent, installmentAmount) {
-                                        let labelElement = document.getElementById("installmentBilledAmount" + installmentID);
-                                        labelElement.value =
-                                            parseFloat(installmentAmount * (percent / 100)).toFixed(2);
-                                    }
-                                </script>
                             </td>
                         </tr>
                         {% else %}
@@ -88,13 +81,6 @@
                                     value=0
                                     ) }}
                                 </div>
-                                <script>
-                                    function changeBilledAmount(installmentID, percent, installmentAmount) {
-                                        let labelElement = document.getElementById("installmentBilledAmount" + installmentID);
-                                        labelElement.value =
-                                            parseFloat(installmentAmount * (percent / 100)).toFixed(2);
-                                    }
-                                </script>
                             </td>
                         </tr>
                         {% endif %}
@@ -106,7 +92,7 @@
                             <td colspan="100%">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Note</span>
-                                    <textarea class="form-control" aria-label="Insert Note"
+                                    <textarea class="form-control" name="invoice_note" aria-label="Insert Note"
                                         style="resize: none;"></textarea>
                                 </div>
                             </td>
@@ -134,6 +120,12 @@
 
             </div>
         </form>
+        <script>
+            function changeBilledAmount(installmentID, percent, installmentAmount) {
+                let labelElement = document.getElementById("installmentBilledAmount" + installmentID);
+                labelElement.value = parseFloat(installmentAmount * (percent / 100)).toFixed(2);
+            }
+        </script>
         <script>
             // Example starter JavaScript for disabling form submissions if there are invalid fields
             (() => {

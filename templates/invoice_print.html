@@ -128,18 +128,20 @@
             <div class="mt-5">
                 <table class="table table-sm text-center table-bordered">
                     <thead>
-                        <th>Project ID</th>
-                        <th>Name</th>
-                        <th>Address</th>
-                        <th>Due Date</th>
+                        <tr>
+                            <th>Project ID</th>
+                            <th>Name</th>
+                            <th>Address</th>
+                            <th>Due Date</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <td>{{ project_info['project_id'] }}</td>
-                        <td>{{ project_info['name'] }}</td>
-                        <td>{{ project_info['address'] }}, {{ project_info['city'] }}, {{ project_info['state'] }}
-                            {{
-                            project_info['zip_code'] }}</td>
-                        <td>{{ today_date | calculate_due_date }}</td>
+                        <tr>
+                            <td>{{ project_info['project_id'] }}</td>
+                            <td>{{ project_info['name'] }}</td>
+                            <td>{{ project_info['address'] }}, {{ project_info['city'] }}, {{ project_info['state'] }} {{ project_info['zip_code'] }}</td>
+                            <td>{{ today_date | calculate_due_date }}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -148,12 +150,14 @@
             <div class="mt-5">
                 <table class="table mb-4">
                     <thead>
-                        <th class="text-center">Installment</th>
-                        <th>Description</th>
-                        <th class="text-center">Billed %</th>
-                        <td></td>
-                        <td></td>
-                        <th class="text-center">Item Amount</th>
+                        <tr>
+                            <th class="text-center">Installment</th>
+                            <th>Description</th>
+                            <th class="text-center">Billed %</th>
+                            <th></th>
+                            <th></th>
+                            <th class="text-center">Item Amount</th>
+                        </tr>
                     </thead>
                     <tbody class="table-group-divider">
                         {% for invoice_item in invoice_items %}

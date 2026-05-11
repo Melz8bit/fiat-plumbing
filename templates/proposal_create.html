@@ -169,6 +169,8 @@
                 var deleteButton = document.createElement("button");
                 deleteButton.id = "btnDeleteFixtureLine" + data[i]['fixture_id'];
                 deleteButton.setAttribute("data-fixture-id", data[i]['fixture_id']);
+                var fixtureDeleteUrl = "{{ url_for('delete_proposal_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}".replace("FIXTURE_ID_REPLACE", data[i]['fixture_id']);
+                deleteButton.setAttribute("data-url", fixtureDeleteUrl);
                 deleteButton.classList.add("border-0", "bg-transparent");
 
                 var deleteIcon = document.createElement("i");
@@ -176,27 +178,6 @@
 
                 deleteButton.appendChild(deleteIcon);
                 deleteCell.appendChild(deleteButton);
-                let fixtureID = data[i]['fixture_id'];
-                deleteButton.addEventListener("click", function (e) {
-                    var url = "{{ url_for('delete_proposal_fixture', fixture_id='FIXTURE_ID_REPLACE', project_id=project['project_id']) }}";
-                    url = url.replace("FIXTURE_ID_REPLACE", fixtureID);
-                    $.ajax({
-                        type: "POST",
-                        url: url,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        data: "", // serializes the form's elements.
-                        success: function (data) {
-                            // console.log(data)  // display the returned data in the console.
-
-                            updateFixtureTable(data);
-                        }
-                    });
-
-                    e.preventDefault(); // block the traditional submission of the form.
-                });
                 newRow.appendChild(deleteCell);
 
                 // Get the table body
@@ -257,6 +238,8 @@
                 var deleteButton = document.createElement("button");
                 deleteButton.id = "btnDeleteNoteLine" + data[i]['note_id'];
                 deleteButton.setAttribute("data-note-id", data[i]['note_id']);
+                var noteDeleteUrl = "{{ url_for('delete_proposal_note', note_id='NOTE_ID_REPLACE', project_id=project['project_id']) }}".replace("NOTE_ID_REPLACE", data[i]['note_id']);
+                deleteButton.setAttribute("data-url", noteDeleteUrl);
                 deleteButton.classList.add("border-0", "bg-transparent");
 
                 var deleteIcon = document.createElement("i");
@@ -264,27 +247,6 @@
 
                 deleteButton.appendChild(deleteIcon);
                 deleteCell.appendChild(deleteButton);
-                deleteButton.addEventListener("click", function (e) {
-                    var noteID = data[i]['note_id'];
-                    var url = "{{ url_for('delete_proposal_note', note_id='NOTE_ID_REPLACE', project_id=project['project_id']) }}";
-                    url = url.replace("NOTE_ID_REPLACE", noteID);
-                    $.ajax({
-                        type: "POST",
-                        url: url,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        data: "", // serializes the form's elements.
-                        success: function (data) {
-                            // console.log(data)  // display the returned data in the console.
-
-                            updateNoteTable(data);
-                        }
-                    });
-
-                    e.preventDefault(); // block the traditional submission of the form.
-                });
                 newRow.appendChild(deleteCell);
 
                 // Get the table body
@@ -336,6 +298,8 @@
                 var deleteButton = document.createElement("button");
                 deleteButton.id = "btnDeleteFixtureNoteLine" + data[i]['fixture_note_id'];
                 deleteButton.setAttribute("data-fixture-note-id", data[i]['fixture_note_id']);
+                var fixtureNoteDeleteUrl = "{{ url_for('delete_proposal_fixture_note', fixture_note_id='FIXTURE_NOTE_ID_REPLACE', project_id=project['project_id']) }}".replace("FIXTURE_NOTE_ID_REPLACE", data[i]['fixture_note_id']);
+                deleteButton.setAttribute("data-url", fixtureNoteDeleteUrl);
                 deleteButton.classList.add("border-0", "bg-transparent");
 
                 var deleteIcon = document.createElement("i");
@@ -343,27 +307,6 @@
 
                 deleteButton.appendChild(deleteIcon);
                 deleteCell.appendChild(deleteButton);
-                deleteButton.addEventListener("click", function (e) {
-                    var fixtureNoteID = data[i]['fixture_note_id'];
-                    var url = "{{ url_for('delete_proposal_fixture_note', fixture_note_id='FIXTURE_NOTE_ID_REPLACE', project_id=project['project_id']) }}";
-                    url = url.replace("FIXTURE_NOTE_ID_REPLACE", fixtureNoteID);
-                    $.ajax({
-                        type: "POST",
-                        url: url,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        data: "", // serializes the form's elements.
-                        success: function (data) {
-                            // console.log(data)  // display the returned data in the console.
-
-                            updateFixtureNoteTable(data);
-                        }
-                    });
-
-                    e.preventDefault(); // block the traditional submission of the form.
-                });
                 newRow.appendChild(deleteCell);
 
                 // Get the table body
@@ -582,46 +525,11 @@
                         </td>
                         <td>
                             <button id="btnDeleteFixtureLine{{ fixture['fixture_id']|string }}" type="button"
-                                class="border-0 bg-transparent" data-fixture-id="{{ fixture['fixture_id']|string }}">
+                                class="border-0 bg-transparent" data-fixture-id="{{ fixture['fixture_id']|string }}"
+                                data-url="{{ url_for('delete_proposal_fixture', fixture_id=fixture['fixture_id'], project_id=fixture['project_id']) }}">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </td>
-                        <script>
-                            // Delete fixture line item
-                            $(document).ready(function () {
-                                $("#fixtureTable").on("click", "button[id^='btnDeleteFixtureLine{{ fixture['fixture_id']|string }}']", function (e) {
-                                    var fixtureId = $(this).data("fixture-id");
-                                    var url = "{{ url_for('delete_proposal_fixture', fixture_id=fixture['fixture_id'], project_id=fixture['project_id']) }}";
-                                    $.ajax({
-                                        type: "POST",
-                                        url: url,
-                                        headers: {
-                                            'Accept': 'application/json',
-                                            'Content-Type': 'application/json'
-                                        },
-                                        data: "", // serializes the form's elements.
-                                        success: function (data) {
-                                            // console.log(data)  // display the returned data in the console.
-                                            // console.log(data.length)
-
-                                            updateFixtureTable(data);
-                                        }
-                                    });
-
-                                    e.preventDefault(); // block the traditional submission of the form.
-                                });
-
-                                // Inject our CSRF token into our AJAX request.
-                                $.ajaxSetup({
-                                    beforeSend: function (xhr, settings) {
-                                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
-                                        }
-                                    }
-                                })
-                            });
-
-                        </script>
                     </tr>
                     {% endfor %}
                     {% endif %}
@@ -639,6 +547,21 @@
                     </tr>
                 </tfoot>
             </table>
+            <script>
+                $(document).ready(function () {
+                    $("#fixtureTable").on("click", "button[id^='btnDeleteFixtureLine']", function (e) {
+                        var url = $(this).data("url");
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                            data: "",
+                            success: function (data) { updateFixtureTable(data); }
+                        });
+                        e.preventDefault();
+                    });
+                });
+            </script>
             <script>
                 var fixture_id = null;
                 // Add fixture line item
@@ -716,7 +639,7 @@
             <table id="fixtureNoteTable" class="table table-striped">
                 <thead>
                     <tr class="text-center">
-                        <th>{{ proposal_fixture_notes_form.fixture_note.label }}</th>
+                        <th>{{ proposal_fixture_notes_form.fixture_note.label() }}</th>
                         <th style="width: 1px;"></th> </tr>
                     </tr>
                 </thead>
@@ -736,47 +659,11 @@
                         </td>
                         <td class="text-end">
                             <button id="btnDeleteFixtureNoteLine{{ note['fixture_note_id']|string }}" type="button"
-                                class="border-0 bg-transparent" data-fixture-id="{{ note['fixture_note_id']|string }}">
+                                class="border-0 bg-transparent" data-fixture-note-id="{{ note['fixture_note_id']|string }}"
+                                data-url="{{ url_for('delete_proposal_fixture_note', fixture_note_id=note['fixture_note_id'], project_id=note['project_id']) }}">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </td>
-                        <!-- Delete fixture note line item -->
-                        <script>
-                            $(document).ready(function () {
-                                $("#fixtureNoteTable").on("click", "button[id^='btnDeleteFixtureNoteLine{{ note['fixture_note_id']|string }}']", function (e) {
-                                    var fixtureNoteId = $(this).data("fixture-note-id");
-                                    var url = "{{ url_for('delete_proposal_fixture_note', fixture_note_id=note['fixture_note_id'], project_id=note['project_id']) }}";
-                                    $.ajax({
-                                        type: "POST",
-                                        url: url,
-                                        headers: {
-                                            'Accept': 'application/json',
-                                            'Content-Type': 'application/json'
-                                        },
-                                        data: "", // serializes the form's elements.
-                                        success: function (data) {
-                                            // console.log(data)  // display the returned data in the console.
-                                            // console.log(data.length)
-
-                                            updateFixtureNoteTable(data);
-                                        }
-                                    });
-
-                                    e.preventDefault(); // block the traditional submission of the form.
-                                });
-
-                                // Inject our CSRF token into our AJAX request.
-                                $.ajaxSetup({
-                                    beforeSend: function (xhr, settings) {
-                                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
-                                        }
-                                    }
-                                })
-                            });
-
-
-                        </script>
                     </tr>
                     {% endfor %}
                     {% endif %}
@@ -784,6 +671,21 @@
                 <tfoot>
                 </tfoot>
             </table>
+            <script>
+                $(document).ready(function () {
+                    $("#fixtureNoteTable").on("click", "button[id^='btnDeleteFixtureNoteLine']", function (e) {
+                        var url = $(this).data("url");
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                            data: "",
+                            success: function (data) { updateFixtureNoteTable(data); }
+                        });
+                        e.preventDefault();
+                    });
+                });
+            </script>
             <!-- Add note line item -->
             <script>
                 $(document).ready(function () {
@@ -1056,7 +958,7 @@
             <table id="noteTable" class="table table-striped">
                 <thead>
                     <tr class="text-center">
-                        <th>{{ proposal_notes_form.note.label }}</th>
+                        <th>{{ proposal_notes_form.note.label() }}</th>
                         <th style="width: 1px;"></th> </tr>
                     </tr>
                 </thead>
@@ -1076,47 +978,11 @@
                         </td>
                         <td class="text-end">
                             <button id="btnDeleteNoteLine{{ note['note_id']|string }}" type="button"
-                                class="border-0 bg-transparent" data-fixture-id="{{ note['note_id']|string }}">
+                                class="border-0 bg-transparent" data-note-id="{{ note['note_id']|string }}"
+                                data-url="{{ url_for('delete_proposal_note', note_id=note['note_id'], project_id=note['project_id']) }}">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </td>
-                        <!-- Delete note line item -->
-                        <script>
-                            $(document).ready(function () {
-                                $("#noteTable").on("click", "button[id^='btnDeleteNoteLine{{ note['note_id']|string }}']", function (e) {
-                                    var noteId = $(this).data("note-id");
-                                    var url = "{{ url_for('delete_proposal_note', note_id=note['note_id'], project_id=note['project_id']) }}";
-                                    $.ajax({
-                                        type: "POST",
-                                        url: url,
-                                        headers: {
-                                            'Accept': 'application/json',
-                                            'Content-Type': 'application/json'
-                                        },
-                                        data: "", // serializes the form's elements.
-                                        success: function (data) {
-                                            // console.log(data)  // display the returned data in the console.
-                                            // console.log(data.length)
-
-                                            updateNoteTable(data);
-                                        }
-                                    });
-
-                                    e.preventDefault(); // block the traditional submission of the form.
-                                });
-
-                                // Inject our CSRF token into our AJAX request.
-                                $.ajaxSetup({
-                                    beforeSend: function (xhr, settings) {
-                                        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                                            xhr.setRequestHeader("X-CSRFToken", "{{ apply_payment_form.csrf_token._value() }}")
-                                        }
-                                    }
-                                })
-                            });
-
-
-                        </script>
                     </tr>
                     {% endfor %}
                     {% endif %}
@@ -1124,6 +990,21 @@
                 <tfoot>
                 </tfoot>
             </table>
+            <script>
+                $(document).ready(function () {
+                    $("#noteTable").on("click", "button[id^='btnDeleteNoteLine']", function (e) {
+                        var url = $(this).data("url");
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                            data: "",
+                            success: function (data) { updateNoteTable(data); }
+                        });
+                        e.preventDefault();
+                    });
+                });
+            </script>
             <!-- Add note line item -->
             <script>
                 $(document).ready(function () {
