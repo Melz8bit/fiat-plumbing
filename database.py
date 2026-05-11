@@ -1476,15 +1476,15 @@ def get_proposal_fixtures(project_id, proposal_id=0):
         return None
 
 
-def add_proposal_fixture(fixture_data, table_name="tmp_project_proposal_fixtures"):
+def add_proposal_fixture(fixture_data):
     total_per_fixture = fixture_data["fixture_quantity"] * fixture_data["fixture_cost"]
     try:
-        sqlQuery = (
-            "INSERT INTO "
-            + table_name
-            + " (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost)"
-            + " VALUES (:project_id, :fixture_abbreviation, :quantity, :cost_per_fixture, :total_per_fixture, :is_cost)"
-        )
+        sqlQuery = """
+            INSERT INTO tmp_project_proposal_fixtures
+                (project_id, fixture_abbreviation, quantity, cost_per_fixture, total_per_fixture, is_cost)
+            VALUES
+                (:project_id, :fixture_abbreviation, :quantity, :cost_per_fixture, :total_per_fixture, :is_cost)
+        """
 
         query_params = {
             "project_id": fixture_data["project_id"],
@@ -1591,16 +1591,14 @@ def get_proposal_installments(project_id, proposal_id=0):
         return None
 
 
-def add_proposal_installment(
-    installment_data, table_name="tmp_project_proposal_installments"
-):
+def add_proposal_installment(installment_data):
     try:
-        sqlQuery = (
-            "INSERT INTO "
-            + table_name
-            + " (project_id, installment_number, installment_category, installment_amount)"
-            + " VALUES (:project_id, :installment_number, :installment_category, :installment_amount)"
-        )
+        sqlQuery = """
+            INSERT INTO tmp_project_proposal_installments
+                (project_id, installment_number, installment_category, installment_amount)
+            VALUES
+                (:project_id, :installment_number, :installment_category, :installment_amount)
+        """
 
         query_params = {
             "project_id": installment_data["project_id"],
