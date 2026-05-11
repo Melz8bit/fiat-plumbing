@@ -23,12 +23,10 @@ from wtforms.validators import (
     ValidationError,
     EqualTo,
     Email,
-    Length,
 )
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from database import (
-    get_all_clients,
     get_document_types,
     get_project_statuses,
     get_fixtures,
@@ -101,7 +99,7 @@ def password_check(form, field):
         raise ValidationError("Password must contain a number")
     elif re.search("[A-Z]", password) is None:
         raise ValidationError("Password must have one uppercase letter")
-    elif re.search("[-\#\$\.\%\&\*\!]", password) is None:
+    elif re.search(r"[-#$\.%&*!]", password) is None:
         raise ValidationError(
             "Password must have at least one special character '- # $ . % & * !' "
         )
@@ -203,7 +201,6 @@ class ClientForm(FlaskForm):
         validators=[DataRequired()],
         choices=STATE_OPTIONS,
     )
-    # state = StringField("State", validators=[DataRequired()])
     zip_code = StringField("Zip Code", validators=[DataRequired()])
     website = StringField("Website")
     phone_number = StringField("Phone Number")
@@ -216,15 +213,9 @@ class ClientForm(FlaskForm):
 
 # Create new project
 class ProjectForm(FlaskForm):
-    # client_options = []
-    # for clients in get_all_clients():
-    #     client_info = (clients["client_id"], clients["name"])
-    #     client_options.append(client_info)
-
     project_id = StringField(
         "Project ID",
         validators=[DataRequired()],
-        # render_kw={"readonly": ""},
     )
     name = StringField(
         "Job Name",
@@ -233,7 +224,6 @@ class ProjectForm(FlaskForm):
     client = SelectField(
         "Client",
         validators=[DataRequired()],
-        # choices=client_options,
     )
     address = StringField(
         "Address",
@@ -258,15 +248,6 @@ class ProjectForm(FlaskForm):
     )
     project_add_submit = SubmitField("Add Project")
 
-    @classmethod
-    def new(cls):
-        # Instantiate the form
-        form = cls()
-
-        # Update the choices for the agency field
-        form.agency.choices = get_all_clients()
-        return form
-
 
 class ProjectNotesForm(FlaskForm):
     project_note = TextAreaField(
@@ -274,16 +255,6 @@ class ProjectNotesForm(FlaskForm):
         render_kw={"style": "resize:none"},
     )
     project_note_submit = SubmitField("Submit")
-
-
-class MasterPermitForm(FlaskForm):
-    master_permit = StringField("Master Permit", validators=[DataRequired()])
-    add = SubmitField("Add")
-
-
-class PlumbingPermitForm(FlaskForm):
-    plumbing_permit = StringField("Plumbing Permit")
-    add = SubmitField("Add")
 
 
 class DocumentUploadForm(FlaskForm):
@@ -327,7 +298,7 @@ class InvoicePaymentForm(FlaskForm):
     )
     date_received = DateField(
         "Date Received",
-        default=datetime.date.today(),
+        default=datetime.date.today,
     )
     note = TextAreaField("Note")
 
@@ -373,7 +344,7 @@ class ApplyPaymentForm(FlaskForm):
     date_received = DateField(
         "Date Received",
         validators=[DataRequired()],
-        default=datetime.date.today(),
+        default=datetime.date.today,
     )
     amount_applied = HiddenField(
         "Amount Applied",
@@ -492,7 +463,7 @@ class PermitsAddForm(FlaskForm):
     permit_status_date = DateField(
         "Status Date",
         validators=[DataRequired()],
-        default=datetime.date.today(),
+        default=datetime.date.today,
     )
     permit_note = TextAreaField(
         "Note",
@@ -507,13 +478,6 @@ class PermitsAddForm(FlaskForm):
         get_pk=lambda x: x.id,
     )
 
-    permit_issue_date = DateField(
-        "Issue Date",
-    )
-
-    permit_expiration_date = DateField(
-        "Expiration Date",
-    )
     permit_add_submit = SubmitField("Submit")
 
 

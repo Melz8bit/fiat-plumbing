@@ -74,7 +74,6 @@ from forms import (
     UpdateEmailForm,
     ProjectForm,
     ProjectNotesForm,
-    MasterPermitForm,
     DocumentUploadForm,
     ProjectStatusForm,
     InvoiceStatusUpdateForm,
@@ -180,11 +179,6 @@ def sign_up():
         last_name = signup_form.last_name.data
         email = signup_form.email.data
         password = signup_form.password.data
-        confirm = signup_form.confirm.data
-
-        if password != confirm:
-            flash("Passwords do not match")
-            return render_template("sign_up.html", signup_form=signup_form)
 
         existing_user = database.get_user_from_email(email)
         if existing_user:
