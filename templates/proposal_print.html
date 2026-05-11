@@ -296,7 +296,7 @@
                     aria-hidden="true"></span>
                 <span id="buttonText">Create Proposal</span>
             </button>
-            <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
             <script>
                 $(document).ready(function () {
                     $("#finalizeButton").click(function () {
@@ -314,7 +314,7 @@
 
                         $.ajax({
                             type: "POST",
-                            url: "/finalizeProposal",
+                            url: "{{ url_for('finalize_proposal') }}",
                             headers: {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json',

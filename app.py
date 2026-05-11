@@ -1598,11 +1598,14 @@ def admin_coi_update(dept_id):
     show_all = request.form.get("show_all", "false")
     edit_form = COIEditForm()
     if edit_form.validate_on_submit():
+        web_portal = edit_form.web_portal.data.strip()
+        if web_portal and not web_portal.startswith(("http://", "https://")):
+            web_portal = "https://" + web_portal
         fields = {
             "entity": edit_form.entity.data,
             "primary_phone": edit_form.primary_phone.data,
             "primary_email": edit_form.primary_email.data,
-            "web_portal": edit_form.web_portal.data,
+            "web_portal": web_portal,
             "submission_method": edit_form.submission_method.data,
             "notes": edit_form.notes.data,
         }
@@ -1929,6 +1932,16 @@ def get_all_proposal_notes(project_id):
         )
 
     return jsonify(notes_added)
+
+
+@app.template_filter()
+def safe_url(value):
+    if not value:
+        return "#"
+    value = str(value).strip()
+    if not value.startswith(("http://", "https://")):
+        value = "https://" + value
+    return value
 
 
 @app.template_filter()

@@ -74,7 +74,7 @@
                             <button id="btnUpdateSavePermit{{ permit['id'] }}" class="btn btn-primary btn-sm"
                                 onclick="updatePermit({{ permit['id'] }})" type="button">Update</button>
                             <a id="btnWebsitePermit{{ permit['id'] }}" class="btn btn-primary btn-sm d-none"
-                                type="button" href="{{permit['website']}}" target="_blank">Website</a>
+                                type="button" href="{{ permit['website'] | safe_url }}" target="_blank" rel="noopener noreferrer">Website</a>
                             <button id="btnCancelPermitUpdate{{ permit['id'] }}" class="btn btn-primary btn-sm d-none"
                                 type="button" onclick="resetPermitUpdate({{ permit['id'] }})">Cancel</button>
                         </div>
