@@ -6,6 +6,15 @@
         * {
             font-family: "Raleway", sans-serif;
         }
+
+        #inspectionTable>tbody>tr>td {
+            background-color: white;
+        }
+
+        #inspectionTable>tbody>tr:nth-child(4n+1)>td,
+        #inspectionTable>tbody>tr:nth-child(4n+2)>td {
+            background-color: #F9F9F9;
+        }
     </style>
 </head>
 
@@ -24,18 +33,15 @@
             </div>
         </div>
 
-        <table class="table table-striped mt-2">
+        <table class="table mt-2" id="inspectionTable">
             <thead>
                 <tr>
                     <th>Building Dept</th>
                     <th>Type</th>
                     <th class="text-center">Scheduled Date</th>
                     <th class="text-center">Scheduled Time</th>
-                    <th class="text-center">Inspection #</th>
-                    <th>Inspector</th>
                     <th class="text-center">Status</th>
                     <th class="text-center">Status Date</th>
-                    <th>Notes</th>
                     <th></th>
                 </tr>
             </thead>
@@ -43,12 +49,13 @@
             <tbody>
                 {% if inspections|length == 0 %}
                 <tr>
-                    <td class="text-center" colspan="100%">
+                    <td class="text-center" colspan="7">
                         No inspections have been added
                     </td>
                 </tr>
                 {% else %}
                 {% for inspection in inspections %}
+                <!-- Main row -->
                 <tr>
                     <td>{{ inspection['building_dept_name'] or '—' }}</td>
                     <td>{{ inspection['inspection_type'] or '—' }}</td>
@@ -58,8 +65,6 @@
                     <td class="text-center">
                         {{ inspection['scheduled_time'].strftime('%I:%M %p') if inspection['scheduled_time'] else '—' }}
                     </td>
-                    <td class="text-center">{{ inspection['inspection_number'] or '—' }}</td>
-                    <td>{{ inspection['inspector_name'] or '—' }}</td>
                     <td class="text-center">
                         <div id="lblInspectionStatus{{ inspection['id'] }}">
                             {{ inspection['status'] or '—' }}
@@ -77,9 +82,8 @@
                     <td class="text-center">
                         {{ inspection['status_date'].strftime('%m/%d/%Y') if inspection['status_date'] else '—' }}
                     </td>
-                    <td>{{ inspection['notes'] or '—' }}</td>
                     <td>
-                        <div class="d-flex justify-content-around">
+                        <div class="d-flex gap-1 justify-content-end">
                             <button id="btnUpdateSaveInspection{{ inspection['id'] }}"
                                 class="btn btn-primary btn-sm"
                                 onclick="updateInspection({{ inspection['id'] }})"
@@ -88,6 +92,34 @@
                                 class="btn btn-secondary btn-sm d-none"
                                 type="button"
                                 onclick="resetInspectionUpdate({{ inspection['id'] }})">Cancel</button>
+                            <button class="btn btn-outline-secondary btn-sm"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapseInspection{{ inspection['id'] }}"
+                                aria-expanded="false"
+                                aria-controls="collapseInspection{{ inspection['id'] }}">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Collapse detail row -->
+                <tr class="collapse" id="collapseInspection{{ inspection['id'] }}">
+                    <td colspan="7">
+                        <div class="card card-body py-2">
+                            <div class="row">
+                                <div class="col-2">
+                                    <div class="fw-semibold text-muted small">Inspection #</div>
+                                    <div>{{ inspection['inspection_number'] or '—' }}</div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="fw-semibold text-muted small">Inspector</div>
+                                    <div>{{ inspection['inspector_name'] or '—' }}</div>
+                                </div>
+                                <div class="col">
+                                    <div class="fw-semibold text-muted small">Notes</div>
+                                    <div style="white-space: pre-wrap;">{{ inspection['notes'] or '—' }}</div>
+                                </div>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -96,7 +128,6 @@
             </tbody>
         </table>
     </div>
-
 
 </body>
 
