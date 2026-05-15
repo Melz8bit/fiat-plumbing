@@ -690,7 +690,7 @@ def project_view(project_id, new_project=False):
         else:
             app.logger.debug("permit_add_form errors: %s", permit_add_form.errors)
 
-        # Add Inspection
+        # Add Inspection (legacy non-AJAX fallback)
         if (
             inspection_add_form.validate_on_submit()
             and inspection_add_form.inspection_add_submit.data
@@ -1423,6 +1423,7 @@ def get_project_inspections_tab(project_id):
         inspections=inspections,
         inspection_add_form=inspection_add_form,
         building_dept_urls=building_dept_urls,
+        project_id=project_id,
     )
 
 
@@ -1445,6 +1446,32 @@ def add_project_inspection(inspection_add_form, project_id):
     flash(result)
     session["active_tab"] = "inspections"
     return redirect(url_for("project_view", project_id=project_id))
+
+
+@app.route("/project/<project_id>/add-inspection", methods=["POST"])
+@login_required
+def add_inspection_ajax(project_id):
+    form = InspectionAddForm()
+    if form.validate_on_submit():
+        inspection_info = {
+            "project_id": project_id,
+            "building_dept_id": form.building_dept.data["id"] if form.building_dept.data else None,
+            "inspection_type": form.inspection_type.data,
+            "scheduled_date": form.scheduled_date.data,
+            "scheduled_time": form.scheduled_time.data,
+            "status": form.status.data,
+            "status_date": form.status_date.data,
+            "notes": form.notes.data,
+        }
+        database.add_inspection(inspection_info)
+        return jsonify({"status": "success", "message": "Inspection added"})
+    errors = [
+        f"{form[field].label.text}: {error}"
+        for field, errs in form.errors.items()
+        for error in errs
+        if field != "csrf_token"
+    ]
+    return jsonify({"status": "error", "errors": errors}), 400
 
 
 @app.route("/project/inspections/update-status", methods=["POST"])

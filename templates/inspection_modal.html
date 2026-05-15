@@ -7,11 +7,12 @@
         <form id="inspectionAddForm" method="POST" enctype="multipart/form-data">
             {{ inspection_add_form.hidden_tag() }}
             <div class="modal-body">
+                <div id="inspectionFormErrors" class="alert alert-danger d-none" role="alert"></div>
 
                 <!-- Building Department -->
                 <div class="input-group mb-3">
                     {{ inspection_add_form.building_dept.label(class="input-group-text") }}
-                    <select class="form-select" name="building_dept" id="building_dept">
+                    <select class="form-select" name="building_dept" id="building_dept" required>
                         <option selected disabled value="">Select Department</option>
                         {% for option in inspection_add_form.building_dept %}
                         {% if not loop.first %}
@@ -87,8 +88,63 @@
 
             </div>
             <div class="modal-footer">
-                {{ inspection_add_form.inspection_add_submit(class="btn btn-primary") }}
+                {{ inspection_add_form.inspection_add_submit(class="btn btn-primary", id="btnInspectionSubmit") }}
             </div>
         </form>
     </div>
 </div>
+<script>
+    document.getElementById("inspectionAddForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const errorBox = document.getElementById("inspectionFormErrors");
+        const submitBtn = document.getElementById("btnInspectionSubmit");
+        const url = "{{ url_for('add_inspection_ajax', project_id=project_id) }}";
+
+        errorBox.classList.add("d-none");
+        errorBox.innerHTML = "";
+        submitBtn.disabled = true;
+
+        fetch(url, {
+            method: "POST",
+            body: new FormData(form),
+            headers: { "X-CSRFToken": form.querySelector("[name=csrf_token]").value }
+        })
+        .then(res => res.json().then(data => ({ ok: res.ok, data })))
+        .then(({ ok, data }) => {
+            if (ok) {
+                bootstrap.Modal.getInstance(document.getElementById("addInspectionModal")).hide();
+                // Refresh inspections tab
+                const pane = document.getElementById("inspections-tab-pane");
+                if (pane) {
+                    pane.innerHTML = "";
+                    const tabBtn = document.getElementById("inspections-tab");
+                    if (tabBtn) new bootstrap.Tab(tabBtn).show();
+                }
+                // Show success toast using site-wide style
+                const toastHtml = `
+                    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1100;">
+                        <div class="toast bg-light" role="status" aria-live="polite" aria-atomic="true">
+                            <div class="toast-header">
+                                <strong class="me-auto">Message</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">${data.message || "Inspection added"}</div>
+                        </div>
+                    </div>`;
+                document.body.insertAdjacentHTML("beforeend", toastHtml);
+                const toastEl = document.body.lastElementChild.querySelector(".toast");
+                new bootstrap.Toast(toastEl).show();
+            } else {
+                errorBox.innerHTML = data.errors.map(msg => `<div>${msg}</div>`).join("");
+                errorBox.classList.remove("d-none");
+            }
+        })
+        .catch(() => {
+            errorBox.textContent = "An unexpected error occurred. Please try again.";
+            errorBox.classList.remove("d-none");
+        })
+        .finally(() => { submitBtn.disabled = false; });
+    });
+</script>

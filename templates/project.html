@@ -268,6 +268,8 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                const activeTab = "{{ tab }}";
+
                 const tabEl = document.getElementById('myTab');
                 tabEl.addEventListener('show.bs.tab', function (event) {
                     const url = event.target.getAttribute('data-url');
@@ -275,20 +277,24 @@
                     const contentPane = document.querySelector(target);
 
                     if (url && contentPane && contentPane.innerHTML.trim() === '') {
-                        // Add a loading spinner
                         contentPane.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
                         fetch(url)
                             .then(response => response.text())
-                            .then(html => {
-                                contentPane.innerHTML = html;
-                            })
+                            .then(html => { contentPane.innerHTML = html; })
                             .catch(error => {
                                 console.error('Error loading tab content:', error);
                                 contentPane.innerHTML = '<p class="text-center text-danger mt-5">Failed to load content.</p>';
                             });
                     }
                 });
+
+                if (activeTab) {
+                    const tabButton = document.getElementById(activeTab + "-tab");
+                    if (tabButton) {
+                        new bootstrap.Tab(tabButton).show();
+                    }
+                }
             });
         </script>
     </div>
@@ -553,19 +559,6 @@
         });
     </script>
 
-    <script>
-        // Load tab on submission
-        document.addEventListener("DOMContentLoaded", function () {
-            const activeTab = "{{ tab }}";
-            if (activeTab) {
-                const tabButton = document.getElementById(activeTab + "-tab");
-                if (tabButton) {
-                    const tabInstance = new bootstrap.Tab(tabButton);
-                    tabInstance.show();
-                }
-            }
-        });
-    </script>
 
     <script>
         $(document).ready(function () {

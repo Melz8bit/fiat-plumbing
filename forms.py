@@ -489,10 +489,22 @@ class InspectionAddForm(FlaskForm):
         allow_blank=True,
         blank_text="Select Department",
         get_pk=lambda x: x.id,
+        validators=[DataRequired(message="Building Department is required")],
     )
-    inspection_type = StringField("Inspection Type", default="Plumbing")
-    scheduled_date = DateField("Scheduled Date")
-    scheduled_time = TimeField("Scheduled Time")
+    inspection_type = StringField(
+        "Inspection Type",
+        default="Plumbing",
+        validators=[DataRequired(message="Inspection Type is required")],
+    )
+    scheduled_date = DateField(
+        "Scheduled Date",
+        validators=[DataRequired(message="Scheduled Date is required")],
+    )
+    scheduled_time = TimeField(
+        "Scheduled Time",
+        default=datetime.time(8, 0),
+        validators=[DataRequired(message="Scheduled Time is required")],
+    )
     status = SelectField(
         "Status",
         validators=[DataRequired()],
@@ -505,6 +517,10 @@ class InspectionAddForm(FlaskForm):
     )
     notes = TextAreaField("Notes", render_kw={"style": "resize:none; height: 80px;"})
     inspection_add_submit = SubmitField("Submit")
+
+    def validate_building_dept(self, field):
+        if field.data is None:
+            raise ValidationError("Building Department is required")
 
 
 class COIEditForm(FlaskForm):
