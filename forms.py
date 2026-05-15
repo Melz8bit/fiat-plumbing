@@ -515,6 +515,8 @@ class InspectionAddForm(FlaskForm):
         validators=[DataRequired()],
         default=datetime.date.today,
     )
+    inspection_number = StringField("Inspection #")
+    inspector_name = StringField("Inspector Name")
     notes = TextAreaField("Notes", render_kw={"style": "resize:none; height: 80px;"})
     inspection_add_submit = SubmitField("Submit")
 

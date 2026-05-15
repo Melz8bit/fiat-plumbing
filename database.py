@@ -2442,9 +2442,11 @@ def add_inspection(inspection_info):
     try:
         sqlQuery = """
             INSERT INTO project_inspections
-                (project_id, building_dept_id, inspection_type, scheduled_date, scheduled_time, status, status_date, notes)
+                (project_id, building_dept_id, inspection_type, scheduled_date, scheduled_time,
+                 status, status_date, notes, inspection_number, inspector_name)
             VALUES
-                (:project_id, :building_dept_id, :inspection_type, :scheduled_date, :scheduled_time, :status, :status_date, :notes);
+                (:project_id, :building_dept_id, :inspection_type, :scheduled_date, :scheduled_time,
+                 :status, :status_date, :notes, :inspection_number, :inspector_name);
         """
         query_params = {
             "project_id": inspection_info["project_id"],
@@ -2455,6 +2457,8 @@ def add_inspection(inspection_info):
             "status": inspection_info["status"],
             "status_date": inspection_info["status_date"],
             "notes": inspection_info["notes"],
+            "inspection_number": inspection_info.get("inspection_number") or None,
+            "inspector_name": inspection_info.get("inspector_name") or None,
         }
         with engine.connect() as connection:
             connection.execute(text(sqlQuery), query_params)

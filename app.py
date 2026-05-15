@@ -1462,6 +1462,8 @@ def add_inspection_ajax(project_id):
             "status": form.status.data,
             "status_date": form.status_date.data,
             "notes": form.notes.data,
+            "inspection_number": form.inspection_number.data,
+            "inspector_name": form.inspector_name.data,
         }
         database.add_inspection(inspection_info)
         return jsonify({"status": "success", "message": "Inspection added"})

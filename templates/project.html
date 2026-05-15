@@ -540,6 +540,62 @@
             selectStatus.classList.add("d-none");
         }
 
+        // Inspection form AJAX submit
+        document.addEventListener("submit", function (e) {
+            if (!e.target || e.target.id !== "inspectionAddForm") return;
+            e.preventDefault();
+
+            const form = e.target;
+            const errorBox = document.getElementById("inspectionFormErrors");
+            const submitBtn = document.getElementById("btnInspectionSubmit");
+            const url = "{{ url_for('add_inspection_ajax', project_id=project['project_id']) }}";
+
+            errorBox.classList.add("d-none");
+            errorBox.innerHTML = "";
+            submitBtn.disabled = true;
+
+            fetch(url, {
+                method: "POST",
+                body: new FormData(form),
+                headers: { "X-CSRFToken": form.querySelector("[name=csrf_token]").value }
+            })
+            .then(res => res.json().then(data => ({ ok: res.ok, data })))
+            .then(({ ok, data }) => {
+                if (ok) {
+                    bootstrap.Modal.getInstance(document.getElementById("addInspectionModal")).hide();
+                    const pane = document.getElementById("inspections-tab-pane");
+                    const tabBtn = document.getElementById("inspections-tab");
+                    if (pane && tabBtn) {
+                        pane.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+                        fetch(tabBtn.getAttribute("data-url"))
+                            .then(r => r.text())
+                            .then(html => { pane.innerHTML = html; })
+                            .catch(() => { pane.innerHTML = '<p class="text-center text-danger mt-5">Failed to load content.</p>'; });
+                    }
+                    const toastHtml = `
+                        <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1100;">
+                            <div class="toast bg-light" role="status" aria-live="polite" aria-atomic="true">
+                                <div class="toast-header">
+                                    <strong class="me-auto">Message</strong>
+                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">${data.message || "Inspection added"}</div>
+                            </div>
+                        </div>`;
+                    document.body.insertAdjacentHTML("beforeend", toastHtml);
+                    new bootstrap.Toast(document.body.lastElementChild.querySelector(".toast")).show();
+                } else {
+                    errorBox.innerHTML = data.errors.map(msg => `<div>${msg}</div>`).join("");
+                    errorBox.classList.remove("d-none");
+                }
+            })
+            .catch(() => {
+                errorBox.textContent = "An unexpected error occurred. Please try again.";
+                errorBox.classList.remove("d-none");
+            })
+            .finally(() => { submitBtn.disabled = false; });
+        });
+
         // Inspection modal Go button
         document.addEventListener("change", function (e) {
             if (e.target && e.target.id === "building_dept") {
