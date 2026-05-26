@@ -132,57 +132,16 @@
             </div>
         </div>
 
-        <!-- Permits -->
-        <!-- {#<h4 class="my-3">Permit Information</h4>
-        <hr>
-        <div>
-            <div class="row">
-                <div class="col">
-                    {% if master_permit %}
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-master-permit">Master Permit</span>
-                        <input type="text" class="form-control" value="{{ master_permit['permit_number'] }}"
-                            aria-label="address" aria-describedby="proj-master-permit" readonly>
-                    </div>
-                    {% else %}
-                    <form method="POST">
-                        <div class="input-group mb-3">
-                            {{ master_form.hidden_tag() }}
-                            {{ master_form.master_permit.label(class="input-group-text") }}
-                            {{ master_form.master_permit(class="form-control") }}
-                            {{ master_form.add(class="btn btn-outline-primary")}}
-
-                        </div>
-                    </form>
-                    {% endif %}
-                </div>
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-plumbing-permit">Plumbing Permit</span>
-                        <input type="text" class="form-control" value="{{ plumbing_permit['permit_number'] }}"
-                            aria-label="city" aria-describedby="proj-plumbing-permit" readonly>
-                        {% if not plumbing_permit %}
-                        <button class="btn btn-outline-primary" type="button" id="button-addon2">Request</button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div> #}-->
-
         <hr>
 
         <!-- Submenu Nav -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
-                <!-- <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-tab-pane"
-                    type="button" role="tab" aria-controls="notes-tab-pane" aria-selected="true">Notes</button> -->
                 <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-tab-pane"
                     type="button" role="tab" aria-controls="notes-tab-pane" aria-selected="true"
                     data-url="{{ url_for('get_project_notes', project_id=project['project_id']) }}">Notes</button>
             </li>
             <li class="nav-item" role="presentation">
-                <!-- <button class="nav-link" id="fixtures-tab" data-bs-toggle="tab" data-bs-target="#fixtures-tab-pane"
-                    type="button" role="tab" aria-controls="fixtures-tab-pane" aria-selected="false">Fixtures</button> -->
                 <button class="nav-link" id="fixtures-tab" data-bs-toggle="tab" data-bs-target="#fixtures-tab-pane"
                     type="button" role="tab" aria-controls="fixtures-tab-pane" aria-selected="false"
                     data-url="{{ url_for('get_project_fixtures', project_id=project['project_id']) }}">Fixtures</button>

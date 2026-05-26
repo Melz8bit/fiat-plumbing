@@ -321,7 +321,7 @@
     function clearInstallmentsUIOnly() {
         // Wipe the table body
         var instBody = document.getElementById("installmentTable").querySelector("tbody");
-        instBody.innerHTML = '<tr id="emptyInstallmentRow"><td class="text-center" colspan="100%">Please add installment(s)</td></tr>';
+        instBody.innerHTML = '<tr id="emptyInstallmentRow"><td class="text-center" colspan="3">Please add installment(s)</td></tr>';
         
         // Reset the footer total
         document.getElementById("proposalInstallmentsTotal").textContent = "$0.00";
@@ -329,6 +329,24 @@
         // Reset the installment number back to 1
         document.getElementById("installment_number").value = 1;
     }
+
+    function redirectToUrl() {
+        var plans_date = document.getElementById('plans_date').value;
+        if (!plans_date) {
+            document.getElementById('clientFlashBody').innerHTML = 'Please enter a plans date before viewing the PDF.';
+            bootstrap.Toast.getOrCreateInstance(document.getElementById('clientFlashToast')).show();
+            return;
+        }
+        var url = "{{ url_for('create_proposal_pdf', project_id=project['project_id'], plans_date='TEMP' )}}";
+        url = url.replace('TEMP', encodeURIComponent(plans_date));
+        window.location.href = url;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('btnContinueDraft').addEventListener('click', continueDraft);
+        document.getElementById('btnStartOver').addEventListener('click', confirmStartOver);
+        document.getElementById('btnViewPDF').addEventListener('click', redirectToUrl);
+    });
 </script>
 
 <div id="proposalPrompt" class="{% if proposal_fixtures|length == 0 and proposal_fixture_notes|length == 0 and proposal_installments|length == 0 and proposal_notes|length == 0 %}d-none{% endif %}">
@@ -338,8 +356,8 @@
             <h4>Draft Found</h4>
             <p class="text-muted">You have an unfinished proposal draft.</p>
             <div class="d-grid gap-2 d-md-block mt-4">
-                <button type="button" class="btn btn-success" onclick="continueDraft()">Continue Draft</button>
-                <button type="button" class="btn btn-outline-danger" onclick="confirmStartOver()">Start Over</button>
+                <button type="button" class="btn btn-success" id="btnContinueDraft">Continue Draft</button>
+                <button type="button" class="btn btn-outline-danger" id="btnStartOver">Start Over</button>
             </div>
         </div>
     </div>
@@ -497,7 +515,7 @@
                     <!-- Fixture Table-->
                     {% if proposal_fixtures|length == 0 %}
                     <tr id="emptyFixtureRow">
-                        <td class="text-center" colspan="100%">
+                        <td class="text-center" colspan="7">
                             Please add fixture(s)
                         </td>
                     </tr>
@@ -646,7 +664,7 @@
                 <tbody>
                     {% if proposal_fixture_notes|length == 0 %}
                     <tr id="emptyFixtureNoteRow">
-                        <td class="text-center" colspan="100%">
+                        <td class="text-center" colspan="2">
                             Please add fixture note(s)
                         </td>
                     </tr>
@@ -792,7 +810,7 @@
                     <tbody>
                         {% if proposal_installments|length == 0 %}
                         <tr id="emptyInstallmentRow">
-                            <td class="text-center" colspan="100%">
+                            <td class="text-center" colspan="3">
                                 Please add installment(s)
                             </td>
                         </tr>
@@ -965,7 +983,7 @@
                 <tbody>
                     {% if proposal_notes|length == 0 %}
                     <tr id="emptyNoteRow">
-                        <td class="text-center" colspan="100%">
+                        <td class="text-center" colspan="2">
                             Please add note(s)
                         </td>
                     </tr>
@@ -1077,22 +1095,9 @@
             <!-- <a href="{{ url_for('create_proposal_pdf', project_id=project['project_id'] )}}" class="btn btn-primary">
                 View PDF
             </a> -->
-            <button onClick="redirectToUrl()" class="btn btn-primary">
+            <button id="btnViewPDF" class="btn btn-primary">
                 View PDF
             </button>
-            <script>
-                function redirectToUrl() {
-                    var plans_date = document.getElementById('plans_date').value;
-                    if (!plans_date) {
-                        document.getElementById('clientFlashBody').innerHTML = 'Please enter a plans date before viewing the PDF.';
-                        bootstrap.Toast.getOrCreateInstance(document.getElementById('clientFlashToast')).show();
-                        return;
-                    }
-                    var url = "{{ url_for('create_proposal_pdf', project_id=project['project_id'], plans_date='TEMP' )}}";
-                    url = url.replace('TEMP', encodeURIComponent(plans_date));
-                    window.location.href = url;
-                }
-            </script>
         </div>
     </div>
 </div>
