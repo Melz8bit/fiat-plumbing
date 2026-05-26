@@ -26,12 +26,52 @@
             <div class="col">
                 <h1 class="display-5">{{ client['name'] }}</h1>
             </div>
-            <div class="col-2 text-end">
+            <div class="col-auto text-end d-flex gap-2 align-items-center">
+                {% if client['is_test'] %}
+                <form id="deleteClientForm" method="POST" action="{{ url_for('delete_client', client_id=client['client_id']) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteClientModal">
+                        Delete Client
+                    </button>
+                </form>
+                {% endif %}
                 <a class="btn btn-sm btn-primary"
                     href="{{ url_for('edit_client', client_id=client['client_id']) }}">Edit
                     Information</a>
             </div>
         </div>
+
+        <!-- Delete Client Confirmation Modal -->
+        {% if client['is_test'] %}
+        <div class="modal fade" id="deleteClientModal" tabindex="-1" aria-labelledby="deleteClientModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger" id="deleteClientModalLabel">Delete Test Client</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>This will permanently delete <strong>{{ client['name'] }}</strong> and all associated data.</p>
+                        {% if client_projects %}
+                        <p>The following projects and all their data will also be deleted:</p>
+                        <ul>
+                            {% for project in client_projects %}
+                            <li><strong>{{ project['name'] }}</strong> ({{ project['project_id'] }})</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p>This client has no projects.</p>
+                        {% endif %}
+                        <p class="mb-0 text-danger fw-semibold">This cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" onclick="document.getElementById('deleteClientForm').submit()">Delete Client</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Address Information -->
         <h4 class="my-3">Address Information</h4>

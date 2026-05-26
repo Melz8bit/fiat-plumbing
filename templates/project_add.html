@@ -57,12 +57,39 @@
                     {% else %}
                     <select class="form-select" name="client" id="client">
                         <option value="" disabled selected>Select Client</option>
-                        {% for value, label in form.client.choices %}
+                        {% for value, label in regular_client_options %}
                         <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
                     </select>
                     {% endif %}
                 </div>
+                {% if not client %}
+                <script>
+                    const testClients = {{ test_client_options | tojson }};
+                    const regularClients = {{ regular_client_options | tojson }};
+
+                    function updateClientDropdown() {
+                        const isTestEl = document.getElementById('is_test');
+                        const isTest = isTestEl ? isTestEl.checked : false;
+                        const clientSelect = document.getElementById('client');
+                        const clients = isTest ? testClients : regularClients;
+                        clientSelect.innerHTML = '<option value="" disabled selected>Select Client</option>';
+                        clients.forEach(([id, name]) => {
+                            const opt = document.createElement('option');
+                            opt.value = id;
+                            opt.textContent = name;
+                            clientSelect.appendChild(opt);
+                        });
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const isTestEl = document.getElementById('is_test');
+                        if (isTestEl) {
+                            isTestEl.addEventListener('change', updateClientDropdown);
+                        }
+                    });
+                </script>
+                {% endif %}
 
                 <!-- Location Information -->
                 <hr>
@@ -126,6 +153,12 @@
                 </script>
             </div>
 
+            {% if user.role == 'developer' %}
+            <div class="form-check mt-3">
+                {{ form.is_test(class="form-check-input") }}
+                {{ form.is_test.label(class="form-check-label text-danger fw-semibold") }}
+            </div>
+            {% endif %}
             <div class="text-center mt-3">
                 {{ form.project_add_submit(class="btn btn-primary") }}
             </div>

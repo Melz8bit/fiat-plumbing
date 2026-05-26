@@ -207,6 +207,7 @@ class ClientForm(FlaskForm):
     poc_name = StringField("Name")
     poc_phone_number = StringField("Phone Number")
     poc_email = EmailField("Email")
+    is_test = BooleanField("Test Client?")
     client_submit = SubmitField("Create Client")
     client_edit_submit = SubmitField("Update Client")
 
@@ -246,6 +247,7 @@ class ProjectForm(FlaskForm):
         "County",
         validators=[DataRequired()],
     )
+    is_test = BooleanField("Test Project?")
     project_add_submit = SubmitField("Add Project")
 
 

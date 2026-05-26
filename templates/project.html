@@ -22,14 +22,79 @@
             <div class="col">
                 <h1 class="display-5">{{ project['name'] }}</h1>
             </div>
-            <div class="col-2 text-end">
+            <div class="col-auto text-end d-flex gap-2">
+                {% if project['is_test'] %}
+                <form id="resetProjectForm" method="POST" action="{{ url_for('reset_project', project_id=project['project_id']) }}">
+                    {{ project_status_form.csrf_token() }}
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#resetProjectModal">
+                        Reset Project
+                    </button>
+                </form>
+                <form id="deleteProjectForm" method="POST" action="{{ url_for('delete_project', project_id=project['project_id']) }}">
+                    {{ project_status_form.csrf_token() }}
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
+                        Delete Project
+                    </button>
+                </form>
+                {% endif %}
                 <button class="btn btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#modalProposalCreation">Create
-                    Proposal</button>
+                    data-bs-target="#modalProposalCreation">Create Proposal</button>
             </div>
         </div>
 
-        <!-- Modal -->
+        <!-- Reset Project Confirmation Modal -->
+        {% if project['is_test'] %}
+        <div class="modal fade" id="resetProjectModal" tabindex="-1" aria-labelledby="resetProjectModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger" id="resetProjectModalLabel">Reset Test Project</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>This will permanently delete all data for <strong>{{ project['name'] }}</strong> and reset its status to <strong>Researching</strong>:</p>
+                        <ul>
+                            <li>Notes</li>
+                            <li>Fixtures, installments &amp; proposals</li>
+                            <li>Invoices &amp; payments</li>
+                            <li>Permits</li>
+                            <li>Inspections</li>
+                            <li>Documents</li>
+                        </ul>
+                        <p class="mb-0 text-danger fw-semibold">This cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" onclick="document.getElementById('resetProjectForm').submit()">Reset Project</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Delete Project Confirmation Modal -->
+        {% if project['is_test'] %}
+        <div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger" id="deleteProjectModalLabel">Delete Test Project</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>This will permanently delete <strong>{{ project['name'] }}</strong> and all of its data, including notes, fixtures, installments, invoices, payments, permits, inspections, documents, and proposals.</p>
+                        <p class="mb-0 text-danger fw-semibold">This cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" onclick="document.getElementById('deleteProjectForm').submit()">Delete Project</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Proposal Modal -->
         <div class="modal fade" id="modalProposalCreation" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
                 <div class="modal-content">
