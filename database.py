@@ -38,13 +38,15 @@ def get_results(sqlQuery):
 
 
 ############## Landing Page Queries ##############
-def get_projects_status_summary():
+def get_projects_status_summary(user_role):
     try:
+        is_test_filter = "" if user_role == "developer" else "AND projects.is_test = FALSE"
         sqlQuery = f"""
-                SELECT status, COUNT(status), order_number 
+                SELECT status, COUNT(status), order_number
                 FROM projects
                 INNER JOIN matrix_project_statuses ON projects.status = matrix_project_statuses.project_status
                 WHERE projects.status NOT LIKE ALL (ARRAY['Completed%', '%Cancelled%', '%Pending Response%'])
+                {is_test_filter}
                 GROUP BY status, order_number
                 ORDER BY order_number;
             """
@@ -60,19 +62,20 @@ def get_projects_status_summary():
         return []
 
 
-def get_projects_finance_summary():
+def get_projects_finance_summary(user_role):
     try:
+        is_test_filter = "" if user_role == "developer" else "AND projects.is_test = FALSE"
         sqlQuery = f"""
-                SELECT 
+                SELECT
                     project_invoices.project_id,
                     projects.name,
-                    SUM(project_invoices.invoice_total) as invoiceTotal, 
-                    SUM(project_invoices.payment_received) as totalReceived, 
-                    SUM(project_invoices.payment_remaining) as amountRemaining, 
+                    SUM(project_invoices.invoice_total) as invoiceTotal,
+                    SUM(project_invoices.payment_received) as totalReceived,
+                    SUM(project_invoices.payment_remaining) as amountRemaining,
                     (SUM(project_invoices.payment_received) / NULLIF(SUM(project_invoices.invoice_total), 0) * 100) AS percentReceived
                 FROM project_invoices
                 INNER JOIN projects on project_invoices.project_id = projects.project_id
-                WHERE project_invoices.invoice_total IS NOT NULL AND projects.is_test = false
+                WHERE project_invoices.invoice_total IS NOT NULL {is_test_filter}
                 GROUP BY project_invoices.project_id, projects.name;
             """
 
@@ -278,8 +281,8 @@ def get_all_clients(user_role):
 def create_client(client_info):
     try:
         sqlQuery = (
-            "INSERT INTO clients (name, address, city, state, zip_code, website, phone_number)"
-            + " VALUES (:name, :address, :city, :state, :zip_code, :website, :phone_number)"
+            "INSERT INTO clients (name, address, city, state, zip_code, website, phone_number, is_test)"
+            + " VALUES (:name, :address, :city, :state, :zip_code, :website, :phone_number, :is_test)"
         )
 
         query_params = {
@@ -290,6 +293,7 @@ def create_client(client_info):
             "zip_code": client_info["zip_code"],
             "website": client_info["website"],
             "phone_number": client_info["phone_number"],
+            "is_test": client_info.get("is_test", False),
         }
 
         with engine.connect() as connection:
@@ -443,8 +447,8 @@ def get_project(project_id):
 def create_project(project_info):
     try:
         sqlQuery = (
-            "INSERT INTO projects (project_id, client_id, name, address, city, state, zip_code, county)"
-            + " VALUES (:project_id, :client_id, :name, :address, :city, :state, :zip_code, :county)"
+            "INSERT INTO projects (project_id, client_id, name, address, city, state, zip_code, county, is_test)"
+            + " VALUES (:project_id, :client_id, :name, :address, :city, :state, :zip_code, :county, :is_test)"
         )
 
         query_params = {
@@ -456,6 +460,7 @@ def create_project(project_info):
             "state": project_info["state"],
             "zip_code": project_info["zip_code"],
             "county": project_info["county"],
+            "is_test": project_info.get("is_test", False),
         }
 
         with engine.connect() as connection:
@@ -466,6 +471,106 @@ def create_project(project_info):
     except Exception as e:
         logger.error("Database Error: %s", e)
         return []
+
+
+def reset_project(project_id):
+    try:
+        with engine.connect() as connection:
+            params = {"project_id": project_id}
+            # Payments (child tables first)
+            connection.execute(text("DELETE FROM invoice_payments WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_invoice_items WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_payments WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_invoices WHERE project_id = :project_id"), params)
+            # Proposal data (sub-tables before header)
+            connection.execute(text("DELETE FROM tmp_project_proposal_fixture_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM tmp_project_proposal_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM tmp_project_proposal_fixtures WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM tmp_project_proposal_installments WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal_fixture_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal_fixtures WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal_installments WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal WHERE project_id = :project_id"), params)
+            # Remaining project data
+            connection.execute(text("DELETE FROM project_permits WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_inspections WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_documents WHERE project_id = :project_id"), params)
+            # Reset status
+            connection.execute(text("UPDATE projects SET status = 'Researching' WHERE project_id = :project_id"), params)
+            connection.commit()
+        logger.info("Project reset: %s", project_id)
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        raise
+
+
+def delete_project(project_id):
+    try:
+        with engine.connect() as connection:
+            params = {"project_id": project_id}
+            connection.execute(text("DELETE FROM invoice_payments WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_invoice_items WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_payments WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_invoices WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM tmp_project_proposal_fixture_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM tmp_project_proposal_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM tmp_project_proposal_fixtures WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM tmp_project_proposal_installments WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal_fixture_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal_fixtures WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal_installments WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_proposal WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_permits WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_inspections WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_notes WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM project_documents WHERE project_id = :project_id"), params)
+            connection.execute(text("DELETE FROM projects WHERE project_id = :project_id"), params)
+            connection.commit()
+        logger.info("Project deleted: %s", project_id)
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        raise
+
+
+def delete_client(client_id):
+    try:
+        with engine.connect() as connection:
+            projects = connection.execute(
+                text("SELECT project_id FROM projects WHERE client_id = :client_id"),
+                {"client_id": client_id},
+            ).mappings().all()
+
+            for project in projects:
+                params = {"project_id": project["project_id"]}
+                connection.execute(text("DELETE FROM invoice_payments WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_invoice_items WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_payments WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_invoices WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM tmp_project_proposal_fixture_notes WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM tmp_project_proposal_notes WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM tmp_project_proposal_fixtures WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM tmp_project_proposal_installments WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_proposal_fixture_notes WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_proposal_notes WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_proposal_fixtures WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_proposal_installments WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_proposal WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_permits WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_inspections WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_notes WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM project_documents WHERE project_id = :project_id"), params)
+                connection.execute(text("DELETE FROM projects WHERE project_id = :project_id"), params)
+
+            connection.execute(text("DELETE FROM client_poc WHERE client_id = :client_id"), {"client_id": client_id})
+            connection.execute(text("DELETE FROM clients WHERE client_id = :client_id"), {"client_id": client_id})
+            connection.commit()
+        logger.info("Client deleted: %s", client_id)
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        raise
 
 
 def get_client_projects(client_id):
@@ -2360,11 +2465,12 @@ def get_all_permits():
         return []
 
 
-def get_permit_dashboard_summary():
+def get_permit_dashboard_summary(user_role):
     try:
-        sqlQuery = """
+        is_test_filter = "" if user_role == "developer" else "WHERE projects.is_test = FALSE"
+        sqlQuery = f"""
             SELECT
-                project_id,
+                project_permits.project_id,
                 MAX(CASE WHEN type = 'Plumbing' THEN permit_number END) AS plumbing_permit_number,
                 MAX(CASE WHEN type = 'Plumbing' THEN status END) AS plumbing_permit_status,
                 TO_CHAR(MAX(CASE WHEN type = 'Plumbing' THEN status_date END), 'MM/DD/YYYY') AS plumbing_permit_status_date,
@@ -2372,11 +2478,12 @@ def get_permit_dashboard_summary():
                 MAX(CASE WHEN type = 'Master' THEN status END) AS master_permit_status,
                 TO_CHAR(MAX(CASE WHEN type = 'Master' THEN status_date END), 'MM/DD/YYYY') AS master_permit_status_date
             FROM project_permits
-            GROUP BY project_id;
+            INNER JOIN projects ON project_permits.project_id = projects.project_id
+            {is_test_filter}
+            GROUP BY project_permits.project_id;
         """
-        query_params = {}
         with engine.connect() as connection:
-            result = connection.execute(text(sqlQuery), query_params)
+            result = connection.execute(text(sqlQuery))
             return result.mappings().all()
     except Exception as e:
         logger.error("Database Error: %s", e)
@@ -2399,9 +2506,10 @@ def get_building_departments_list():
         return []
 
 
-def get_all_inspections():
+def get_all_inspections(user_role):
     try:
-        sqlQuery = """
+        is_test_filter = "" if user_role == "developer" else "AND projects.is_test = FALSE"
+        sqlQuery = f"""
             SELECT project_inspections.*, fl_building_departments.entity AS building_dept_name,
                    projects.name AS project_name
             FROM project_inspections
@@ -2409,6 +2517,7 @@ def get_all_inspections():
                 ON project_inspections.building_dept_id = fl_building_departments.id
             LEFT JOIN projects
                 ON project_inspections.project_id = projects.project_id
+            WHERE TRUE {is_test_filter}
             ORDER BY project_inspections.scheduled_date DESC NULLS LAST, project_inspections.created_at DESC;
         """
         with engine.connect() as connection:

@@ -380,15 +380,15 @@ def main():
     user = database.get_user(session["user_id"])
     clients = database.get_all_clients(user.role)
     projects = database.get_all_projects(user.role)
-    permits_summary = database.get_permit_dashboard_summary()
+    permits_summary = database.get_permit_dashboard_summary(user.role)
 
     # Graph data
-    status_counts = database.get_projects_status_summary()
+    status_counts = database.get_projects_status_summary(user.role)
     status_summary_labels = [item["status"] for item in status_counts]
     status_summary_values = [item["count"] for item in status_counts]
 
-    finance_counts = database.get_projects_finance_summary()
-    inspections_summary = database.get_all_inspections()
+    finance_counts = database.get_projects_finance_summary(user.role)
+    inspections_summary = database.get_all_inspections(user.role)
 
     return render_template(
         "home.html",
@@ -475,6 +475,7 @@ def create_client():
             "poc_name": poc_name,
             "poc_phone_number": poc_phone_number,
             "poc_email": poc_email,
+            "is_test": form.is_test.data and user.role == "developer",
         }
 
         database.create_client(client_info)
@@ -1286,6 +1287,45 @@ def finalize_proposal():
     )
 
 
+@app.route("/project/<project_id>/reset", methods=["POST"])
+@login_required
+def reset_project(project_id):
+    project = database.get_project(project_id)
+
+    if not project or not project.get("is_test"):
+        return "Not found", 404
+
+    database.reset_project(project_id)
+    flash("Project has been reset.")
+    return redirect(url_for("project_view", project_id=project_id))
+
+
+@app.route("/project/<project_id>/delete", methods=["POST"])
+@login_required
+def delete_project(project_id):
+    project = database.get_project(project_id)
+
+    if not project or not project.get("is_test"):
+        return "Not found", 404
+
+    database.delete_project(project_id)
+    flash(f"Project '{project['name']}' has been deleted.")
+    return redirect(url_for("projects_list"))
+
+
+@app.route("/client/<client_id>/delete", methods=["POST"])
+@login_required
+def delete_client(client_id):
+    client = database.get_client(client_id)
+
+    if not client or not client.get("is_test"):
+        return "Not found", 404
+
+    database.delete_client(client_id)
+    flash(f"Client '{client['name']}' and all associated projects have been deleted.")
+    return redirect(url_for("client_list"))
+
+
 # Project Add
 @app.route("/project/add", methods=["GET", "POST"])
 @app.route("/project/add/<client_id>", methods=["GET", "POST"])
@@ -1304,13 +1344,11 @@ def project_add(client_id=None):
 
     form = ProjectForm()
 
-    # Populate the form with an updated list of clients
+    # Populate the form with an updated list of clients, split by is_test
     clients = database.get_all_clients(user.role)
-    client_options = []
-    for client_option in clients:
-        client_info = (client_option["client_id"], client_option["name"])
-        client_options.append(client_info)
-    form.client.choices = client_options
+    test_client_options = [(c["client_id"], c["name"]) for c in clients if c.get("is_test")]
+    regular_client_options = [(c["client_id"], c["name"]) for c in clients if not c.get("is_test")]
+    form.client.choices = test_client_options + regular_client_options
 
     if form.validate_on_submit():
         project_id = form.project_id.data
@@ -1321,6 +1359,15 @@ def project_add(client_id=None):
         state = form.state.data
         zip_code = form.zip_code.data
         county = form.county.data
+        is_test = form.is_test.data and user.role == "developer"
+
+        if is_test:
+            selected_client = database.get_client(client)
+            if not selected_client or not selected_client.get("is_test"):
+                flash("A test project must be attached to a test client.")
+                if client_id:
+                    return redirect(url_for("project_add", client_id=client_id))
+                return redirect(url_for("project_add"))
 
         project_info = {
             "project_id": project_id,
@@ -1331,6 +1378,7 @@ def project_add(client_id=None):
             "state": state,
             "zip_code": zip_code,
             "county": county,
+            "is_test": is_test,
         }
 
         database.create_project(project_info)
@@ -1351,6 +1399,8 @@ def project_add(client_id=None):
 
     if client_id:
         client = database.get_client(client_id)
+        if client and client.get("is_test") and user.role == "developer":
+            form.is_test.data = True
 
     next_project_id = database.get_next_project_id()
 
@@ -1367,6 +1417,8 @@ def project_add(client_id=None):
         zip_code=zip_code,
         county=county,
         next_project_id=next_project_id,
+        test_client_options=test_client_options,
+        regular_client_options=regular_client_options,
     )
 
 
