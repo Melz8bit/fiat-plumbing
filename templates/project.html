@@ -18,29 +18,35 @@
     <main>
 
     <div class="container pt-4">
-        <div class="row d-flex align-items-center mb-4">
+        <div class="row align-items-center mb-2">
             <div class="col">
-                <h1 class="display-5">{{ project['name'] }}</h1>
+                <h1 class="h3 mb-0">{{ project['name'] }}</h1>
             </div>
-            <div class="col-auto text-end d-flex gap-2">
-                {% if project['is_test'] %}
+            <div class="col-auto">
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                    data-bs-target="#modalProposalCreation">Create Proposal</button>
+            </div>
+        </div>
+        {% if project['is_test'] %}
+        <div class="row mb-4">
+            <div class="col d-flex justify-content-end gap-2">
                 <form id="resetProjectForm" method="POST" action="{{ url_for('reset_project', project_id=project['project_id']) }}">
                     {{ project_status_form.csrf_token() }}
-                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#resetProjectModal">
-                        Reset Project
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#resetProjectModal">
+                        <i class="fa-solid fa-rotate-left"></i><span class="d-none d-md-inline ms-1">Reset Project</span>
                     </button>
                 </form>
                 <form id="deleteProjectForm" method="POST" action="{{ url_for('delete_project', project_id=project['project_id']) }}">
                     {{ project_status_form.csrf_token() }}
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
-                        Delete Project
+                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProjectModal">
+                        <i class="fa-solid fa-trash"></i><span class="d-none d-md-inline ms-1">Delete Project</span>
                     </button>
                 </form>
-                {% endif %}
-                <button class="btn btn-outline-primary" data-bs-toggle="modal"
-                    data-bs-target="#modalProposalCreation">Create Proposal</button>
             </div>
         </div>
+        {% else %}
+        <div class="mb-4"></div>
+        {% endif %}
 
         <!-- Reset Project Confirmation Modal -->
         {% if project['is_test'] %}
@@ -104,30 +110,32 @@
         </div>
 
         <!-- Project Info -->
+        <h4 class="my-3">Project Information</h4>
+        <hr>
         <div>
-            <div class=" row">
-                <div class="col">
+            <div class="row">
+                <div class="col-12 col-md">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-contract">Contract #</span>
-                        <input type="text" class="form-control" value="{{ project['project_id'] }}" aria-label="address"
-                            aria-describedby="proj-contract" readonly>
+                        <span class="input-group-text border-primary text-primary" id="proj-contract">Contract #</span>
+                        <input type="text" class="form-control border-primary" value="{{ project['project_id'] }}"
+                            aria-label="contract" aria-describedby="proj-contract" readonly>
                     </div>
                 </div>
-                <div class="col">
+                <div class="col-12 col-md">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-client">Client</span>
-                        <input type="text" class="form-control" value="{{ project['client_name'] }}"
-                            aria-label="address" aria-describedby="proj-client" readonly>
+                        <span class="input-group-text border-primary text-primary" id="proj-client">Client</span>
+                        <input type="text" class="form-control border-primary" value="{{ project['client_name'] }}"
+                            aria-label="client" aria-describedby="proj-client" readonly>
                     </div>
                 </div>
             </div>
             <div class="row">
-                <div class="col">
+                <div class="col-12 col-md">
                     <form id="projectStatusForm" method="POST">
                         {{ project_status_form.csrf_token() }}
                         <div class="input-group mb-3">
-                            {{ project_status_form.project_status.label(class="input-group-text")}}
-                            <select class="form-select" name="project_status" id="project_status">
+                            <span class="input-group-text border-primary text-primary">Status</span>
+                            <select class="form-select border-primary" name="project_status" id="project_status">
                                 <option selected disabled value="{{ project['status'] }}">
                                     {{ project['status'] }}
                                 </option>
@@ -144,16 +152,16 @@
                                 {% endif %}
                                 {% endfor %}
                             </select>
-                            {{ project_status_form.project_status_update_submit(class="btn btn-outline-primary")}}
+                            {{ project_status_form.project_status_update_submit(class="btn btn-outline-primary") }}
                         </div>
                     </form>
                 </div>
-                <div class="col">
+                <div class="col-12 col-md">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-status-date">Status Date</span>
-                        <input type="text" class="form-control"
-                            value="{{ project['status_date'].strftime('%m/%d/%Y') }}" aria-label="address"
-                            aria-describedby="proj-status-date" readonly>
+                        <span class="input-group-text border-primary text-primary" id="proj-status-date">Status Date</span>
+                        <input type="text" class="form-control border-primary"
+                            value="{{ project['status_date'].strftime('%m/%d/%Y') }}"
+                            aria-label="statusDate" aria-describedby="proj-status-date" readonly>
                     </div>
                 </div>
             </div>
@@ -164,34 +172,34 @@
         <hr>
         <div>
             <div class="row">
-                <div class="col">
+                <div class="col-12">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-address">Address</span>
-                        <input type="text" class="form-control" value="{{ project['address'] }}" aria-label="address"
-                            aria-describedby="proj-address" readonly>
+                        <span class="input-group-text border-primary text-primary" id="proj-address">Address</span>
+                        <input type="text" class="form-control border-primary" value="{{ project['address'] }}"
+                            aria-label="address" aria-describedby="proj-address" readonly>
                     </div>
                 </div>
             </div>
             <div class="row">
-                <div class="col">
+                <div class="col-12 col-md">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-city">City</span>
-                        <input type="text" class="form-control" value="{{ project['city'] }}" aria-label="city"
-                            aria-describedby="proj-city" readonly>
+                        <span class="input-group-text border-primary text-primary" id="proj-city">City</span>
+                        <input type="text" class="form-control border-primary" value="{{ project['city'] }}"
+                            aria-label="city" aria-describedby="proj-city" readonly>
                     </div>
                 </div>
-                <div class="col">
+                <div class="col-12 col-md">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-state">State</span>
-                        <input type="text" class="form-control" value="{{ project['state'] }}" aria-label="state"
-                            aria-describedby="proj-state" readonly>
+                        <span class="input-group-text border-primary text-primary" id="proj-state">State</span>
+                        <input type="text" class="form-control border-primary" value="{{ project['state'] }}"
+                            aria-label="state" aria-describedby="proj-state" readonly>
                     </div>
                 </div>
-                <div class="col">
+                <div class="col-12 col-md">
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="proj-zip">Zip Code</span>
-                        <input type="text" class="form-control" value="{{ project['zip_code'] }}" aria-label="zipCode"
-                            aria-describedby="proj-zip" readonly>
+                        <span class="input-group-text border-primary text-primary" id="proj-zip">Zip Code</span>
+                        <input type="text" class="form-control border-primary" value="{{ project['zip_code'] }}"
+                            aria-label="zipCode" aria-describedby="proj-zip" readonly>
                     </div>
                 </div>
             </div>
@@ -199,8 +207,11 @@
 
         <hr>
 
+        <!-- Mobile Tab Select -->
+        <select class="form-select d-md-none mb-3" id="tabSelect"></select>
+
         <!-- Submenu Nav -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <ul class="nav nav-tabs d-none d-md-flex" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-tab-pane"
                     type="button" role="tab" aria-controls="notes-tab-pane" aria-selected="true"
@@ -250,9 +261,7 @@
             <!-- Notes -->
             <div class="tab-pane fade show active" id="notes-tab-pane" role="tabpanel" aria-labelledby="notes-tab"
                 tabindex="0">
-                <div class="ratio ratio-16x9">
-                    {% include 'project_notes.html' %}
-                </div>
+                {% include 'project_notes.html' %}
             </div>
 
             <!-- Fixtures -->
@@ -319,6 +328,28 @@
                         new bootstrap.Tab(tabButton).show();
                     }
                 }
+
+                // Build mobile select from tab buttons
+                const tabSelect = document.getElementById('tabSelect');
+                const tabButtons = tabEl.querySelectorAll('button[data-bs-toggle="tab"]');
+                tabButtons.forEach(btn => {
+                    const opt = document.createElement('option');
+                    opt.value = btn.id;
+                    opt.textContent = btn.textContent.trim();
+                    if (btn.classList.contains('active')) opt.selected = true;
+                    tabSelect.appendChild(opt);
+                });
+
+                // Keep select in sync when tab changes
+                tabEl.addEventListener('shown.bs.tab', function (event) {
+                    tabSelect.value = event.target.id;
+                });
+
+                // Show tab when select changes
+                tabSelect.addEventListener('change', function () {
+                    const btn = document.getElementById(this.value);
+                    if (btn) new bootstrap.Tab(btn).show();
+                });
             });
         </script>
     </div>
@@ -451,8 +482,9 @@
             }
             else {
                 const newStatus = selectPermitStatus.value;
+                const numericPermitID = String(permitID).replace(/^m/, '');
                 const data = {
-                    permit_id: permitID,
+                    permit_id: numericPermitID,
                     new_status: newStatus
                 };
 
@@ -468,12 +500,13 @@
                     .then(response => response.json())
                     .then(result => {
                         if (result.success) {
-                            // On success, update the UI and revert the button
-                            lblPermitStatus.innerText = newStatus;
-                            // btnUpdateSavePermit.innerText = "Update";
-                            // lblPermitStatus.classList.remove("d-none");
-                            // selectPermitStatus.classList.add("d-none");
-                            resetPermitUpdate(permitID);
+                            const permitsTabBtn = document.getElementById('permits-tab');
+                            const permitsPane = document.querySelector(permitsTabBtn.getAttribute('data-bs-target'));
+                            const permitsUrl = permitsTabBtn.getAttribute('data-url');
+                            permitsPane.innerHTML = '<div class="text-center mt-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+                            fetch(permitsUrl)
+                                .then(r => r.text())
+                                .then(html => { permitsPane.innerHTML = html; });
                             console.log("Status updated successfully:", result.message);
                         } else {
                             // Handle errors from the server
@@ -529,16 +562,20 @@
                 selectStatus.classList.remove("d-none");
             } else {
                 const newStatus = selectStatus.value;
+                const numericInspectionID = String(inspectionID).replace(/^m/, '');
                 fetch('/project/inspections/update-status', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
-                    body: JSON.stringify({ inspection_id: inspectionID, new_status: newStatus }),
+                    body: JSON.stringify({ inspection_id: numericInspectionID, new_status: newStatus }),
                 })
                     .then(response => response.json())
                     .then(result => {
                         if (result.success) {
-                            lblStatus.innerText = newStatus;
-                            resetInspectionUpdate(inspectionID);
+                            const inspTabBtn = document.getElementById('inspections-tab');
+                            const inspPane = document.querySelector(inspTabBtn.getAttribute('data-bs-target'));
+                            const inspUrl = inspTabBtn.getAttribute('data-url');
+                            inspPane.innerHTML = '<div class="text-center mt-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+                            fetch(inspUrl).then(r => r.text()).then(html => { inspPane.innerHTML = html; });
                         } else {
                             alert("Failed to update status: " + result.error);
                             resetInspectionUpdate(inspectionID);

@@ -1,31 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+<style>
+    * { font-family: "Raleway", sans-serif; }
+</style>
 
-<head>
-
-    <style>
-        * {
-            font-family: "Raleway", sans-serif;
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Permits -->
-    <div>
-        <!-- Button trigger modal -->
-        <div class="text-end mt-2">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPermitModal">
-                Add Permit
-            </button>
-
-            <!-- Modal -->
-            <div class="modal fade" id="addPermitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-                aria-labelledby="addPermitModalHeader" aria-hidden="true">
-                {% include 'permits_modal.html' %}
-            </div>
+<!-- Permits -->
+<div>
+    <div class="text-end mt-2 mb-2">
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPermitModal">
+            Add Permit
+        </button>
+        <div class="modal fade" id="addPermitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="addPermitModalHeader" aria-hidden="true">
+            {% include 'permits_modal.html' %}
         </div>
+    </div>
 
+    <!-- Desktop Table -->
+    <div class="d-none d-md-block">
         <table class="table table-striped mt-2">
             <thead>
                 <tr>
@@ -38,13 +28,10 @@
                     <th></th>
                 </tr>
             </thead>
-
             <tbody>
                 {% if permits|length == 0 %}
                 <tr>
-                    <td class="text-center" colspan="100%">
-                        No permits have been attached
-                    </td>
+                    <td class="text-center" colspan="7">No permits have been attached</td>
                 </tr>
                 {% else %}
                 {% for permit in permits %}
@@ -53,16 +40,10 @@
                     <td>{{ permit['permit_number'] }}</td>
                     <td>{{ permit['city_county'] }}</td>
                     <td class="text-center">
-                        <div id="lblPermitStatus{{ permit['id'] }}">
-                            {{ permit['status'] }}
-                        </div>
-
-                        <select id="selectPermitStatus{{ permit['id'] }}" class="form-select form-select-sm d-none"
-                            name="permit_status">
+                        <div id="lblPermitStatus{{ permit['id'] }}">{{ permit['status'] }}</div>
+                        <select id="selectPermitStatus{{ permit['id'] }}" class="form-select form-select-sm d-none" name="permit_status">
                             {% for option in permit_add_form.permit_status %}
-                            {% if loop.first %}
-                            <option selected disabled value="">Select Status</option>
-                            {% endif %}
+                            {% if loop.first %}<option selected disabled value="">Select Status</option>{% endif %}
                             {{ option }}
                             {% endfor %}
                         </select>
@@ -74,19 +55,62 @@
                             <button id="btnUpdateSavePermit{{ permit['id'] }}" class="btn btn-primary btn-sm"
                                 onclick="updatePermit({{ permit['id'] }})" type="button">Update</button>
                             <a id="btnWebsitePermit{{ permit['id'] }}" class="btn btn-primary btn-sm d-none"
-                                type="button" href="{{ permit['website'] | safe_url }}" target="_blank" rel="noopener noreferrer">Website</a>
+                                href="{{ permit['website'] | safe_url }}" target="_blank" rel="noopener noreferrer">Website</a>
                             <button id="btnCancelPermitUpdate{{ permit['id'] }}" class="btn btn-primary btn-sm d-none"
                                 type="button" onclick="resetPermitUpdate({{ permit['id'] }})">Cancel</button>
                         </div>
                     </td>
                 </tr>
-
                 {% endfor %}
                 {% endif %}
             </tbody>
         </table>
     </div>
 
-</body>
-
-</html>
+    <!-- Mobile Cards -->
+    <div class="d-md-none">
+        {% if permits|length == 0 %}
+        <div class="text-center text-muted">No permits have been attached</div>
+        {% else %}
+        {% for permit in permits %}
+        <div class="card mb-2">
+            <div class="card-body pb-2">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <span class="fw-semibold">{{ permit['type'] }}</span>
+                    <span id="lblPermitStatusm{{ permit['id'] }}">
+                        {% if permit['status'] | lower == 'approved' %}
+                        <span class="text-success">&#9679;</span>
+                        {% elif permit['status'] | lower == 'rejected' %}
+                        <span class="text-danger">&#9679;</span>
+                        {% else %}
+                        <span class="text-warning">&#9679;</span>
+                        {% endif %}
+                        {{ permit['status'] }}
+                    </span>
+                </div>
+                <div class="text-muted small">{{ permit['permit_number'] }}</div>
+                <div class="text-muted small">
+                    {{ permit['city_county'] }} &middot;
+                    {{ permit['status_date'].strftime('%m/%d/%Y') }} &middot;
+                    Follow-up: {{ permit['follow_up_date'].strftime('%m/%d/%Y') }}
+                </div>
+                <select id="selectPermitStatusm{{ permit['id'] }}" class="form-select form-select-sm d-none mt-2" name="permit_status">
+                    {% for option in permit_add_form.permit_status %}
+                    {% if loop.first %}<option selected disabled value="">Select Status</option>{% endif %}
+                    {{ option }}
+                    {% endfor %}
+                </select>
+                <div class="d-flex gap-2 mt-2">
+                    <button id="btnUpdateSavePermitm{{ permit['id'] }}" class="btn btn-sm btn-primary"
+                        onclick="updatePermit('m{{ permit['id'] }}')" type="button">Update</button>
+                    <a id="btnWebsitePermitm{{ permit['id'] }}" class="btn btn-sm btn-primary d-none"
+                        href="{{ permit['website'] | safe_url }}" target="_blank" rel="noopener noreferrer">Website</a>
+                    <button id="btnCancelPermitUpdatem{{ permit['id'] }}" class="btn btn-sm btn-outline-secondary d-none"
+                        type="button" onclick="resetPermitUpdate('m{{ permit['id'] }}')">Cancel</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>

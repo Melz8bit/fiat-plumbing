@@ -1,4 +1,4 @@
-<div class="modal-dialog modal-lg">
+<div class="modal-dialog modal-lg modal-fullscreen-sm-down">
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title" id="addInspectionModalHeader">Add Inspection</h5>
@@ -27,27 +27,22 @@
                     <a class="btn btn-primary" id="inspectionGoLink" href="#" target="_blank" disabled>Go</a>
                 </div>
 
-                <div class="row">
-                    <!-- Inspection Type -->
-                    <div class="col">
-                        <div class="input-group mb-3">
-                            {{ inspection_add_form.inspection_type.label(class="input-group-text") }}
-                            {{ inspection_add_form.inspection_type(class="form-control") }}
-                        </div>
-                    </div>
+                <!-- Inspection Type -->
+                <div class="input-group mb-3">
+                    {{ inspection_add_form.inspection_type.label(class="input-group-text") }}
+                    {{ inspection_add_form.inspection_type(class="form-control") }}
                 </div>
 
                 <div class="row">
                     <!-- Scheduled Date -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
                             {{ inspection_add_form.scheduled_date.label(class="input-group-text") }}
                             {{ inspection_add_form.scheduled_date(class="form-control", type="date") }}
                         </div>
                     </div>
-
                     <!-- Scheduled Time -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
                             {{ inspection_add_form.scheduled_time.label(class="input-group-text") }}
                             {{ inspection_add_form.scheduled_time(class="form-control", type="time") }}
@@ -57,14 +52,14 @@
 
                 <div class="row">
                     <!-- Inspection # -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
                             {{ inspection_add_form.inspection_number.label(class="input-group-text") }}
                             {{ inspection_add_form.inspection_number(class="form-control") }}
                         </div>
                     </div>
                     <!-- Inspector Name -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
                             {{ inspection_add_form.inspector_name.label(class="input-group-text") }}
                             {{ inspection_add_form.inspector_name(class="form-control") }}
@@ -74,7 +69,7 @@
 
                 <div class="row">
                     <!-- Status -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
                             {{ inspection_add_form.status.label(class="input-group-text") }}
                             <select class="form-select" name="status" id="inspection_status" required>
@@ -87,9 +82,8 @@
                             </select>
                         </div>
                     </div>
-
                     <!-- Status Date -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
                             {{ inspection_add_form.status_date.label(class="input-group-text") }}
                             {{ inspection_add_form.status_date(class="form-control", type="date") }}

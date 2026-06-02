@@ -1,38 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
+<style>
+    * { font-family: "Raleway", sans-serif; }
+</style>
 
-<head>
-    <style>
-        * {
-            font-family: "Raleway", sans-serif;
-        }
+<!-- Payments -->
+<div>
+    <div class="text-end pt-1 mb-2">
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#applyPaymentModal"
+            {% if project_amount_owed == 0 %} disabled {% endif %}>
+            Apply Payment
+        </button>
+    </div>
 
-        #invoiceTable>tbody>tr>td {
-            background-color: white;
-        }
+    <!-- Apply Payment Modal -->
+    <div class="modal fade" id="applyPaymentModal" tabindex="-1" aria-labelledby="applyPaymentLabel"
+        aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        {% include 'apply_payment_modal.html' %}
+    </div>
 
-        #invoiceTable>tbody>tr:nth-child(4n+1)>td,
-        #invoiceTable>tbody>tr:nth-child(4n+2)>td {
-            background-color: #F9F9F9;
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Payments -->
-    <div>
-        <div class="text-end pt-1">
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#applyPaymentModal" {% if
-                project_amount_owed==0 %} disabled {% endif %}>
-                Apply Payment
-            </button>
-        </div>
-        <!-- Apply Payment Modal -->
-        <div class="modal fade" id="applyPaymentModal" tabindex="-1" aria-labelledby="applyPaymentLabel"
-            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-            {% include 'apply_payment_modal.html' %}
-        </div>
-
+    <!-- Desktop Table -->
+    <div class="d-none d-md-block">
         <table class="table" id="paymentsTable">
             <thead>
                 <tr class="text-center">
@@ -44,13 +30,10 @@
                     <th></th>
                 </tr>
             </thead>
-
             <tbody>
                 {% if project_payments|length == 0 %}
                 <tr>
-                    <td class="text-center" colspan="100%">
-                        No payments have been received
-                    </td>
+                    <td class="text-center" colspan="6">No payments have been received</td>
                 </tr>
                 {% else %}
                 {% for payment in project_payments %}
@@ -61,49 +44,95 @@
                     <td>{{ "${:,.2f}".format(payment['payment_amount']) }}</td>
                     <td>{{ payment['payment_note'] }}</td>
                     <td class="w-25">
-                        <div class="btn-group gap-1 justify-content-end">
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="collapse"
-                                data-bs-target="#collapsePaymentInfo{{ payment['project_payment_id'] }}"
-                                aria-expanded="false"
-                                aria-controls="collapsePaymentInfo{{ payment['project_payment_id'] }}">
-                                View Invoices
-                            </button>
-                        </div>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="collapse"
+                            data-bs-target="#collapsePaymentInfo{{ payment['project_payment_id'] }}"
+                            aria-expanded="false">
+                            View Invoices
+                        </button>
                     </td>
                 </tr>
                 <tr class="collapse" id="collapsePaymentInfo{{ payment['project_payment_id'] }}">
                     <td colspan="999">
-                        <div>
-                            <div class="card card-body mb-1">
-                                <h5>Invoice(s)</h5>
-                                <table class="table mt-2">
-                                    <thead>
-                                        <tr class="text-center">
-                                            <th>#</th>
-                                            <th>Applied Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="text-center">
-                                        {% for installment in installment_payments %}
-                                        {% if installment['check_number'] == payment['check_number'] %}
-                                        <tr>
-                                            <td>{{ installment['invoice_number'] }}</td>
-                                            <td>{{ "${:,.2f}".format(installment['amount_applied']) }}</td>
-                                        </tr>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="card card-body mb-1">
+                            <h5>Invoice(s)</h5>
+                            <table class="table mt-2">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th>#</th>
+                                        <th>Applied Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                    {% for installment in installment_payments %}
+                                    {% if installment['check_number'] == payment['check_number'] %}
+                                    <tr>
+                                        <td>{{ installment['invoice_number'] }}</td>
+                                        <td>{{ "${:,.2f}".format(installment['amount_applied']) }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </td>
                 </tr>
-
                 {% endfor %}
                 {% endif %}
             </tbody>
         </table>
     </div>
-</body>
 
-</html>
+    <!-- Mobile Cards -->
+    <div class="d-md-none">
+        {% if project_payments|length == 0 %}
+        <div class="text-center text-muted">No payments have been received</div>
+        {% else %}
+        {% for payment in project_payments %}
+        <div class="card mb-2">
+            <div class="card-body pb-2">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <span class="fw-semibold">{{ "${:,.2f}".format(payment['payment_amount']) }}</span>
+                    <span class="text-muted small">{{ payment['date_received'].strftime('%m/%d/%Y') }}</span>
+                </div>
+                <div class="text-muted small">
+                    {{ payment['payment_method'] }} &middot; Check #{{ payment['check_number'] }}
+                </div>
+                {% if payment['payment_note'] %}
+                <div class="text-muted small fst-italic">{{ payment['payment_note'] }}</div>
+                {% endif %}
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse"
+                        data-bs-target="#collapsePaymentMobile{{ payment['project_payment_id'] }}"
+                        aria-expanded="false">
+                        View Invoices
+                    </button>
+                </div>
+                <div class="collapse mt-2" id="collapsePaymentMobile{{ payment['project_payment_id'] }}">
+                    <div class="card card-body">
+                        <h6>Invoice(s)</h6>
+                        <table class="table table-sm mt-1">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>#</th>
+                                    <th>Applied Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for installment in installment_payments %}
+                                {% if installment['check_number'] == payment['check_number'] %}
+                                <tr>
+                                    <td>{{ installment['invoice_number'] }}</td>
+                                    <td>{{ "${:,.2f}".format(installment['amount_applied']) }}</td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>

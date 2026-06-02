@@ -3,44 +3,31 @@
     <!-- Search -->
     {% include 'search.html' %}
 </form>
-<div class="row">
+<div class="row align-items-center">
     <div class="col">
-        <p class="fs-3 lh-1">Projects</p>
+        <p class="fs-3 lh-1 mb-0">Projects</p>
     </div>
-    <div class="col-2 text-end">
+    <div class="col-auto text-end">
         <a class="btn btn-sm btn-primary" href="{{ url_for('project_add')}}">Add Project</a>
     </div>
 </div>
 <hr>
-<div class="container text-center">
-    <table class="table table-hover">
-        <thead>
-            <tr class="text-center">
-                <th scope="col">#</th>
-                <th scope="col">Project</th>
-                <th scope="col">Client</th>
-                <th scope="col">Date</th>
-                <!-- <th scope="col">Amount</th> -->
-                <th scope="col">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for project in projects %}
-            <tr id="{{project['project_id']}}" class="projectRow text-center" tabindex="0"
-                onclick="rowClick(this.id)"
-                onkeydown="if(event.key==='Enter'||event.key===' ')rowClick(this.id)">
-                <td scope="row">{{ project['project_id'] }}</td>
-                <td>{{ project['name'] }}</td>
-                <td>{{ project['client_name']}}</td>
-                <td>{{ project['status_date'].strftime('%m/%d/%Y') }}</td>
-                <td>{{ project['status'] | title }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <script>
-        function rowClick(project_id) {
-            window.location = "/project/" + project_id;
-        }
-    </script>
+<div class="list-group mb-4">
+    {% for project in projects %}
+    <a href="/project/{{ project['project_id'] }}" class="list-group-item list-group-item-action">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <span class="text-muted small">#{{ project['project_id'] }}</span>
+                <span class="ms-2 fw-semibold">{{ project['name'] }}</span>
+            </div>
+            <span class="badge bg-secondary ms-2 d-none d-md-inline">{{ project['status'] | title }}</span>
+        </div>
+        <div class="text-muted small mt-1">
+            {{ project['client_name'] }} &middot; {{ project['status_date'].strftime('%m/%d/%Y') }}
+        </div>
+        <div class="text-muted small d-md-none">
+            {{ project['status'] | title }}
+        </div>
+    </a>
+    {% endfor %}
 </div>

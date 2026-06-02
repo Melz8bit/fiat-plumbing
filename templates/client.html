@@ -10,10 +10,6 @@
         * {
             font-family: "Raleway", sans-serif;
         }
-
-        .projectRow:hover {
-            cursor: pointer;
-        }
     </style>
 </head>
 
@@ -21,190 +17,179 @@
     {% include 'nav.html' %}
     <main>
 
-    <div class="container pt-4">
-        <div class="row align-items-center mb-4">
-            <div class="col">
-                <h1 class="display-5">{{ client['name'] }}</h1>
+        <div class="container pt-4">
+            <div class="row align-items-center mb-4">
+                <div class="col">
+                    <h1 class="h3 mb-0">{{ client['name'] }}</h1>
+                </div>
+                <div class="col-auto d-flex gap-2 align-items-center justify-content-end">
+                    {% if client['is_test'] %}
+                    <form id="deleteClientForm" method="POST" action="{{ url_for('delete_client', client_id=client['client_id']) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteClientModal">
+                            <i class="fa-solid fa-trash"></i><span class="d-none d-md-inline ms-1">Delete Client</span>
+                        </button>
+                    </form>
+                    {% endif %}
+                    <a class="btn btn-sm btn-primary"
+                        href="{{ url_for('edit_client', client_id=client['client_id']) }}">
+                        <i class="fa-solid fa-pen"></i><span class="d-none d-md-inline ms-1">Edit Information</span>
+                    </a>
+                </div>
             </div>
-            <div class="col-auto text-end d-flex gap-2 align-items-center">
-                {% if client['is_test'] %}
-                <form id="deleteClientForm" method="POST" action="{{ url_for('delete_client', client_id=client['client_id']) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteClientModal">
-                        Delete Client
-                    </button>
-                </form>
-                {% endif %}
-                <a class="btn btn-sm btn-primary"
-                    href="{{ url_for('edit_client', client_id=client['client_id']) }}">Edit
-                    Information</a>
-            </div>
-        </div>
 
-        <!-- Delete Client Confirmation Modal -->
-        {% if client['is_test'] %}
-        <div class="modal fade" id="deleteClientModal" tabindex="-1" aria-labelledby="deleteClientModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger" id="deleteClientModalLabel">Delete Test Client</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>This will permanently delete <strong>{{ client['name'] }}</strong> and all associated data.</p>
-                        {% if client_projects %}
-                        <p>The following projects and all their data will also be deleted:</p>
-                        <ul>
-                            {% for project in client_projects %}
-                            <li><strong>{{ project['name'] }}</strong> ({{ project['project_id'] }})</li>
-                            {% endfor %}
-                        </ul>
-                        {% else %}
-                        <p>This client has no projects.</p>
-                        {% endif %}
-                        <p class="mb-0 text-danger fw-semibold">This cannot be undone.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-danger" onclick="document.getElementById('deleteClientForm').submit()">Delete Client</button>
+            <!-- Delete Client Confirmation Modal -->
+            {% if client['is_test'] %}
+            <div class="modal fade" id="deleteClientModal" tabindex="-1" aria-labelledby="deleteClientModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteClientModalLabel">Delete Test Client</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>This will permanently delete <strong>{{ client['name'] }}</strong> and all associated data.</p>
+                            {% if client_projects %}
+                            <p>The following projects and all their data will also be deleted:</p>
+                            <ul>
+                                {% for project in client_projects %}
+                                <li><strong>{{ project['name'] }}</strong> ({{ project['project_id'] }})</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p>This client has no projects.</p>
+                            {% endif %}
+                            <p class="mb-0 text-danger fw-semibold">This cannot be undone.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" onclick="document.getElementById('deleteClientForm').submit()">Delete Client</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {% endif %}
+            {% endif %}
 
-        <!-- Address Information -->
-        <h4 class="my-3">Address Information</h4>
-        <hr>
-        <div>
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-address">Address</span>
-                        <input type="text" class="form-control border-primary" value="{{ client['address'] }}"
-                            aria-label="address" aria-describedby="client-address" readonly>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-city">City</span>
-                        <input type="text" class="form-control border-primary" value="{{ client['city'] }}"
-                            aria-label="city" aria-describedby="client-city" readonly>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-state">State</span>
-                        <input type="text" class="form-control border-primary" value="{{ client['state'] }}"
-                            aria-label="state" aria-describedby="client-state" readonly>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-zip">Zip Code</span>
-                        <input type="text" class="form-control border-primary" value="{{ client['zip_code'] }}"
-                            aria-label="zipCode" aria-describedby="client-zip" readonly>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-telephone">Telephone</span>
-                        <input type="text" class="form-control border-primary" value="{{ client['phone_number'] }}"
-                            aria-label="telephone" aria-describedby="client-telephone" readonly>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-website">Website</span>
-                        <input type="text" class="form-control border-primary" value="{{ client['website'] }}"
-                            aria-label="website" aria-describedby="client-website" readonly>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Contact Information -->
-        <h4 class="my-3">Contact Information</h4>
-        <div>
+            <!-- Address Information -->
+            <h4 class="my-3">Address Information</h4>
             <hr>
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-poc-name">Name</span>
-                        <input type="text" class="form-control border-primary" value="{{ client_poc['name'] }}"
-                            aria-label="contactName" aria-describedby="client-poc-name" readonly>
+            <div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-address">Address</span>
+                            <input type="text" class="form-control border-primary" value="{{ client['address'] }}"
+                                aria-label="address" aria-describedby="client-address" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-city">City</span>
+                            <input type="text" class="form-control border-primary" value="{{ client['city'] }}"
+                                aria-label="city" aria-describedby="client-city" readonly>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-state">State</span>
+                            <input type="text" class="form-control border-primary" value="{{ client['state'] }}"
+                                aria-label="state" aria-describedby="client-state" readonly>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-zip">Zip Code</span>
+                            <input type="text" class="form-control border-primary" value="{{ client['zip_code'] }}"
+                                aria-label="zipCode" aria-describedby="client-zip" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-telephone">Telephone</span>
+                            <input type="text" class="form-control border-primary" value="{{ client['phone_number'] }}"
+                                aria-label="telephone" aria-describedby="client-telephone" readonly>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-website">Website</span>
+                            <input type="text" class="form-control border-primary" value="{{ client['website'] }}"
+                                aria-label="website" aria-describedby="client-website" readonly>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-poc-phone">Phone Number</span>
-                        <input type="tel" class="form-control border-primary" value="{{ client_poc['telephone'] }}"
-                            pattern="\([0-9]{3}) [0-9]{3}-[0-9]{4}" aria-label="phoneNumber"
-                            aria-describedby="client-poc-phone" readonly>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text border-primary text-primary" id="client-poc-email">Email</span>
-                        <input type="email" class="form-control border-primary" value="{{ client_poc['email'] }}"
-                            aria-label="email" aria-describedby="client-poc-email" readonly>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Project List -->
-        <div class="row my-3">
-            <div class="col">
-                <h4>Projects</h4>
+            <!-- Contact Information -->
+            <h4 class="my-3">Contact Information</h4>
+            <div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-poc-name">Name</span>
+                            <input type="text" class="form-control border-primary" value="{{ client_poc['name'] }}"
+                                aria-label="contactName" aria-describedby="client-poc-name" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-poc-phone">Telephone</span>
+                            <input type="tel" class="form-control border-primary" value="{{ client_poc['telephone'] }}"
+                                pattern="\([0-9]{3}) [0-9]{3}-[0-9]{4}" aria-label="phoneNumber"
+                                aria-describedby="client-poc-phone" readonly>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text border-primary text-primary" id="client-poc-email">Email</span>
+                            <input type="email" class="form-control border-primary" value="{{ client_poc['email'] }}"
+                                aria-label="email" aria-describedby="client-poc-email" readonly>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-2 text-end">
-                <a class="btn btn-primary btn-sm" href="{{ url_for('project_add', client_id=client['client_id']) }}">
-                    New Project
-                </a>
-            </div>
-        </div>
-        <hr>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="text-center">#</th>
-                    <th>Name</th>
-                    <th class="text-center">Adddress</th>
-                    <th class="text-center">City</th>
-                    <th class="text-center">State</th>
-                    <th class="text-center">Status</th>
-                    <th class="text-center">Status Date</th>
-                </tr>
-            </thead>
-            <tbody>
+            <!-- Project List -->
+            <div class="row align-items-center my-3">
+                <div class="col">
+                    <h4 class="mb-0">Projects</h4>
+                </div>
+                <div class="col-auto text-end">
+                    <a class="btn btn-primary btn-sm" href="{{ url_for('project_add', client_id=client['client_id']) }}">
+                        New Project
+                    </a>
+                </div>
+            </div>
+            <hr>
+
+            <div class="list-group mb-4">
                 {% for project in client_projects %}
-                <tr id="{{ project['project_id'] }}" class="projectRow" onclick=rowClick(id)>
-                    <td class="text-center">{{ project['project_id'] }}</td>
-                    <td>{{ project['name'] }}</td>
-                    <td class="text-center">{{ project['address'] }}</td>
-                    <td class="text-center">{{ project['city'] }}</td>
-                    <td class="text-center">{{ project['state'] }}</td>
-                    <td class="text-center">{{ project['status'] | capitalize }}</td>
-                    <td class="text-center">{{ project['status_date'].strftime('%m/%d/%Y') }}</td>
-                </tr>
-                <script>
-                    function rowClick(project_id) {
-                        window.location = "/project/" + project_id;
-                    }
-                </script>
+                <a href="/project/{{ project['project_id'] }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="text-muted small">#{{ project['project_id'] }}</span>
+                            <span class="ms-2 fw-semibold">{{ project['name'] }}</span>
+                        </div>
+                        <span class="badge bg-secondary ms-2 d-none d-md-inline">{{ project['status'] | capitalize }}</span>
+                    </div>
+                    <div class="text-muted small mt-1">
+                        {{ project['address'] }}, {{ project['city'] }}, {{ project['state'] }} &middot; {{ project['status_date'].strftime('%m/%d/%Y') }}
+                    </div>
+                    <div class="text-muted small d-md-none">
+                        {{ project['status'] | capitalize }}
+                    </div>
+                </a>
                 {% endfor %}
-            </tbody>
-        </table>
+            </div>
 
-    </div>
+        </div>
 
     </main>
 </body>

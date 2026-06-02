@@ -1,4 +1,4 @@
-<div class="modal-dialog modal-lg">
+<div class="modal-dialog modal-lg modal-fullscreen-sm-down">
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title" id="addPermitModalHeader">Add Permit</h5>
@@ -14,8 +14,8 @@
                         {% if loop.first %}
                         <option selected disabled value="">Select City/County</option>
                         {% endif %}
-                        <option value="{{ option.data }}" data-website="{{ permit_websites[option.data] }}" {% if
-                            option.checked%}selected{% endif %}>
+                        <option value="{{ option.data }}" data-website="{{ permit_websites[option.data] }}"
+                            {% if option.checked %}selected{% endif %}>
                             {{ option.label.text }}
                         </option>
                         {% endfor %}
@@ -25,19 +25,15 @@
 
                 <div class="row">
                     <!-- Permit Number -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
-                            <!-- <span class="input-group-text">Permit #</span> -->
-                            <!-- <input type="text" class="form-control" aria-label="Permit Number"> -->
                             {{ permit_add_form.permit_number.label(class="input-group-text") }}
                             {{ permit_add_form.permit_number(class="form-control", required=True) }}
                         </div>
                     </div>
-
                     <!-- Permit Type -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
-                            <!-- <span class="input-group-text">Type</span> -->
                             {{ permit_add_form.permit_type.label(class="input-group-text") }}
                             <select class="form-select" name="permit_type" id="permit_type" required>
                                 {% for option in permit_add_form.permit_type %}
@@ -52,10 +48,9 @@
                 </div>
 
                 <div class="row">
-                    <!-- Status Selection -->
-                    <div class="col">
+                    <!-- Status -->
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
-                            <!-- <span class="input-group-text">Status</span> -->
                             {{ permit_add_form.permit_status.label(class="input-group-text") }}
                             <select class="form-select" name="permit_status" id="permit_status" required>
                                 {% for option in permit_add_form.permit_status %}
@@ -67,9 +62,8 @@
                             </select>
                         </div>
                     </div>
-
                     <!-- Status Date -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
                             {{ permit_add_form.permit_status_date.label(class="input-group-text") }}
                             {{ permit_add_form.permit_status_date(class="form-control", type="date") }}
@@ -77,15 +71,15 @@
                     </div>
                 </div>
 
+                <!-- Note -->
                 <div class="input-group">
                     {{ permit_add_form.permit_note.label(class="input-group-text") }}
                     {{ permit_add_form.permit_note(class="form-control") }}
                 </div>
 
             </div>
-
             <div class="modal-footer">
-                {{ permit_add_form.permit_add_submit(class="btn btn-primary")}}
+                {{ permit_add_form.permit_add_submit(class="btn btn-primary") }}
             </div>
         </form>
     </div>

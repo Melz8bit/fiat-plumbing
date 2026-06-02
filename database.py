@@ -2471,12 +2471,13 @@ def get_permit_dashboard_summary(user_role):
         sqlQuery = f"""
             SELECT
                 project_permits.project_id,
-                MAX(CASE WHEN type = 'Plumbing' THEN permit_number END) AS plumbing_permit_number,
-                MAX(CASE WHEN type = 'Plumbing' THEN status END) AS plumbing_permit_status,
-                TO_CHAR(MAX(CASE WHEN type = 'Plumbing' THEN status_date END), 'MM/DD/YYYY') AS plumbing_permit_status_date,
-                MAX(CASE WHEN type = 'Master' THEN permit_number END) AS master_permit_number,
-                MAX(CASE WHEN type = 'Master' THEN status END) AS master_permit_status,
-                TO_CHAR(MAX(CASE WHEN type = 'Master' THEN status_date END), 'MM/DD/YYYY') AS master_permit_status_date
+                MAX(projects.name) AS project_name,
+                MAX(CASE WHEN project_permits.type = 'Plumbing' THEN project_permits.permit_number END) AS plumbing_permit_number,
+                MAX(CASE WHEN project_permits.type = 'Plumbing' THEN project_permits.status END) AS plumbing_permit_status,
+                TO_CHAR(MAX(CASE WHEN project_permits.type = 'Plumbing' THEN project_permits.status_date END), 'MM/DD/YYYY') AS plumbing_permit_status_date,
+                MAX(CASE WHEN project_permits.type = 'Master' THEN project_permits.permit_number END) AS master_permit_number,
+                MAX(CASE WHEN project_permits.type = 'Master' THEN project_permits.status END) AS master_permit_status,
+                TO_CHAR(MAX(CASE WHEN project_permits.type = 'Master' THEN project_permits.status_date END), 'MM/DD/YYYY') AS master_permit_status_date
             FROM project_permits
             INNER JOIN projects ON project_permits.project_id = projects.project_id
             {is_test_filter}

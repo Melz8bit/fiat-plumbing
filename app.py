@@ -649,7 +649,9 @@ def project_view(project_id, new_project=False):
                 )
             return redirect(url_for("project_view", project_id=project["project_id"]))
         else:
-            app.logger.debug("project_status_form errors: %s", project_status_form.errors)
+            app.logger.debug(
+                "project_status_form errors: %s", project_status_form.errors
+            )
 
         # Add Project Note
         if (
@@ -671,7 +673,9 @@ def project_view(project_id, new_project=False):
                 project_id,
             )
         else:
-            app.logger.debug("invoice_create_form errors: %s", invoice_create_form.errors)
+            app.logger.debug(
+                "invoice_create_form errors: %s", invoice_create_form.errors
+            )
 
         # Apply payment
         if (
@@ -698,7 +702,9 @@ def project_view(project_id, new_project=False):
         ):
             return add_project_inspection(inspection_add_form, project_id)
         else:
-            app.logger.debug("inspection_add_form errors: %s", inspection_add_form.errors)
+            app.logger.debug(
+                "inspection_add_form errors: %s", inspection_add_form.errors
+            )
 
         # Upload Document
         if (
@@ -709,7 +715,7 @@ def project_view(project_id, new_project=False):
         else:
             app.logger.debug("document_form errors: %s", document_form.errors)
 
-    tab = session.pop("active_tab", None)
+    tab = session.pop("active_tab", None) or request.args.get("tab")
 
     return render_template(
         "project.html",
@@ -1240,7 +1246,9 @@ def finalize_proposal():
         ).write_pdf()
 
     # upload_file_type = filename.filename.split(".")[-1]
-    upload_file_name = f"{project_id}-Proposal-{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+    upload_file_name = (
+        f"{project_id}-Proposal-{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+    )
 
     try:
         # Add document to S3 bucket
@@ -1346,8 +1354,12 @@ def project_add(client_id=None):
 
     # Populate the form with an updated list of clients, split by is_test
     clients = database.get_all_clients(user.role)
-    test_client_options = [(c["client_id"], c["name"]) for c in clients if c.get("is_test")]
-    regular_client_options = [(c["client_id"], c["name"]) for c in clients if not c.get("is_test")]
+    test_client_options = [
+        (c["client_id"], c["name"]) for c in clients if c.get("is_test")
+    ]
+    regular_client_options = [
+        (c["client_id"], c["name"]) for c in clients if not c.get("is_test")
+    ]
     form.client.choices = test_client_options + regular_client_options
 
     if form.validate_on_submit():
@@ -1507,7 +1519,9 @@ def add_inspection_ajax(project_id):
     if form.validate_on_submit():
         inspection_info = {
             "project_id": project_id,
-            "building_dept_id": form.building_dept.data["id"] if form.building_dept.data else None,
+            "building_dept_id": (
+                form.building_dept.data["id"] if form.building_dept.data else None
+            ),
             "inspection_type": form.inspection_type.data,
             "scheduled_date": form.scheduled_date.data,
             "scheduled_time": form.scheduled_time.data,
@@ -1574,7 +1588,12 @@ def update_permit_status():
 
         try:
             database.update_permit(permit_id, new_status, session["user_id"])
-            return jsonify({"success": True, "message": "Permit status updated successfully"}), 200
+            return (
+                jsonify(
+                    {"success": True, "message": "Permit status updated successfully"}
+                ),
+                200,
+            )
         except Exception as e:
             app.logger.error("Error updating permit status: %s", e)
             return jsonify({"error": "An internal error occurred"}), 500
@@ -1749,7 +1768,7 @@ def admin_coi_send():
                 database.mark_coi_sent([dept_id], dept["primary_email"])
                 email_successes.append(dept["entity"])
             except Exception as e:
-                app.logger.error("COI email error for %s: %s", dept['entity'], e)
+                app.logger.error("COI email error for %s: %s", dept["entity"], e)
                 email_failures.append(dept["entity"])
 
     if portal_ids:

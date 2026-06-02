@@ -1,79 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
+<style>
+    * { font-family: "Raleway", sans-serif; }
+</style>
 
-<head>
-    <style>
-        * {
-            font-family: "Raleway", sans-serif;
-        }
-    </style>
-</head>
+<!-- Documents -->
+<div>
+    <div class="text-end mt-2 mb-2">
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDocModal">
+            Upload File
+        </button>
 
-<body>
-    <!-- Documents -->
-    <div>
-        <div class="text-end mt-2">
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDocModal">
-                Upload File
-            </button>
-
-            <!-- Upload Modal -->
-            <div class="modal fade" id="uploadDocModal" tabindex="-1" aria-labelledby="uploadDocModalHeader"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="uploadDocModalHeader">Document Upload</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="documentForm" method="POST" enctype="multipart/form-data">
-                                {{ document_form.csrf_token }}
-
-                                <!-- <div class="input-group mb-3">
-                                    {{ document_form.document_type.label(class="input-group-text")}}
-                                    <select class="form-select" name="document_type" id="document_type">
-                                        {% for option in document_form.document_type %}
-                                        {% if loop.first %}
-                                        <option selected disabled value="">Select Type</option>
-                                        {% endif %}
-                                        {{ option }}
-                                        {% endfor %}
-                                    </select>
-                                </div> -->
-                                <div class="input-group mb-3">
-                                    {{ document_form.document_type.label(class="input-group-text")}}
-                                    {{ document_form.document_type(class="form-select") }}
-                                </div>
-                                <div class="input-group mb-3">
-                                    {{ document_form.comment.label(class="input-group-text")}}
-                                    {{ document_form.comment(class="form-control")}}
-                                </div>
-                                <div class="mb-3">
-                                    {{ document_form.upload_file(class="form-control", type="file")}}
-                                </div>
-                                <div class="modal-footer">
-                                    {{ document_form.upload_document_submit(class="btn btn-primary")}}
-                                </div>
-                            </form>
-
-                        </div>
+        <!-- Upload Modal -->
+        <div class="modal fade" id="uploadDocModal" tabindex="-1" aria-labelledby="uploadDocModalHeader" aria-hidden="true">
+            <div class="modal-dialog modal-fullscreen-sm-down">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="uploadDocModalHeader">Document Upload</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="documentForm" method="POST" enctype="multipart/form-data">
+                            {{ document_form.csrf_token }}
+                            <div class="input-group mb-3">
+                                {{ document_form.document_type.label(class="input-group-text") }}
+                                {{ document_form.document_type(class="form-select") }}
+                            </div>
+                            <div class="input-group mb-3">
+                                {{ document_form.comment.label(class="input-group-text") }}
+                                {{ document_form.comment(class="form-control") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ document_form.upload_file(class="form-control", type="file") }}
+                            </div>
+                            <div class="text-end">
+                                {{ document_form.upload_document_submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Desktop Table -->
+    <div class="d-none d-md-block">
         <table class="table table-striped mt-2">
             <thead>
                 <tr>
-                    <th class="text-center">Type</th>
+                    <th>Type</th>
                     <th class="text-center">Date</th>
-                    <th class="text-center">Comment</th>
+                    <th>Comment</th>
                     <th class="text-center">Uploaded By</th>
-                    <th class="text-center"></th>
+                    <th></th>
                 </tr>
             </thead>
-
             <tbody>
                 {% for document in documents %}
                 <tr>
@@ -91,6 +70,31 @@
             </tbody>
         </table>
     </div>
-</body>
 
-</html>
+    <!-- Mobile Cards -->
+    <div class="d-md-none">
+        {% if documents %}
+        <div class="list-group list-group-flush mb-4">
+            {% for document in documents %}
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="fw-semibold">{{ document["type"] }}</span>
+                    <span class="text-muted small">{{ document["upload_date"].strftime('%m/%d/%Y') }}</span>
+                </div>
+                {% if document["comment"] %}
+                <div class="text-muted small fst-italic mt-1">{{ document["comment"] }}</div>
+                {% endif %}
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                    <span class="text-muted small">{{ document["first_name"] }} {{ document["last_name"] }}</span>
+                    <a class="btn btn-sm btn-outline-primary"
+                        href="{{ url_for('download_document', project_id=document['project_id'], doc_filename=document['filename']) }}"
+                        target="_blank">View</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-muted mt-3">No documents have been uploaded</div>
+        {% endif %}
+    </div>
+</div>

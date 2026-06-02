@@ -1,15 +1,26 @@
-<style>
-    /* Adds a solid split line after the fourth column */
-    .td-permit:nth-child(4) {
-        border-right: 2px solid black;
-        padding-right: 10px;
-    }
+{% macro permit_dot(status) -%}
+{%- if not status %}—
+{%- elif status | lower == 'approved' %}<span class="text-success">&#9679;</span> {{ status }}
+{%- elif status | lower == 'rejected' %}<span class="text-danger">&#9679;</span> {{ status }}
+{%- else %}<span class="text-warning">&#9679;</span> {{ status }}
+{%- endif %}
+{%- endmacro %}
 
-    /* Adds padding to the next column to create space */
-    .td-permit:nth-child(5) {
-        padding-left: 10px;
-    }
-</style>
+{% macro inspection_dot(status) -%}
+{%- if not status %}—
+{%- elif status | lower == 'passed' %}<span class="text-success">&#9679;</span> {{ status }}
+{%- elif status | lower == 'failed' %}<span class="text-danger">&#9679;</span> {{ status }}
+{%- else %}<span class="text-warning">&#9679;</span> {{ status }}
+{%- endif %}
+{%- endmacro %}
+
+{% macro inspection_badge_class(status) -%}
+{%- if not status %}bg-secondary
+{%- elif status | lower == 'passed' %}bg-success
+{%- elif status | lower == 'failed' %}bg-danger
+{%- else %}bg-warning text-dark
+{%- endif %}
+{%- endmacro %}
 
 <div class="accordion" id="accordianHomePage">
     <!-- Projects Summary -->
@@ -23,9 +34,8 @@
         <div id="collapseProjectSummary" class="accordion-collapse collapse show" data-bs-parent="#accordianHomePage">
             <div class="accordion-body">
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <!-- Project Status Summary -->
                 <div class="container mt-4">
-                    <div class="card w-75 mx-auto">
+                    <div class="card w-100 mx-auto">
                         <div class="card-header text-center">Project Status Summary</div>
                         <div class="card-body">
                             <canvas id="statusChart" role="img" aria-label="Project Status Summary chart"></canvas>
@@ -35,21 +45,21 @@
                         const ctx = document.getElementById('statusChart');
 
                         new Chart(ctx, {
-                            type: 'bar', // or 'pie' or 'bar'
+                            type: 'bar',
                             data: {
-                                labels: {{ status_summary_labels | tojson }}, // Safely pass Python list to JS
+                                labels: {{ status_summary_labels | tojson }},
                             datasets: [{
                                 label: '# of Projects',
                                 data: {{ status_summary_values | tojson }},
                             backgroundColor: [
-                                'rgba(54, 162, 235, 0.8)', // Blue
-                                'rgba(255, 206, 86, 0.8)', // Yellow
-                                'rgba(75, 192, 192, 0.8)', // Green
-                                'rgba(255, 99, 132, 0.8)'  // Red
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(255, 99, 132, 0.8)'
                             ],
                             borderWidth: 1
-            }]
-        },
+                        }]
+                    },
                             options: {
                             responsive: true,
                             plugins: {
@@ -58,7 +68,7 @@
                                 }
                             }
                         }
-    });
+                    });
                     </script>
                 </div>
             </div>
@@ -74,27 +84,20 @@
             </button>
         </h2>
         <div id="collapseFinances" class="accordion-collapse collapse" data-bs-parent="#accordianHomePage">
-            <div class="accordion-body">
-                <table class="table w-100">
-                    <thead>
-                        <tr>
-                            <th scope="col">Project Name</th>
-                            <th scope="col" class="text-end">Project Total</th>
-                            <th scope="col" class="text-end">Amount Received</th>
-                            <th scope="col" class="text-end">% Received</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for finance in finance_counts %}
-                        <tr>
-                            <th scope="row">{{ finance['name'] }}</th>
-                            <td class="text-end">{{ "${:,.2f}".format(finance['invoicetotal']) }}</td>
-                            <td class="text-end">{{ "${:,.2f}".format(finance['totalreceived']) }}</td>
-                            <td class="text-end">{{ "{:,.2f}%".format(finance['percentreceived']) }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="accordion-body p-0">
+                <div class="list-group list-group-flush mb-4">
+                    {% for finance in finance_counts %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="fw-semibold">{{ finance['name'] }}</span>
+                            <span class="badge bg-secondary ms-2">{{ "{:,.1f}%".format(finance['percentreceived']) }}</span>
+                        </div>
+                        <div class="text-muted small mt-1">
+                            Total: {{ "${:,.2f}".format(finance['invoicetotal']) }} &middot; Received: {{ "${:,.2f}".format(finance['totalreceived']) }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -108,43 +111,32 @@
             </button>
         </h2>
         <div id="collapsePermits" class="accordion-collapse collapse" data-bs-parent="#accordianHomePage">
-            <div class="accordion-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th class="text-center" colspan="3">Plumbing</th>
-                            <th class="text-center" colspan="3">Master</th>
-                        </tr>
-                        <tr>
-                            <th>Project ID</th>
-                            <th>Permit Number</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Permit Number</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-group-divider">
-                        {% for permit in permits_summary %}
-                        <tr>
-                            <td class="td-permit">{{ permit["project_id"] }}</td>
-                            <td class="td-permit">{{ permit["plumbing_permit_number"] | default('', true) }}</td>
-                            <td class="td-permit">{{ permit["plumbing_permit_status"] | default('', true) }}</td>
-                            <td class="td-permit">{{ permit["plumbing_permit_status_date"] | default('', true) }}</td>
-                            <td class="td-permit">{{ permit["master_permit_number"] | default('', true) }}</td>
-                            <td class="td-permit">{{ permit["master_permit_status"] | default('', true) }}</td>
-                            <td class="td-permit">{{ permit["master_permit_status_date"] | default('', true) }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="accordion-body p-0">
+                <div class="list-group list-group-flush mb-4">
+                    {% for permit in permits_summary %}
+                    <a href="/project/{{ permit['project_id'] }}?tab=permits" class="list-group-item list-group-item-action">
+                        <div class="mb-1">
+                            <span class="text-muted small">#{{ permit['project_id'] }}</span>
+                            <span class="ms-2 fw-semibold">{{ permit['project_name'] or '—' }}</span>
+                        </div>
+                        <div class="text-muted small">
+                            <span class="fw-semibold text-body">Plumbing:</span>
+                            {{ permit_dot(permit['plumbing_permit_status'] | default('', true)) }} &middot;
+                            {{ permit['plumbing_permit_status_date'] | default('—', true) }}
+                        </div>
+                        <div class="text-muted small">
+                            <span class="fw-semibold text-body">Master:</span>
+                            {{ permit_dot(permit['master_permit_status'] | default('', true)) }} &middot;
+                            {{ permit['master_permit_status_date'] | default('—', true) }}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Inspection -->
+    <!-- Inspections -->
     <div class="accordion-item">
         <h2 class="accordion-header">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -153,47 +145,37 @@
             </button>
         </h2>
         <div id="collapseInspections" class="accordion-collapse collapse" data-bs-parent="#accordianHomePage">
-            <div class="accordion-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Project ID</th>
-                            <th>Project Name</th>
-                            <th>Building Dept</th>
-                            <th>Type</th>
-                            <th class="text-center">Scheduled Date</th>
-                            <th class="text-center">Scheduled Time</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-center">Status Date</th>
-                            <th>Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-group-divider">
-                        {% for inspection in inspections_summary %}
-                        <tr>
-                            <td>{{ inspection['project_id'] }}</td>
-                            <td>{{ inspection['project_name'] or '—' }}</td>
-                            <td>{{ inspection['building_dept_name'] or '—' }}</td>
-                            <td>{{ inspection['inspection_type'] or '—' }}</td>
-                            <td class="text-center">
-                                {{ inspection['scheduled_date'].strftime('%m/%d/%Y') if inspection['scheduled_date'] else '—' }}
-                            </td>
-                            <td class="text-center">
-                                {{ inspection['scheduled_time'].strftime('%I:%M %p') if inspection['scheduled_time'] else '—' }}
-                            </td>
-                            <td class="text-center">{{ inspection['status'] or '—' }}</td>
-                            <td class="text-center">
-                                {{ inspection['status_date'].strftime('%m/%d/%Y') if inspection['status_date'] else '—' }}
-                            </td>
-                            <td>{{ inspection['notes'] or '—' }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td class="text-center" colspan="100%">No inspections found</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="accordion-body p-0">
+                <div class="list-group list-group-flush mb-4">
+                    {% for inspection in inspections_summary %}
+                    <a href="/project/{{ inspection['project_id'] }}?tab=inspections" class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="text-muted small">#{{ inspection['project_id'] }}</span>
+                                <span class="ms-2 fw-semibold">{{ inspection['project_name'] or '—' }}</span>
+                                <span class="ms-2 text-muted small">{{ inspection['inspection_type'] or '—' }}</span>
+                            </div>
+                            <span class="badge {{ inspection_badge_class(inspection['status']) }} ms-2 d-none d-md-inline">{{ inspection['status'] or '—' }}</span>
+                        </div>
+                        <div class="text-muted small mt-1">
+                            {{ inspection['building_dept_name'] or '—' }}
+                            &middot;
+                            {% if inspection['scheduled_date'] %}{{ inspection['scheduled_date'].strftime('%m/%d/%Y') }}{% else %}—{% endif %}
+                            {% if inspection['scheduled_time'] %} {{ inspection['scheduled_time'].strftime('%I:%M %p') }}{% endif %}
+                            <span class="d-none d-md-inline">&middot; Status date: {% if inspection['status_date'] %}{{ inspection['status_date'].strftime('%m/%d/%Y') }}{% else %}—{% endif %}</span>
+                        </div>
+                        <div class="text-muted small d-md-none">
+                            Status date: {% if inspection['status_date'] %}{{ inspection['status_date'].strftime('%m/%d/%Y') }}{% else %}—{% endif %}
+                        </div>
+                        {% if inspection['notes'] %}
+                        <div class="text-muted small fst-italic mt-1">{{ inspection['notes'] }}</div>
+                        {% endif %}
+                        <div class="text-muted small d-md-none mt-1">{{ inspection_dot(inspection['status'] or '') }}</div>
+                    </a>
+                    {% else %}
+                    <div class="list-group-item text-center text-muted">No inspections found</div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>

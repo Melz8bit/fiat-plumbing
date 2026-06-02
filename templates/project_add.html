@@ -10,10 +10,6 @@
         * {
             font-family: "Raleway", sans-serif;
         }
-
-        .contractRow:hover {
-            cursor: pointer;
-        }
     </style>
 </head>
 
@@ -27,35 +23,34 @@
             {{ form.hidden_tag() }}
 
             <!-- Project Information -->
-            <h4 class="mt-3">Project Information</h4>
+            <h4 class="my-3">Project Information</h4>
+            <hr>
 
             <div>
                 <div class="row">
-                    <!-- Contract Number -->
-                    <div class="col-4">
+                    <div class="col-12 col-md-4">
                         <div class="input-group mb-3">
-                            {{ form.project_id.label(class="input-group-text")}}
-                            {{ form.project_id(class="form-control", value=next_project_id) }}
+                            {{ form.project_id.label(class="input-group-text border-primary text-primary") }}
+                            {{ form.project_id(class="form-control border-primary", value=next_project_id) }}
                         </div>
                     </div>
-                    <!-- Contract Name -->
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
-                            {{ form.name.label(class="input-group-text")}}
-                            {{ form.name(class="form-control") }}
+                            {{ form.name.label(class="input-group-text border-primary text-primary") }}
+                            {{ form.name(class="form-control border-primary") }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Client -->
                 <div class="input-group mb-2">
-                    {{ form.client.label(class="input-group-text") }}
+                    {{ form.client.label(class="input-group-text border-primary text-primary") }}
                     {% if client %}
-                    <select class="form-select" name="client" id="client" value="{{ client['client_id'] }}">
+                    <select class="form-select border-primary" name="client" id="client" value="{{ client['client_id'] }}">
                         <option value="{{ client['client_id'] }}" selected>{{ client['name'] }}</option>
                     </select>
                     {% else %}
-                    <select class="form-select" name="client" id="client">
+                    <select class="form-select border-primary" name="client" id="client">
                         <option value="" disabled selected>Select Client</option>
                         {% for value, label in regular_client_options %}
                         <option value="{{ value }}">{{ label }}</option>
@@ -95,31 +90,31 @@
                 <hr>
                 <h4 class="my-3">Location Information</h4>
                 <div class="row">
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
-                            {{ form.address.label(class="input-group-text")}}
-                            {{ form.address(class="form-control") }}
+                            {{ form.address.label(class="input-group-text border-primary text-primary") }}
+                            {{ form.address(class="form-control border-primary") }}
                         </div>
                     </div>
-                    <div class="col-4">
+                    <div class="col-12 col-md-4">
                         <div class="input-group mb-3">
-                            {{ form.zip_code.label(class="input-group-text")}}
-                            {{ form.zip_code(class="form-control", id="txtZipCode") }}
+                            {{ form.zip_code.label(class="input-group-text border-primary text-primary") }}
+                            {{ form.zip_code(class="form-control border-primary", id="txtZipCode") }}
                             <button class="btn btn-outline-primary" type="button" id="btnAutoFill">Auto Fill</button>
                         </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
-                            {{ form.city.label(class="input-group-text")}}
-                            {{ form.city(class="form-control", id="txtCity") }}
+                            {{ form.city.label(class="input-group-text border-primary text-primary") }}
+                            {{ form.city(class="form-control border-primary", id="txtCity") }}
                         </div>
                     </div>
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
-                            {{ form.state.label(class="input-group-text") }}
-                            <select class="form-select" name="state" id="state">
+                            {{ form.state.label(class="input-group-text border-primary text-primary") }}
+                            <select class="form-select border-primary" name="state" id="state">
                                 <option value="" disabled selected>Select State</option>
                                 {% for value, label in form.state.choices %}
                                 <option value="{{ value }}">{{ label }}</option>
@@ -127,10 +122,10 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col">
+                    <div class="col-12 col-md">
                         <div class="input-group mb-3">
-                            {{ form.county.label(class="input-group-text")}}
-                            {{ form.county(class="form-control", id="txtCounty") }}
+                            {{ form.county.label(class="input-group-text border-primary text-primary") }}
+                            {{ form.county(class="form-control border-primary", id="txtCounty") }}
                         </div>
                     </div>
                 </div>
@@ -159,7 +154,7 @@
                 {{ form.is_test.label(class="form-check-label text-danger fw-semibold") }}
             </div>
             {% endif %}
-            <div class="text-center mt-3">
+            <div class="text-center mt-3 mb-4">
                 {{ form.project_add_submit(class="btn btn-primary") }}
             </div>
         </form>

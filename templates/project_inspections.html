@@ -1,38 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+<style>
+    * { font-family: "Raleway", sans-serif; }
+</style>
 
-<head>
-    <style>
-        * {
-            font-family: "Raleway", sans-serif;
-        }
-
-        #inspectionTable>tbody>tr>td {
-            background-color: white;
-        }
-
-        #inspectionTable>tbody>tr:nth-child(4n+1)>td,
-        #inspectionTable>tbody>tr:nth-child(4n+2)>td {
-            background-color: #F9F9F9;
-        }
-    </style>
-</head>
-
-<body>
-    <div>
-        <!-- Add Inspection button -->
-        <div class="text-end mt-2">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInspectionModal">
-                Add Inspection
-            </button>
-
-            <!-- Modal -->
-            <div class="modal fade" id="addInspectionModal" data-bs-backdrop="static" data-bs-keyboard="false"
-                tabindex="-1" aria-labelledby="addInspectionModalHeader" aria-hidden="true">
-                {% include 'inspection_modal.html' %}
-            </div>
+<div>
+    <!-- Add Inspection button -->
+    <div class="text-end mt-2 mb-2">
+        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addInspectionModal">
+            Add Inspection
+        </button>
+        <div class="modal fade" id="addInspectionModal" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1" aria-labelledby="addInspectionModalHeader" aria-hidden="true">
+            {% include 'inspection_modal.html' %}
         </div>
+    </div>
 
+    <!-- Desktop Table -->
+    <div class="d-none d-md-block">
         <table class="table mt-2" id="inspectionTable">
             <thead>
                 <tr>
@@ -45,17 +28,13 @@
                     <th></th>
                 </tr>
             </thead>
-
             <tbody>
                 {% if inspections|length == 0 %}
                 <tr>
-                    <td class="text-center" colspan="7">
-                        No inspections have been added
-                    </td>
+                    <td class="text-center" colspan="7">No inspections have been added</td>
                 </tr>
                 {% else %}
                 {% for inspection in inspections %}
-                <!-- Main row -->
                 <tr>
                     <td>{{ inspection['building_dept_name'] or '—' }}</td>
                     <td>{{ inspection['inspection_type'] or '—' }}</td>
@@ -66,16 +45,12 @@
                         {{ inspection['scheduled_time'].strftime('%I:%M %p') if inspection['scheduled_time'] else '—' }}
                     </td>
                     <td class="text-center">
-                        <div id="lblInspectionStatus{{ inspection['id'] }}">
-                            {{ inspection['status'] or '—' }}
-                        </div>
+                        <div id="lblInspectionStatus{{ inspection['id'] }}">{{ inspection['status'] or '—' }}</div>
                         <select id="selectInspectionStatus{{ inspection['id'] }}"
                             class="form-select form-select-sm d-none" name="inspection_status">
                             <option selected disabled value="">Select Status</option>
                             {% for option in inspection_add_form.status %}
-                            {% if not loop.first %}
-                            {{ option }}
-                            {% endif %}
+                            {% if not loop.first %}{{ option }}{% endif %}
                             {% endfor %}
                         </select>
                     </td>
@@ -84,25 +59,18 @@
                     </td>
                     <td>
                         <div class="d-flex gap-1 justify-content-end">
-                            <button id="btnUpdateSaveInspection{{ inspection['id'] }}"
-                                class="btn btn-primary btn-sm"
-                                onclick="updateInspection({{ inspection['id'] }})"
-                                type="button">Update</button>
-                            <button id="btnCancelInspectionUpdate{{ inspection['id'] }}"
-                                class="btn btn-secondary btn-sm d-none"
-                                type="button"
-                                onclick="resetInspectionUpdate({{ inspection['id'] }})">Cancel</button>
-                            <button class="btn btn-outline-secondary btn-sm"
-                                data-bs-toggle="collapse"
+                            <button id="btnUpdateSaveInspection{{ inspection['id'] }}" class="btn btn-primary btn-sm"
+                                onclick="updateInspection({{ inspection['id'] }})" type="button">Update</button>
+                            <button id="btnCancelInspectionUpdate{{ inspection['id'] }}" class="btn btn-secondary btn-sm d-none"
+                                type="button" onclick="resetInspectionUpdate({{ inspection['id'] }})">Cancel</button>
+                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse"
                                 data-bs-target="#collapseInspection{{ inspection['id'] }}"
-                                aria-expanded="false"
-                                aria-controls="collapseInspection{{ inspection['id'] }}">
+                                aria-expanded="false">
                                 <i class="fa-solid fa-chevron-down"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
-                <!-- Collapse detail row -->
                 <tr class="collapse" id="collapseInspection{{ inspection['id'] }}">
                     <td colspan="7">
                         <div class="card card-body py-2">
@@ -129,6 +97,71 @@
         </table>
     </div>
 
-</body>
-
-</html>
+    <!-- Mobile Cards -->
+    <div class="d-md-none">
+        {% if inspections|length == 0 %}
+        <div class="text-center text-muted">No inspections have been added</div>
+        {% else %}
+        {% for inspection in inspections %}
+        <div class="card mb-2">
+            <div class="card-body pb-2">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div>
+                        <span class="fw-semibold">{{ inspection['building_dept_name'] or '—' }}</span>
+                        <span class="ms-2 text-muted small">{{ inspection['inspection_type'] or '—' }}</span>
+                    </div>
+                </div>
+                <div class="text-muted small">
+                    {{ inspection['scheduled_date'].strftime('%m/%d/%Y') if inspection['scheduled_date'] else '—' }}
+                    {% if inspection['scheduled_time'] %} · {{ inspection['scheduled_time'].strftime('%I:%M %p') }}{% endif %}
+                </div>
+                <div id="lblInspectionStatusm{{ inspection['id'] }}" class="small mt-1">
+                    {% if inspection['status'] | lower == 'passed' %}
+                    <span class="text-success">&#9679;</span>
+                    {% elif inspection['status'] | lower == 'failed' %}
+                    <span class="text-danger">&#9679;</span>
+                    {% else %}
+                    <span class="text-warning">&#9679;</span>
+                    {% endif %}
+                    {{ inspection['status'] or '—' }}
+                </div>
+                <select id="selectInspectionStatusm{{ inspection['id'] }}"
+                    class="form-select form-select-sm d-none mt-2" name="inspection_status">
+                    <option selected disabled value="">Select Status</option>
+                    {% for option in inspection_add_form.status %}
+                    {% if not loop.first %}{{ option }}{% endif %}
+                    {% endfor %}
+                </select>
+                <div class="d-flex gap-2 mt-2">
+                    <button id="btnUpdateSaveInspectionm{{ inspection['id'] }}" class="btn btn-sm btn-primary"
+                        onclick="updateInspection('m{{ inspection['id'] }}')" type="button">Update</button>
+                    <button id="btnCancelInspectionUpdatem{{ inspection['id'] }}" class="btn btn-sm btn-outline-secondary d-none"
+                        type="button" onclick="resetInspectionUpdate('m{{ inspection['id'] }}')">Cancel</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                        data-bs-target="#collapseInspectionMobile{{ inspection['id'] }}"
+                        aria-expanded="false">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="collapse mt-2" id="collapseInspectionMobile{{ inspection['id'] }}">
+                    <div class="card card-body py-2">
+                        <div class="mb-1">
+                            <div class="fw-semibold text-muted small">Inspection #</div>
+                            <div>{{ inspection['inspection_number'] or '—' }}</div>
+                        </div>
+                        <div class="mb-1">
+                            <div class="fw-semibold text-muted small">Inspector</div>
+                            <div>{{ inspection['inspector_name'] or '—' }}</div>
+                        </div>
+                        <div>
+                            <div class="fw-semibold text-muted small">Notes</div>
+                            <div style="white-space: pre-wrap;">{{ inspection['notes'] or '—' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>

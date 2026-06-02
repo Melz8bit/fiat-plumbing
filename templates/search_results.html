@@ -9,59 +9,33 @@
         * {
             font-family: "Raleway", sans-serif;
         }
-
-        .resultRow:hover {
-            cursor: pointer;
-        }
     </style>
-
-
 </head>
 
 <body>
     {% include 'nav.html' %}
 
-    <div class="container">
-        <div>
-            <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
-                <!-- Search -->
-                {% include 'search.html' %}
-            </form>
+    <div class="container pt-4">
+        <form method="get" action="{{url_for('search')}}" class="needs-validation" novalidate>
+            {% include 'search.html' %}
+        </form>
 
-            <hr class="mt-4">
+        <hr class="mt-4">
 
-            <h4 class="mt-4">Search Results</h4>
-            <table class="table table-hover">
-                <thead>
-                    <tr class="text-center">
-                        <th scope="col">#</th>
-                        <th scope="col">Client</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Address</th>
-                        <th scope="col">City</th>
-                        <th scope="col">State</th>
-                        <!-- <th scope="col">Contract Date</th> -->
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for result in results %}
-                    <tr id="{{result['project_id']}}" class="resultRow text-center" onclick=rowClick(id)>
-                        <td>{{result['project_id']}}</td>
-                        <td>{{ result['client_name'] }}</td>
-                        <td>{{ result['name'] }}</td>
-                        <td>{{ result['address'] }}</td>
-                        <td>{{ result['city'] }}</td>
-                        <td>{{ result['state'] }}</td>
-                        <!-- <td>[Date]</td> -->
-                    </tr>
-                    <script>
-                        function rowClick(project_id) {
-                            window.location = "/project/" + project_id;
-                        }
-                    </script>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <h4 class="mt-4 mb-3">Search Results</h4>
+        <div class="list-group mb-4">
+            {% for result in results %}
+            <a href="/project/{{ result['project_id'] }}" class="list-group-item list-group-item-action">
+                <div>
+                    <span class="text-muted small">#{{ result['project_id'] }}</span>
+                    <span class="ms-2 fw-semibold">{{ result['name'] }}</span>
+                </div>
+                <div class="text-muted small mt-1">{{ result['client_name'] }}</div>
+                <div class="text-muted small">{{ result['address'] }}, {{ result['city'] }}, {{ result['state'] }}</div>
+            </a>
+            {% else %}
+            <div class="list-group-item text-muted text-center">No results found</div>
+            {% endfor %}
         </div>
     </div>
 
