@@ -3,8 +3,7 @@
 ## Pending
 
 ### UI / Mobile
-- [ ] Mobile responsiveness: project tab partials (next)
-- [ ] Mobile responsiveness: form layouts — col-12 col-md-* breakpoints on multi-column rows
+- [ ] Mobile responsiveness: form layouts — col-12 col-md-* breakpoints on multi-column rows (remaining forms)
 
 ### Forms
 - [ ] Phone number input: allow user to type digits without hyphens; auto-format to xxx-xxx-xxxx
@@ -35,6 +34,22 @@
 - [x] Client list → list group (mobile-responsive)
 - [x] Client detail projects table → list group (mobile-responsive)
 - [x] Dashboard: chart w-75 → w-100, finances/permits/inspections → list groups
+- [x] Search results → list group
+- [x] Client add/edit form — responsive columns, blue border styling
+- [x] Add Project form — responsive columns, blue border styling
+- [x] Project view header — h3, icon buttons, dev buttons on own row
+- [x] Project view details & location — responsive columns, blue border styling
+- [x] Project tabs — mobile dropdown select (dynamically built from tab buttons)
+- [x] Project notes tab — list group
+- [x] Project fixtures tab — list group (mobile) / table (desktop)
+- [x] Project installments tab — list group (mobile) / table (desktop), progress section redesigned
+- [x] Project invoices tab — card list (mobile) / table (desktop)
+- [x] Project payments tab — card list (mobile) / table (desktop)
+- [x] Project permits tab — card list (mobile) / table (desktop), inline edit m-prefix fix + tab reload
+- [x] Project inspections tab — card list (mobile) / table (desktop), inline edit m-prefix fix + tab reload
+- [x] Project documents tab — list group (mobile) / table (desktop)
+- [x] Add Inspection / Add Permit modals — modal-fullscreen-sm-down, responsive columns
+- [x] COI admin nav — hidden on mobile (d-none d-lg-flex)
 
 ### Dashboard
 - [x] Filter dashboard queries by user role (hide test projects from non-dev users)
