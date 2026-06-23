@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Fiat Plumbing - Certificate of Liability</title>
+    <title>Fiat Plumbing - License & Insurance Submissions</title>
 
     {% include 'bootstrap.html' %}
 
@@ -26,7 +26,7 @@
 
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Certificate of Liability</h2>
+            <h2 class="mb-0">License &amp; Insurance Submissions</h2>
             <span class="text-muted">
                 Coverage Period:
                 <strong>{{ coverage_start.strftime('%B %Y') }}</strong>
@@ -70,6 +70,59 @@
             <input type="hidden" name="action" value="send">
             <input type="hidden" name="show_all" value="{{ 'true' if show_all else 'false' }}">
 
+            <!-- Document version selectors -->
+            <div class="card border-primary mb-3">
+                <div class="card-header bg-primary text-white fw-semibold">Document Versions to Send</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-semibold">COI Year</label>
+                            {% if coi_year_folders %}
+                            <select class="form-select" name="coi_year">
+                                {% for folder in coi_year_folders %}
+                                <option value="{{ folder }}" {% if loop.first %}selected{% endif %}>{{ folder }}</option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <p class="text-muted small mb-0">No COI year folders found in S3.</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-semibold">State License</label>
+                            {% if state_license_docs %}
+                            <select class="form-select" name="state_license_key">
+                                <option value="">(none)</option>
+                                {% for doc in state_license_docs %}
+                                <option value="{{ doc.s3_key }}"
+                                    {% if loop.first and not doc.is_expired %}selected{% endif %}>
+                                    {% if doc.is_expired %}[EXPIRED] {% endif %}{{ doc.filename }} ({{ doc.folder }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <p class="text-muted small mb-0">No State License documents uploaded. <a href="{{ url_for('admin_company_docs') }}">Upload one.</a></p>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-semibold">Local Business Tax Receipt (BTR)</label>
+                            {% if btr_docs %}
+                            <select class="form-select" name="btr_key">
+                                <option value="">(none)</option>
+                                {% for doc in btr_docs %}
+                                <option value="{{ doc.s3_key }}"
+                                    {% if loop.first and not doc.is_expired %}selected{% endif %}>
+                                    {% if doc.is_expired %}[EXPIRED] {% endif %}{{ doc.filename }} ({{ doc.folder }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <p class="text-muted small mb-0">No BTR documents uploaded. <a href="{{ url_for('admin_company_docs') }}">Upload one.</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle mb-0" id="coiTable">
                     <thead class="table-dark">
@@ -85,6 +138,10 @@
                             <th>Date Sent</th>
                             <th>Sent Via</th>
                             <th>Notes</th>
+                            <th class="text-center" style="width: 50px;">
+                                COI<br>
+                                <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_coi" checked title="Select all COI">
+                            </th>
                             <th class="text-center" style="width: 60px;">
                                 State Lic<br>
                                 <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_state_license" checked title="Select all State License">
@@ -92,10 +149,6 @@
                             <th class="text-center" style="width: 50px;">
                                 BTR<br>
                                 <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_btr" checked title="Select all BTR">
-                            </th>
-                            <th class="text-center" style="width: 50px;">
-                                COI<br>
-                                <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_coi" checked title="Select all COI">
                             </th>
                             <th class="text-center" style="width: 60px;">Edit</th>
                         </tr>
@@ -149,13 +202,13 @@
                             <td>{{ dept['sent_via'] or '—' }}</td>
                             <td>{{ dept['notes'] or '—' }}</td>
                             <td class="text-center">
+                                <input type="checkbox" class="form-check-input doc-checkbox" name="doc_coi" value="{{ dept['id'] }}" checked>
+                            </td>
+                            <td class="text-center">
                                 <input type="checkbox" class="form-check-input doc-checkbox" name="doc_state_license" value="{{ dept['id'] }}" checked>
                             </td>
                             <td class="text-center">
                                 <input type="checkbox" class="form-check-input doc-checkbox" name="doc_btr" value="{{ dept['id'] }}" checked>
-                            </td>
-                            <td class="text-center">
-                                <input type="checkbox" class="form-check-input doc-checkbox" name="doc_coi" value="{{ dept['id'] }}" checked>
                             </td>
                             <td class="text-center">
                                 <button type="button"
@@ -303,6 +356,13 @@
                 activeMethod = this.dataset.method;
                 applyFilters();
             });
+        });
+
+        // Disable send button on submit to prevent double-clicks
+        document.getElementById('coiSendForm').addEventListener('submit', function () {
+            const btn = document.getElementById('btnSend');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Sending...';
         });
 
         // Pre-fill edit modal using Bootstrap's show.bs.modal event

@@ -63,7 +63,7 @@ with suppress_c_warnings():
 
 import database
 from database import db_connect
-from documents import upload_file, download_file, upload_proposal
+from documents import upload_file, download_file, upload_proposal, list_company_doc_folders, upload_company_doc, list_coi_year_folders
 from forms import (
     ClientForm,
     LoginForm,
@@ -103,8 +103,6 @@ DAYS_UNTIL_DUE = 30
 
 GMAIL_EMAIL = os.getenv("GMAIL_EMAIL")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
-COI_STATE_LICENSE_KEY = os.getenv("COI_STATE_LICENSE_KEY")
-COI_LOCAL_BIZ_TAX_KEY = os.getenv("COI_LOCAL_BIZ_TAX_KEY")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
@@ -1610,16 +1608,30 @@ def get_coverage_period():
     return coverage_start, coverage_end
 
 
-def send_coi_email(dept, coverage_start, docs):
-    coverage_folder = f"{coverage_start.year}-{coverage_start.year + 1}"
+def send_coi_email(dept, coverage_start, docs, state_license_key=None, btr_key=None, coi_year=None):
+    coverage_folder = coi_year or f"{coverage_start.year}-{coverage_start.year + 1}"
     entity_name = dept["entity"]
     recipient = dept["primary_email"]
+
+    doc_names = []
+    if docs.get("coi"):
+        doc_names.append("Certificate of Liability Insurance")
+    if docs.get("state_license") and state_license_key:
+        doc_names.append("State License")
+    if docs.get("btr") and btr_key:
+        doc_names.append("Local Business Tax Receipt")
+
+    if len(doc_names) == 1:
+        doc_list = doc_names[0]
+    elif len(doc_names) == 2:
+        doc_list = f"{doc_names[0]} and {doc_names[1]}"
+    else:
+        doc_list = ", ".join(doc_names[:-1]) + f", and {doc_names[-1]}"
 
     html_body = f"""
     <html><body>
     <p>Hello,</p>
-    <p>Please see attached Certificate of Liability Insurance, State License,
-    and Local Business Tax Receipt for Fiat Plumbing & General Contractor, Inc. for the {coverage_folder} coverage period.</p>
+    <p>Please see attached {doc_list} for Fiat Plumbing & General Contractor, Inc. for the {coverage_folder} coverage period.</p>
     <p>Should you have any questions or require additional information, please do not
     hesitate to contact us.</p>
     <br>
@@ -1646,12 +1658,10 @@ def send_coi_email(dept, coverage_start, docs):
                 f"{entity_name} - COI.pdf",
             )
         )
-    if docs.get("state_license"):
-        attachments.append((COI_STATE_LICENSE_KEY, "Fiat Plumbing - State License.pdf"))
-    if docs.get("btr"):
-        attachments.append(
-            (COI_LOCAL_BIZ_TAX_KEY, "Fiat Plumbing - Local Business Tax.pdf")
-        )
+    if docs.get("state_license") and state_license_key:
+        attachments.append((state_license_key, state_license_key.split("/")[-1]))
+    if docs.get("btr") and btr_key:
+        attachments.append((btr_key, btr_key.split("/")[-1]))
 
     for s3_key, display_name in attachments:
         try:
@@ -1674,13 +1684,17 @@ def send_coi_email(dept, coverage_start, docs):
 @login_required
 def admin_coi():
     user = database.get_user(session["user_id"])
-    show_all = request.args.get("show_all", "false").lower() == "true"
+    show_all = request.args.get("show_all", "true").lower() == "true"
     coverage_start, coverage_end = get_coverage_period()
     departments = database.get_coi_departments(
         pending_only=not show_all,
         coverage_start=coverage_start,
     )
     edit_form = COIEditForm()
+    company_docs = database.get_company_documents()
+    state_license_docs = [d for d in company_docs if "state license" in d["doc_type"].lower()]
+    btr_docs = [d for d in company_docs if "btr" in d["doc_type"].lower() or "business tax" in d["doc_type"].lower()]
+    coi_year_folders = list_coi_year_folders()
     return render_template(
         "admin_coi.html",
         user=user,
@@ -1689,6 +1703,9 @@ def admin_coi():
         coverage_start=coverage_start,
         coverage_end=coverage_end,
         edit_form=edit_form,
+        state_license_docs=state_license_docs,
+        btr_docs=btr_docs,
+        coi_year_folders=coi_year_folders,
     )
 
 
@@ -1732,6 +1749,10 @@ def admin_coi_send():
         flash("No departments selected.")
         return redirect(url_for("admin_coi", show_all=show_all))
 
+    state_license_key = request.form.get("state_license_key", "").strip() or None
+    btr_key = request.form.get("btr_key", "").strip() or None
+    coi_year = request.form.get("coi_year", "").strip() or None
+
     doc_coi_ids = set(request.form.getlist("doc_coi"))
     doc_state_license_ids = set(request.form.getlist("doc_state_license"))
     doc_btr_ids = set(request.form.getlist("doc_btr"))
@@ -1764,7 +1785,12 @@ def admin_coi_send():
                 email_failures.append(f"{dept['entity']} (no documents selected)")
                 continue
             try:
-                send_coi_email(dept, coverage_start, docs)
+                send_coi_email(
+                    dept, coverage_start, docs,
+                    state_license_key=state_license_key,
+                    btr_key=btr_key,
+                    coi_year=coi_year,
+                )
                 database.mark_coi_sent([dept_id], dept["primary_email"])
                 email_successes.append(dept["entity"])
             except Exception as e:
@@ -1785,6 +1811,63 @@ def admin_coi_send():
         flash(f"Failed to send to: {', '.join(email_failures)}.")
 
     return redirect(url_for("admin_coi", show_all=show_all))
+
+
+@app.route("/admin/company-docs", methods=["GET"])
+@login_required
+def admin_company_docs():
+    user = database.get_user(session["user_id"])
+    docs = database.get_company_documents()
+    folders = list_company_doc_folders()
+    return render_template(
+        "admin_company_docs.html",
+        user=user,
+        docs=docs,
+        folders=folders,
+    )
+
+
+@app.route("/admin/company-docs/upload", methods=["POST"])
+@login_required
+def admin_company_docs_upload():
+    file = request.files.get("file")
+    doc_type = request.form.get("doc_type", "").strip()
+    folder_select = request.form.get("folder_select", "").strip()
+    new_folder = request.form.get("new_folder", "").strip()
+    expiration_date = request.form.get("expiration_date", "").strip() or None
+
+    if not file or not file.filename:
+        flash("No file selected.")
+        return redirect(url_for("admin_company_docs"))
+    if not doc_type:
+        flash("Document type is required.")
+        return redirect(url_for("admin_company_docs"))
+
+    folder = new_folder if folder_select == "__new__" else folder_select
+    if not folder:
+        flash("A folder name is required.")
+        return redirect(url_for("admin_company_docs"))
+
+    s3_key = upload_company_doc(file, folder, file.filename)
+    if not s3_key:
+        flash("Upload failed — file was not saved to S3.")
+        return redirect(url_for("admin_company_docs"))
+
+    filename = secure_filename(file.filename)
+    success = database.insert_company_document(
+        doc_type=doc_type,
+        s3_key=s3_key,
+        folder=folder,
+        filename=filename,
+        user_id=session["user_id"],
+        expiration_date=expiration_date,
+    )
+    if success:
+        flash(f"'{filename}' uploaded successfully.")
+    else:
+        flash("File uploaded to S3 but database record failed.")
+
+    return redirect(url_for("admin_company_docs"))
 
 
 ############## Helper Methods ##############
