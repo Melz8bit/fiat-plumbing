@@ -2719,3 +2719,56 @@ def get_project_statuses():
     except Exception as e:
         logger.error("Database Error: %s", e)
         return []
+
+
+############## Company Document Queries ##############
+def get_company_documents():
+    try:
+        sqlQuery = """
+            SELECT
+                cd.*,
+                u.first_name,
+                u.last_name,
+                CASE
+                    WHEN cd.expiration_date IS NOT NULL AND cd.expiration_date < CURRENT_DATE
+                    THEN TRUE ELSE FALSE
+                END AS is_expired
+            FROM company_documents cd
+            LEFT JOIN users u ON cd.user_id = u.user_id
+            ORDER BY
+                CASE
+                    WHEN cd.expiration_date IS NOT NULL AND cd.expiration_date < CURRENT_DATE
+                    THEN 1 ELSE 0
+                END ASC,
+                cd.upload_date DESC;
+        """
+        with engine.connect() as connection:
+            results = connection.execute(text(sqlQuery))
+            return results.mappings().all()
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return []
+
+
+def insert_company_document(doc_type, s3_key, folder, filename, user_id, expiration_date=None):
+    try:
+        sqlQuery = """
+            INSERT INTO company_documents (doc_type, s3_key, folder, filename, user_id, expiration_date)
+            VALUES (:doc_type, :s3_key, :folder, :filename, :user_id, :expiration_date);
+        """
+        query_params = {
+            "doc_type": doc_type,
+            "s3_key": s3_key,
+            "folder": folder,
+            "filename": filename,
+            "user_id": user_id,
+            "expiration_date": expiration_date or None,
+        }
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), query_params)
+            connection.commit()
+        logger.info("Company document inserted: %s", s3_key)
+        return True
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return False

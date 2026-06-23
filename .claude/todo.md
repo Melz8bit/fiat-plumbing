@@ -16,6 +16,17 @@
 - [ ] Filter permit/inspection dropdown to project city/county only
 - [ ] Permit blank form links (optional)
 
+### Documents
+- [ ] Email document — per-document send/share button opens modal; recipient list = client contacts with an email saved; optional body field (generic fallback if blank)
+
+### Admin / Company Documents
+- [ ] Company document upload: upload files to correct S3 location under `company-docs/`; list existing folders in `company-docs/` as save-location options; allow user to create a new folder
+- [ ] Company document table in Supabase (similar to `project_documents`): track file type, S3 path, uploader, upload date, optional expiration date
+- [ ] Admin email page — document version dropdown: above the entity table, show a dropdown to select which version of an existing company document to send; populated from the company documents table; default = most recent non-expired version; expired entries appear at bottom with `[EXPIRED]` tag
+
+### Clients
+- [ ] Support multiple contacts per client
+
 ---
 
 ## Completed

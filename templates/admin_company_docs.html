@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Fiat Plumbing - Company Documents</title>
+    {% include 'bootstrap.html' %}
+    <style>
+        * { font-family: "Raleway", sans-serif; }
+        .expired-row { opacity: 0.6; }
+    </style>
+</head>
+
+<body>
+    {% include 'nav.html' %}
+    <main>
+    <div class="container-fluid pt-4 px-4">
+
+        <h2 class="mb-4">Company Documents</h2>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Upload Form -->
+        <div class="card border-primary mb-4">
+            <div class="card-header bg-primary text-white fw-semibold">Upload Document</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin_company_docs_upload') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">File</label>
+                            <input type="file" class="form-control" name="file" required>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">Document Type</label>
+                            <input type="text" class="form-control" name="doc_type" placeholder="e.g. COI, State License" required>
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">Folder</label>
+                            <select class="form-select" name="folder_select" id="folderSelect" required>
+                                {% for folder in folders %}
+                                    <option value="{{ folder }}">{{ folder }}</option>
+                                {% endfor %}
+                                <option value="__new__">+ New folder…</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-3" id="newFolderWrapper" style="display:none;">
+                            <label class="form-label fw-semibold">New Folder Name</label>
+                            <input type="text" class="form-control" name="new_folder" id="newFolderInput" placeholder="e.g. state-license">
+                        </div>
+
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">Expiration Date <span class="text-muted fw-normal">(optional)</span></label>
+                            <input type="date" class="form-control" name="expiration_date">
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-upload me-1"></i> Upload
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Documents Table -->
+        <div class="card">
+            <div class="card-header fw-semibold">Uploaded Documents</div>
+            <div class="card-body p-0">
+
+                {% if docs %}
+                <!-- Desktop table -->
+                <div class="d-none d-md-block">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Type</th>
+                                <th>Filename</th>
+                                <th>Folder</th>
+                                <th>Uploaded By</th>
+                                <th>Upload Date</th>
+                                <th>Expiration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in docs %}
+                            <tr class="{{ 'expired-row' if doc.is_expired }}">
+                                <td>{{ doc.doc_type }}</td>
+                                <td>
+                                    {{ doc.filename }}
+                                    {% if doc.is_expired %}
+                                        <span class="badge bg-secondary ms-1">EXPIRED</span>
+                                    {% endif %}
+                                </td>
+                                <td><code>{{ doc.folder }}</code></td>
+                                <td>
+                                    {% if doc.first_name %}
+                                        {{ doc.first_name }} {{ doc.last_name }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ doc.upload_date.strftime('%Y-%m-%d') if doc.upload_date else '—' }}</td>
+                                <td>
+                                    {% if doc.expiration_date %}
+                                        {{ doc.expiration_date.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile list group -->
+                <div class="d-md-none">
+                    <ul class="list-group list-group-flush">
+                        {% for doc in docs %}
+                        <li class="list-group-item {{ 'expired-row' if doc.is_expired }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ doc.doc_type }}</strong>
+                                    {% if doc.is_expired %}
+                                        <span class="badge bg-secondary ms-1">EXPIRED</span>
+                                    {% endif %}
+                                    <br>
+                                    <span class="text-muted small">{{ doc.filename }}</span>
+                                </div>
+                                <span class="text-muted small">{{ doc.upload_date.strftime('%Y-%m-%d') if doc.upload_date else '' }}</span>
+                            </div>
+                            <div class="mt-1 small text-muted">
+                                <code>{{ doc.folder }}</code>
+                                {% if doc.first_name %} &middot; {{ doc.first_name }} {{ doc.last_name }}{% endif %}
+                                {% if doc.expiration_date %} &middot; Expires {{ doc.expiration_date.strftime('%Y-%m-%d') }}{% endif %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                {% else %}
+                <p class="text-muted p-3 mb-0">No documents uploaded yet.</p>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+    </main>
+
+    <script>
+        document.getElementById('folderSelect').addEventListener('change', function () {
+            const wrapper = document.getElementById('newFolderWrapper');
+            const input = document.getElementById('newFolderInput');
+            const isNew = this.value === '__new__';
+            wrapper.style.display = isNew ? '' : 'none';
+            input.required = isNew;
+        });
+    </script>
+</body>
+</html>

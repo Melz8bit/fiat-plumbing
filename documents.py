@@ -63,3 +63,58 @@ def download_file(doc_filename):
         Key=doc_filename,
     )
     return file
+
+
+def list_coi_year_folders():
+    """Return year subfolders under company-docs/certificates-of-liability/."""
+    try:
+        response = s3_client.list_objects_v2(
+            Bucket=BUCKET_NAME,
+            Prefix="company-docs/certificates-of-liability/",
+            Delimiter="/",
+        )
+        folders = []
+        for prefix in response.get("CommonPrefixes", []):
+            folder = prefix["Prefix"].removeprefix("company-docs/certificates-of-liability/").rstrip("/")
+            if folder:
+                folders.append(folder)
+        return sorted(folders, reverse=True)
+    except Exception as e:
+        logging.error("S3 COI folder list error: %s", e)
+        return []
+
+
+def list_company_doc_folders():
+    """Return all nested folder paths under company-docs/ that contain files."""
+    try:
+        paginator = s3_client.get_paginator("list_objects_v2")
+        folders = set()
+        for page in paginator.paginate(Bucket=BUCKET_NAME, Prefix="company-docs/"):
+            for obj in page.get("Contents", []):
+                key = obj["Key"].removeprefix("company-docs/")
+                parts = key.split("/")
+                # Collect every directory component (skip the filename at the end)
+                for depth in range(1, len(parts)):
+                    folder = "/".join(parts[:depth])
+                    if folder:
+                        folders.add(folder)
+        return sorted(folders)
+    except Exception as e:
+        logging.error("S3 folder list error: %s", e)
+        return []
+
+
+def upload_company_doc(file, folder, filename):
+    key = f"company-docs/{folder}/{secure_filename(filename)}"
+    try:
+        file.seek(0)
+        s3_client.put_object(
+            Body=file.read(),
+            Bucket=BUCKET_NAME,
+            Key=key,
+            ContentType=file.content_type,
+        )
+        return key
+    except Exception as e:
+        logging.error("S3 company doc upload error: %s", e)
+        return None
