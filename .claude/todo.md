@@ -19,11 +19,6 @@
 ### Documents
 - [ ] Email document — per-document send/share button opens modal; recipient list = client contacts with an email saved; optional body field (generic fallback if blank)
 
-### Admin / Company Documents
-- [ ] Company document upload: upload files to correct S3 location under `company-docs/`; list existing folders in `company-docs/` as save-location options; allow user to create a new folder
-- [ ] Company document table in Supabase (similar to `project_documents`): track file type, S3 path, uploader, upload date, optional expiration date
-- [ ] Admin email page — document version dropdown: above the entity table, show a dropdown to select which version of an existing company document to send; populated from the company documents table; default = most recent non-expired version; expired entries appear at bottom with `[EXPIRED]` tag
-
 ### Clients
 - [ ] Support multiple contacts per client
 
@@ -69,6 +64,11 @@
   - [x] `get_permit_dashboard_summary()` — add user_role param + projects JOIN
   - [x] `get_all_inspections()` — add user_role param, filter is_test
   - [x] `app.py main()` — pass user.role to all four calls
+
+### Admin / Company Documents
+- [x] `company_documents` Supabase table — tracks doc type, S3 key, folder, filename, uploader, upload date, optional expiration date
+- [x] Company document upload page (`/admin/company-docs`) — upload to S3 `company-docs/`, list existing folders, new folder creation
+- [x] License & Insurance Submissions page — COI year, State License, and BTR version dropdowns populated from `company_documents` table; default = most recent non-expired; expired tagged `[EXPIRED]`; dynamic email body lists only attached docs; hardcoded env var keys removed
 
 ### Test Data Management
 - [x] is_test checkbox (dev only) on new project and new client forms

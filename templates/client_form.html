@@ -57,7 +57,8 @@
     </div>
 </div>
 
-<!-- POC Information -->
+{% if not is_edit %}
+<!-- POC Information (add form only — manage contacts from the client detail page) -->
 <h4 class="my-3">Point of Contact Information</h4>
 <hr>
 <div>
@@ -83,6 +84,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% if user.role == 'developer' %}
 <div class="form-check mt-3">
     {{ form.is_test(class="form-check-input") }}

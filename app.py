@@ -407,14 +407,14 @@ def main():
 def client_view(client_id):
     user = database.get_user(session["user_id"])
     client = database.get_client(client_id)
-    client_poc = database.get_client_poc(client_id)
+    contacts = database.get_client_contacts(client_id)
     client_projects = database.get_client_projects(client_id)
 
     return render_template(
         "client.html",
         user=user,
         client=client,
-        client_poc=client_poc,
+        contacts=contacts,
         client_projects=client_projects,
     )
 
@@ -470,13 +470,13 @@ def create_client():
             "zip_code": zip_code,
             "website": website,
             "phone_number": phone_number,
-            "poc_name": poc_name,
-            "poc_phone_number": poc_phone_number,
-            "poc_email": poc_email,
             "is_test": form.is_test.data and user.role == "developer",
         }
 
-        database.create_client(client_info)
+        client_id = database.create_client(client_info)
+
+        if client_id and any([poc_name, poc_phone_number, poc_email]):
+            database.add_client_contact(client_id, poc_name, poc_phone_number, poc_email)
 
         return redirect(url_for("client_list"))
 
@@ -502,7 +502,6 @@ def create_client():
 def edit_client(client_id):
     user = database.get_user(session["user_id"])
     client = database.get_client(client_id)
-    client_poc = database.get_client_poc(client_id)
 
     name = client["name"]
     address = client["address"]
@@ -511,41 +510,21 @@ def edit_client(client_id):
     zip_code = client["zip_code"]
     website = client["website"]
     phone_number = client["phone_number"]
-    poc_name = client_poc["name"] if client_poc else ""
-    poc_phone_number = client_poc["telephone"] if client_poc else ""
-    poc_email = client_poc["email"] if client_poc else ""
 
     form = ClientForm(state=state)
 
     if form.validate_on_submit():
-        name = form.name.data
-        address = form.address.data
-        city = form.city.data
-        state = form.state.data
-        zip_code = form.zip_code.data
-        website = form.website.data
-        phone_number = form.phone_number.data
-        poc_name = form.poc_name.data
-        poc_phone_number = form.poc_phone_number.data
-        poc_email = form.poc_email.data
-
         client_info = {
             "client_id": client_id,
-            "name": name,
-            "address": address,
-            "city": city,
-            "state": state,
-            "zip_code": zip_code,
-            "website": website,
-            "phone_number": phone_number,
-            "poc_name": poc_name,
-            "poc_phone_number": poc_phone_number,
-            "poc_email": poc_email,
-            "poc_exists": True if client_poc else False,
+            "name": form.name.data,
+            "address": form.address.data,
+            "city": form.city.data,
+            "state": form.state.data,
+            "zip_code": form.zip_code.data,
+            "website": form.website.data,
+            "phone_number": form.phone_number.data,
         }
-
         database.update_client(client_info)
-
         return redirect(url_for("client_view", client_id=client_id))
 
     return render_template(
@@ -559,10 +538,36 @@ def edit_client(client_id):
         zip_code=zip_code,
         website=website,
         phone_number=phone_number,
-        poc_name=poc_name,
-        poc_phone_number=poc_phone_number,
-        poc_email=poc_email,
     )
+
+
+@app.route("/client/<client_id>/contacts/add", methods=["POST"])
+@login_required
+def client_contact_add(client_id):
+    name = request.form.get("name", "").strip()
+    telephone = request.form.get("telephone", "").strip()
+    email = request.form.get("email", "").strip()
+    title = request.form.get("title", "").strip()
+    database.add_client_contact(client_id, name, telephone, email, title)
+    return redirect(url_for("client_view", client_id=client_id))
+
+
+@app.route("/client/<client_id>/contacts/<int:contact_id>/edit", methods=["POST"])
+@login_required
+def client_contact_edit(client_id, contact_id):
+    name = request.form.get("name", "").strip()
+    telephone = request.form.get("telephone", "").strip()
+    email = request.form.get("email", "").strip()
+    title = request.form.get("title", "").strip()
+    database.update_client_contact(contact_id, name, telephone, email, title)
+    return redirect(url_for("client_view", client_id=client_id))
+
+
+@app.route("/client/<client_id>/contacts/<int:contact_id>/delete", methods=["POST"])
+@login_required
+def client_contact_delete(client_id, contact_id):
+    database.delete_client_contact(contact_id)
+    return redirect(url_for("client_view", client_id=client_id))
 
 
 ############## Search ##############

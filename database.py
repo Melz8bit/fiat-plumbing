@@ -234,18 +234,81 @@ def get_client(client_id):
 
 def get_client_poc(client_id):
     try:
-        sqlQuery = "SELECT * FROM client_poc WHERE client_id = :client_id;"
-        query_params = {
-            "client_id": client_id,
-        }
-
+        sqlQuery = "SELECT * FROM client_poc WHERE client_id = :client_id ORDER BY id LIMIT 1;"
         with engine.connect() as connection:
-            poc_dict = connection.execute(text(sqlQuery), query_params).mappings().first()
-
+            poc_dict = connection.execute(text(sqlQuery), {"client_id": client_id}).mappings().first()
         return poc_dict
     except Exception as e:
         logger.error("get_client_poc() - Database Error: %s", e)
         return None
+
+
+def get_client_contacts(client_id):
+    try:
+        sqlQuery = "SELECT * FROM client_poc WHERE client_id = :client_id ORDER BY id;"
+        with engine.connect() as connection:
+            results = connection.execute(text(sqlQuery), {"client_id": client_id})
+            return results.mappings().all()
+    except Exception as e:
+        logger.error("get_client_contacts() - Database Error: %s", e)
+        return []
+
+
+def add_client_contact(client_id, name, telephone, email, title=None):
+    try:
+        sqlQuery = """
+            INSERT INTO client_poc (client_id, name, telephone, email, title)
+            VALUES (:client_id, :name, :telephone, :email, :title);
+        """
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), {
+                "client_id": client_id,
+                "name": name or None,
+                "telephone": telephone or None,
+                "email": email or None,
+                "title": title or None,
+            })
+            connection.commit()
+        logger.info("Client contact added for client %s", client_id)
+        return True
+    except Exception as e:
+        logger.error("add_client_contact() - Database Error: %s", e)
+        return False
+
+
+def update_client_contact(contact_id, name, telephone, email, title=None):
+    try:
+        sqlQuery = """
+            UPDATE client_poc
+            SET name = :name, telephone = :telephone, email = :email, title = :title
+            WHERE id = :id;
+        """
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), {
+                "id": contact_id,
+                "name": name or None,
+                "telephone": telephone or None,
+                "email": email or None,
+                "title": title or None,
+            })
+            connection.commit()
+        logger.info("Client contact %s updated", contact_id)
+        return True
+    except Exception as e:
+        logger.error("update_client_contact() - Database Error: %s", e)
+        return False
+
+
+def delete_client_contact(contact_id):
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("DELETE FROM client_poc WHERE id = :id;"), {"id": contact_id})
+            connection.commit()
+        logger.info("Client contact %s deleted", contact_id)
+        return True
+    except Exception as e:
+        logger.error("delete_client_contact() - Database Error: %s", e)
+        return False
 
 
 def get_all_clients(user_role):
@@ -282,9 +345,9 @@ def create_client(client_info):
     try:
         sqlQuery = (
             "INSERT INTO clients (name, address, city, state, zip_code, website, phone_number, is_test)"
-            + " VALUES (:name, :address, :city, :state, :zip_code, :website, :phone_number, :is_test)"
+            " VALUES (:name, :address, :city, :state, :zip_code, :website, :phone_number, :is_test)"
+            " RETURNING client_id;"
         )
-
         query_params = {
             "name": client_info["name"],
             "address": client_info["address"],
@@ -295,16 +358,15 @@ def create_client(client_info):
             "phone_number": client_info["phone_number"],
             "is_test": client_info.get("is_test", False),
         }
-
         with engine.connect() as connection:
             result = connection.execute(text(sqlQuery), query_params)
+            client_id = result.scalar()
             connection.commit()
-
-        logger.info("Client created")
-
+        logger.info("Client created: %s", client_id)
+        return client_id
     except Exception as e:
         logger.error("Database Error: %s", e)
-        return []
+        return None
 
 
 def create_client_poc(client_info):
@@ -335,10 +397,10 @@ def update_client(client_info):
     try:
         sqlQuery = (
             "UPDATE clients"
-            + " SET name = :name, address = :address, city = :city, state = :state, zip_code = :zip_code, website = :website, phone_number = :phone_number"
-            + " WHERE client_id = :client_id;"
+            " SET name = :name, address = :address, city = :city, state = :state,"
+            " zip_code = :zip_code, website = :website, phone_number = :phone_number"
+            " WHERE client_id = :client_id;"
         )
-
         query_params = {
             "name": client_info["name"],
             "address": client_info["address"],
@@ -349,35 +411,10 @@ def update_client(client_info):
             "phone_number": client_info["phone_number"],
             "client_id": client_info["client_id"],
         }
-
         with engine.connect() as connection:
-            result = connection.execute(text(sqlQuery), query_params)
+            connection.execute(text(sqlQuery), query_params)
             connection.commit()
-
         logger.info("Client updated")
-        # POC Update
-        if client_info["poc_exists"]:
-            sqlQuery = (
-                "UPDATE client_poc"
-                + " SET name = :name, telephone = :telephone, email = :email"
-                + " WHERE client_id = :client_id;"
-            )
-
-            query_params = {
-                "name": client_info["poc_name"],
-                "telephone": client_info["poc_phone_number"],
-                "email": client_info["poc_email"],
-                "client_id": client_info["client_id"],
-            }
-
-            with engine.connect() as connection:
-                result = connection.execute(text(sqlQuery), query_params)
-                connection.commit()
-
-            logger.info("Client POC updated")
-        else:
-            create_client_poc(client_info)
-
     except Exception as e:
         logger.error("Database Error: %s", e)
         return []
