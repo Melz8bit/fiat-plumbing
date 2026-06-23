@@ -19,8 +19,6 @@
 ### Documents
 - [ ] Email document — per-document send/share button opens modal; recipient list = client contacts with an email saved; optional body field (generic fallback if blank)
 
-### Clients
-- [ ] Support multiple contacts per client
 
 ---
 
@@ -69,6 +67,9 @@
 - [x] `company_documents` Supabase table — tracks doc type, S3 key, folder, filename, uploader, upload date, optional expiration date
 - [x] Company document upload page (`/admin/company-docs`) — upload to S3 `company-docs/`, list existing folders, new folder creation
 - [x] License & Insurance Submissions page — COI year, State License, and BTR version dropdowns populated from `company_documents` table; default = most recent non-expired; expired tagged `[EXPIRED]`; dynamic email body lists only attached docs; hardcoded env var keys removed
+
+### Clients
+- [x] Multiple contacts per client — `client_poc` table given `id` PK and `title` column; add/edit/delete modals on client detail page; fixed bug where POC was never saved on client creation
 
 ### Test Data Management
 - [x] is_test checkbox (dev only) on new project and new client forms
