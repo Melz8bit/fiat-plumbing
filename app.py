@@ -518,6 +518,9 @@ def edit_client(client_id):
 
     form = ClientForm(state=state)
 
+    if not form.is_submitted() and client.get("is_test") and user.role == "developer":
+        form.is_test.data = True
+
     if form.validate_on_submit():
         client_info = {
             "client_id": client_id,

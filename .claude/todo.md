@@ -2,12 +2,6 @@
 
 ## Pending
 
-### UI / Mobile
-- [ ] Mobile responsiveness: form layouts — col-12 col-md-* breakpoints on multi-column rows (remaining forms)
-
-### Forms
-- [ ] Phone number input: allow user to type digits without hyphens; auto-format to xxx-xxx-xxxx
-
 ### Invoices
 - [ ] Rework full invoice tab functionality
 - [ ] Fix: View Details in invoice not working (mobile collapse)
@@ -52,6 +46,11 @@
 - [x] Project documents tab — list group (mobile) / table (desktop)
 - [x] Add Inspection / Add Permit modals — modal-fullscreen-sm-down, responsive columns
 - [x] COI admin nav — hidden on mobile (d-none d-lg-flex)
+- [x] Mobile responsiveness: remaining form layouts (account.html, admin_coi.html edit modal)
+
+### Forms
+- [x] Phone number input: auto-format to xxx-xxx-xxxx as user types (client add/edit, contact modals, COI edit modal)
+- [x] Phone number validation: pattern attribute (frontend) + Regexp validator (backend) on all phone fields
 
 ### Dashboard
 - [x] Filter dashboard queries by user role (hide test projects from non-dev users)
@@ -71,6 +70,7 @@
 
 ### Clients
 - [x] Multiple contacts per client — `client_poc` table given `id` PK and `title` column; add/edit/delete modals on client detail page; fixed bug where POC was never saved on client creation
+- [x] Edit client: pre-check "Test Client?" checkbox when client is a test client
 
 ### Test Data Management
 - [x] is_test checkbox (dev only) on new project and new client forms

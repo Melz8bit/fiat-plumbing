@@ -23,6 +23,8 @@ from wtforms.validators import (
     ValidationError,
     EqualTo,
     Email,
+    Optional,
+    Regexp,
 )
 from wtforms_sqlalchemy.fields import QuerySelectField
 
@@ -203,9 +205,9 @@ class ClientForm(FlaskForm):
     )
     zip_code = StringField("Zip Code", validators=[DataRequired()])
     website = StringField("Website")
-    phone_number = StringField("Phone Number")
+    phone_number = StringField("Phone Number", validators=[Optional(), Regexp(r'^\d{3}-\d{3}-\d{4}$', message="Phone must be in xxx-xxx-xxxx format")])
     poc_name = StringField("Name")
-    poc_phone_number = StringField("Phone Number")
+    poc_phone_number = StringField("Phone Number", validators=[Optional(), Regexp(r'^\d{3}-\d{3}-\d{4}$', message="Phone must be in xxx-xxx-xxxx format")])
     poc_email = EmailField("Email")
     is_test = BooleanField("Test Client?")
     client_submit = SubmitField("Create Client")
@@ -529,7 +531,7 @@ class InspectionAddForm(FlaskForm):
 
 class COIEditForm(FlaskForm):
     entity = StringField("Entity", validators=[DataRequired()])
-    primary_phone = StringField("Primary Phone")
+    primary_phone = StringField("Primary Phone", validators=[Optional(), Regexp(r'^\d{3}-\d{3}-\d{4}$', message="Phone must be in xxx-xxx-xxxx format")])
     primary_email = EmailField("Primary Email")
     web_portal = StringField("Web Portal URL")
     submission_method = SelectField(

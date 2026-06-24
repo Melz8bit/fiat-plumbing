@@ -200,7 +200,7 @@
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="form-label fw-semibold">Phone</label>
-                                        <input type="tel" class="form-control" name="telephone" placeholder="123-456-7890">
+                                        <input type="tel" class="form-control" name="telephone" placeholder="123-456-7890" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" title="Format: xxx-xxx-xxxx">
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="form-label fw-semibold">Email</label>
@@ -239,7 +239,7 @@
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="form-label fw-semibold">Phone</label>
-                                        <input type="tel" class="form-control" name="telephone" id="editContactPhone" placeholder="123-456-7890">
+                                        <input type="tel" class="form-control" name="telephone" id="editContactPhone" placeholder="123-456-7890" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" title="Format: xxx-xxx-xxxx">
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <label class="form-label fw-semibold">Email</label>
@@ -333,6 +333,19 @@
             document.getElementById('deleteContactForm').action =
                 `/client/{{ client['client_id'] }}/contacts/${id}/delete`;
             document.getElementById('deleteContactName').textContent = btn.dataset.name;
+        });
+
+        document.querySelectorAll('input[name="telephone"]').forEach(function (input) {
+            input.addEventListener('input', function () {
+                const pos = this.selectionStart;
+                const oldLen = this.value.length;
+                const digits = this.value.replace(/\D/g, '').slice(0, 10);
+                if (digits.length > 6) this.value = digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+                else if (digits.length > 3) this.value = digits.slice(0,3) + '-' + digits.slice(3);
+                else this.value = digits;
+                const diff = this.value.length - oldLen;
+                this.setSelectionRange(pos + diff, pos + diff);
+            });
         });
     </script>
 </body>

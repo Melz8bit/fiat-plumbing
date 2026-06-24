@@ -246,7 +246,7 @@
     <!-- Edit Department Modal -->
     <div class="modal fade" id="editDeptModal" tabindex="-1"
          aria-labelledby="editDeptModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editDeptModalLabel">Edit Department</h5>
@@ -262,11 +262,11 @@
                             {{ edit_form.entity(class="form-control", id="editEntity") }}
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 {{ edit_form.primary_phone.label(class="form-label") }}
-                                {{ edit_form.primary_phone(class="form-control", id="editPhone") }}
+                                {{ edit_form.primary_phone(class="form-control", id="editPhone", placeholder="123-456-7890", pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}", title="Format: xxx-xxx-xxxx") }}
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 {{ edit_form.submission_method.label(class="form-label") }}
                                 {{ edit_form.submission_method(class="form-select", id="editMethod") }}
                             </div>
@@ -380,6 +380,17 @@
             for (let opt of sel.options) {
                 opt.selected = opt.value === btn.dataset.method;
             }
+        });
+
+        document.getElementById('editPhone').addEventListener('input', function () {
+            const pos = this.selectionStart;
+            const oldLen = this.value.length;
+            const digits = this.value.replace(/\D/g, '').slice(0, 10);
+            if (digits.length > 6) this.value = digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+            else if (digits.length > 3) this.value = digits.slice(0,3) + '-' + digits.slice(3);
+            else this.value = digits;
+            const diff = this.value.length - oldLen;
+            this.setSelectionRange(pos + diff, pos + diff);
         });
     </script>
 
