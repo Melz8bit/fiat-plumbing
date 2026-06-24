@@ -16,8 +16,6 @@
 - [ ] Filter permit/inspection dropdown to project city/county only
 - [ ] Permit blank form links (optional)
 
-### Documents
-- [ ] Email document — per-document send/share button opens modal; recipient list = client contacts with an email saved; optional body field (generic fallback if blank)
 
 
 ---
@@ -62,6 +60,9 @@
   - [x] `get_permit_dashboard_summary()` — add user_role param + projects JOIN
   - [x] `get_all_inspections()` — add user_role param, filter is_test
   - [x] `app.py main()` — pass user.role to all four calls
+
+### Documents
+- [x] Email document — "Send Documents" button on project Documents tab; modal with From dropdown (AOL/Gmail, Ventura client auto-selects Gmail), To/CC recipient cards, document attach/remove workflow, auto-generated body with placeholder preview; note added on success
 
 ### Admin / Company Documents
 - [x] `company_documents` Supabase table — tracks doc type, S3 key, folder, filename, uploader, upload date, optional expiration date
