@@ -103,6 +103,11 @@ DAYS_UNTIL_DUE = 30
 
 GMAIL_EMAIL = os.getenv("GMAIL_EMAIL")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD")
+AOL_EMAIL = os.getenv("AOL_EMAIL")
+AOL_APP_PASSWORD = os.getenv("AOL_APP_PASSWORD")
+AFIAT_GMAIL_EMAIL = os.getenv("AFIAT_GMAIL_EMAIL")
+AFIAT_GMAIL_APP_PASSWORD = os.getenv("AFIAT_GMAIL_APP_PASSWORD")
+VENTURA_CLIENT_ID = "10"
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
@@ -641,6 +646,13 @@ def project_view(project_id, new_project=False):
     document_form = DocumentUploadForm()
 
     project_amount_owed = get_project_amount_owed(project_id)
+    project_documents = database.get_project_docs(project_id)
+    doc_contacts = [c for c in database.get_client_contacts(project["client_id"]) if c["email"]]
+    doc_default_from_email = AFIAT_GMAIL_EMAIL if str(project["client_id"]) == VENTURA_CLIENT_ID else AOL_EMAIL
+    doc_from_emails = [
+        {"email": AOL_EMAIL, "label": f"AOL ({AOL_EMAIL})"},
+        {"email": AFIAT_GMAIL_EMAIL, "label": f"Gmail ({AFIAT_GMAIL_EMAIL})"},
+    ]
 
     if request.method == "POST":
         # Update project status
@@ -741,6 +753,10 @@ def project_view(project_id, new_project=False):
         project_status_form=project_status_form,
         project_amount_owed=project_amount_owed,
         document_form=document_form,
+        project_documents=project_documents,
+        doc_contacts=doc_contacts,
+        doc_default_from_email=doc_default_from_email,
+        doc_from_emails=doc_from_emails,
     )
 
 
@@ -1115,6 +1131,93 @@ def get_project_documents(project_id):
         documents=documents,
         document_form=document_form,
     )
+
+
+@app.route("/project/<project_id>/documents/send", methods=["POST"])
+@login_required
+def send_project_documents(project_id):
+    from_email = request.form.get("from_email", "").strip()
+    to_ids = request.form.getlist("to_ids")
+    cc_ids = request.form.getlist("cc_ids")
+    doc_filenames = request.form.getlist("doc_filenames")
+    body = request.form.get("body", "").strip()
+
+    if not to_ids:
+        return jsonify({"success": False, "error": "At least one 'To' recipient is required."})
+    if not doc_filenames:
+        return jsonify({"success": False, "error": "At least one document must be selected."})
+
+    try:
+        project = database.get_project(project_id)
+        user = database.get_user(session["user_id"])
+        all_contacts = database.get_client_contacts(project["client_id"])
+        contacts_by_id = {str(c["id"]): c for c in all_contacts}
+
+        to_contacts = [contacts_by_id[i] for i in to_ids if i in contacts_by_id]
+        cc_contacts = [contacts_by_id[i] for i in cc_ids if i in contacts_by_id]
+        all_docs = database.get_project_docs(project_id)
+        selected_docs = [d for d in all_docs if d["filename"] in doc_filenames]
+
+        project_address = project['address']
+
+        if not body:
+            greeting = f"Hello {to_contacts[0]['name']}," if len(to_contacts) == 1 else "Hello,"
+            doc_phrase = "document" if len(selected_docs) == 1 else "documents"
+            doc_lines = "\n".join(f"- {d['type']}" for d in selected_docs)
+            body = (
+                f"{greeting}\n\n"
+                f"Please see attached the following {doc_phrase} for {project_address}:\n"
+                f"{doc_lines}\n\n\n"
+                f"Thank you,\n"
+                f"{user.first_name} {user.last_name}\n"
+                f"Fiat Plumbing and General Contractors, Inc."
+            )
+
+        to_emails = [c["email"] for c in to_contacts]
+        cc_emails = [c["email"] for c in cc_contacts]
+
+        msg = MIMEMultipart("mixed")
+        msg["From"] = from_email
+        msg["To"] = ", ".join(to_emails)
+        if cc_emails:
+            msg["Cc"] = ", ".join(cc_emails)
+        msg["Subject"] = f"Fiat Plumbing — Documents for {project_address}"
+        html_body = body.replace("\n", "<br>")
+        msg.attach(MIMEText(f"<html><body><p>{html_body}</p></body></html>", "html"))
+
+        for doc in selected_docs:
+            response = download_file(doc["filename"])
+            data = response["Body"].read()
+            ext = ("." + doc["filename"].rsplit(".", 1)[-1]) if "." in doc["filename"] else ""
+            display = f"{doc['type']} ({doc['upload_date'].strftime('%m-%d-%Y')}){ext}"
+            part = MIMEApplication(data, Name=display)
+            part["Content-Disposition"] = f'attachment; filename="{display}"'
+            msg.attach(part)
+
+        if from_email == AFIAT_GMAIL_EMAIL:
+            host, port, login, pwd = "smtp.gmail.com", 587, AFIAT_GMAIL_EMAIL, AFIAT_GMAIL_APP_PASSWORD
+        else:
+            host, port, login, pwd = "smtp.aol.com", 587, AOL_EMAIL, AOL_APP_PASSWORD
+
+        with smtplib.SMTP(host, port, timeout=10) as smtp:
+            smtp.ehlo()
+            smtp.starttls()
+            smtp.login(login, pwd)
+            smtp.sendmail(from_email, to_emails + cc_emails, msg.as_string())
+
+        doc_names = ", ".join(d["type"] for d in selected_docs)
+        database.add_project_note({
+            "project_id": project_id,
+            "comment": f"Documents emailed to client: {doc_names}",
+            "user_id": session["user_id"],
+        })
+        session["active_tab"] = "documents"
+        flash("Documents emailed successfully.")
+        return jsonify({"success": True})
+
+    except Exception as e:
+        app.logger.error("send_project_documents() - Error: %s", e)
+        return jsonify({"success": False, "error": str(e)})
 
 
 def upload_project_document(document_upload_form, project_id):
