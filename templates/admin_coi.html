@@ -27,12 +27,24 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">License &amp; Insurance Submissions</h2>
-            <span class="text-muted">
-                Coverage Period:
-                <strong>{{ coverage_start.strftime('%B %Y') }}</strong>
-                &ndash;
-                <strong>{{ coverage_end.strftime('%B %Y') }}</strong>
-            </span>
+            <div class="d-flex align-items-center gap-3">
+                {% if failure_count %}
+                <a href="{{ url_for('admin_coi_failures') }}" class="btn btn-danger btn-sm">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    {{ failure_count }} Send Failure{{ 's' if failure_count != 1 }}
+                </a>
+                {% else %}
+                <a href="{{ url_for('admin_coi_failures') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-list-check me-1"></i>Failure Log
+                </a>
+                {% endif %}
+                <span class="text-muted">
+                    Coverage Period:
+                    <strong>{{ coverage_start.strftime('%B %Y') }}</strong>
+                    &ndash;
+                    <strong>{{ coverage_end.strftime('%B %Y') }}</strong>
+                </span>
+            </div>
         </div>
 
         <!-- Toggle pending / all -->
@@ -128,7 +140,7 @@
                     <thead class="table-dark">
                         <tr>
                             <th class="text-center" style="width: 42px;">
-                                <input type="checkbox" class="form-check-input" id="selectAll" title="Select all">
+                                <input type="checkbox" class="" id="selectAll" title="Select all">
                             </th>
                             <th>Entity</th>
                             <th>Phone</th>
@@ -140,15 +152,15 @@
                             <th>Notes</th>
                             <th class="text-center" style="width: 50px;">
                                 COI<br>
-                                <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_coi" checked title="Select all COI">
+                                <input type="checkbox" class=" select-all-doc" data-doc="doc_coi" title="Select all COI">
                             </th>
                             <th class="text-center" style="width: 60px;">
                                 State Lic<br>
-                                <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_state_license" checked title="Select all State License">
+                                <input type="checkbox" class=" select-all-doc" data-doc="doc_state_license" title="Select all State License">
                             </th>
                             <th class="text-center" style="width: 50px;">
                                 BTR<br>
-                                <input type="checkbox" class="form-check-input select-all-doc" data-doc="doc_btr" checked title="Select all BTR">
+                                <input type="checkbox" class=" select-all-doc" data-doc="doc_btr" title="Select all BTR">
                             </th>
                             <th class="text-center" style="width: 60px;">Edit</th>
                         </tr>
@@ -170,7 +182,7 @@
                         <tr class="{{ 'table-pending' if is_pending else '' }}">
                             <td class="text-center">
                                 <input type="checkbox"
-                                       class="form-check-input dept-checkbox"
+                                       class=" dept-checkbox"
                                        name="selected_depts"
                                        value="{{ dept['id'] }}">
                             </td>
@@ -202,13 +214,13 @@
                             <td>{{ dept['sent_via'] or '—' }}</td>
                             <td>{{ dept['notes'] or '—' }}</td>
                             <td class="text-center">
-                                <input type="checkbox" class="form-check-input doc-checkbox" name="doc_coi" value="{{ dept['id'] }}" checked>
+                                <input type="checkbox" class=" doc-checkbox" name="doc_coi" value="{{ dept['id'] }}">
                             </td>
                             <td class="text-center">
-                                <input type="checkbox" class="form-check-input doc-checkbox" name="doc_state_license" value="{{ dept['id'] }}" checked>
+                                <input type="checkbox" class=" doc-checkbox" name="doc_state_license" value="{{ dept['id'] }}">
                             </td>
                             <td class="text-center">
-                                <input type="checkbox" class="form-check-input doc-checkbox" name="doc_btr" value="{{ dept['id'] }}" checked>
+                                <input type="checkbox" class=" doc-checkbox" name="doc_btr" value="{{ dept['id'] }}">
                             </td>
                             <td class="text-center">
                                 <button type="button"
@@ -359,7 +371,13 @@
         });
 
         // Disable send button on submit to prevent double-clicks
-        document.getElementById('coiSendForm').addEventListener('submit', function () {
+        document.getElementById('coiSendForm').addEventListener('submit', function (e) {
+            const anyDocChecked = document.querySelector('.doc-checkbox:checked');
+            if (!anyDocChecked) {
+                e.preventDefault();
+                alert('Please select at least one document type (COI, State License, or BTR) before sending.');
+                return;
+            }
             const btn = document.getElementById('btnSend');
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Sending...';

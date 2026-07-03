@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Fiat Plumbing - COI Email Failure Log</title>
+    {% include 'bootstrap.html' %}
+    <style>
+        * { font-family: "Raleway", sans-serif; }
+    </style>
+</head>
+
+<body>
+    {% include 'nav.html' %}
+    <main>
+
+    <div class="container-fluid pt-4 px-4">
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="mb-0">COI Email Failure Log</h2>
+            <a href="{{ url_for('admin_coi') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i>Back to COI
+            </a>
+        </div>
+
+        {% include "flash_message.html" %}
+
+        {% if failures %}
+        <div class="d-flex justify-content-end mb-3">
+            <form method="POST" action="{{ url_for('resolve_all_coi_failures') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-success btn-sm">
+                    <i class="fa-solid fa-check-double me-1"></i>Mark All Resolved
+                </button>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Department</th>
+                        <th>Reason</th>
+                        <th>Attempted</th>
+                        <th class="text-center" style="width: 130px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in failures %}
+                    <tr>
+                        <td class="fw-semibold">{{ f.entity }}</td>
+                        <td class="text-danger font-monospace small">{{ f.reason }}</td>
+                        <td class="text-nowrap small">{{ f.attempted_at.strftime('%m/%d/%Y %I:%M %p') }}</td>
+                        <td class="text-center">
+                            <form method="POST" action="{{ url_for('resolve_coi_failure', failure_id=f.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-success btn-sm">
+                                    <i class="fa-solid fa-check me-1"></i>Resolved
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-success">
+            <i class="fa-solid fa-circle-check me-2"></i>No unresolved email failures.
+        </div>
+        {% endif %}
+
+    </div>
+    </main>
+</body>
+</html>
