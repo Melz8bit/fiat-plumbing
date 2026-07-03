@@ -1,5 +1,6 @@
 import logging
 import mimetypes
+import time
 import ast
 import base64
 import json
@@ -1739,6 +1740,19 @@ def send_coi_email(dept, coverage_start, docs, state_license_key=None, btr_key=N
     else:
         doc_list = ", ".join(doc_names[:-1]) + f", and {doc_names[-1]}"
 
+    subject_parts = []
+    if docs.get("state_license") and state_license_key:
+        sl_year = state_license_key.split("/")[2]
+        subject_parts.append(f"State License {sl_year}")
+    coi_btr = []
+    if docs.get("coi"):
+        coi_btr.append("COI")
+    if docs.get("btr") and btr_key:
+        coi_btr.append("BTR")
+    if coi_btr:
+        subject_parts.append(f"{' & '.join(coi_btr)} {coverage_folder}")
+    subject_doc_list = ", ".join(subject_parts)
+
     html_body = f"""
     <html><body>
     <p>Hello,</p>
@@ -1754,10 +1768,10 @@ def send_coi_email(dept, coverage_start, docs, state_license_key=None, btr_key=N
     """
 
     msg = MIMEMultipart("mixed")
-    msg["From"] = GMAIL_EMAIL
+    msg["From"] = AOL_EMAIL
     msg["To"] = recipient
     msg["Subject"] = (
-        f"Fiat Plumbing & General Contractor, Inc. - Certificate of Liability Insurance Renewal {coverage_folder} — {entity_name}"
+        f"Fiat Plumbing & General Contractor, Inc. - {subject_doc_list} — {entity_name}"
     )
     msg.attach(MIMEText(html_body, "html"))
 
@@ -1784,11 +1798,11 @@ def send_coi_email(dept, coverage_start, docs, state_license_key=None, btr_key=N
         except Exception as e:
             raise Exception(f"Missing file in S3: {s3_key}") from e
 
-    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as smtp:
+    with smtplib.SMTP("smtp.aol.com", 587, timeout=10) as smtp:
         smtp.ehlo()
         smtp.starttls()
-        smtp.login(GMAIL_EMAIL, GMAIL_APP_PASSWORD)
-        smtp.sendmail(GMAIL_EMAIL, recipient, msg.as_string())
+        smtp.login(AOL_EMAIL, AOL_APP_PASSWORD)
+        smtp.sendmail(AOL_EMAIL, recipient, msg.as_string())
 
 
 @app.route("/admin/coi", methods=["GET"])
@@ -1806,6 +1820,7 @@ def admin_coi():
     state_license_docs = [d for d in company_docs if "state license" in d["doc_type"].lower()]
     btr_docs = [d for d in company_docs if "btr" in d["doc_type"].lower() or "business tax" in d["doc_type"].lower()]
     coi_year_folders = list_coi_year_folders()
+    failure_count = database.count_coi_send_failures()
     return render_template(
         "admin_coi.html",
         user=user,
@@ -1817,6 +1832,7 @@ def admin_coi():
         state_license_docs=state_license_docs,
         btr_docs=btr_docs,
         coi_year_folders=coi_year_folders,
+        failure_count=failure_count,
     )
 
 
@@ -1885,7 +1901,9 @@ def admin_coi_send():
             portal_ids.append(dept_id)
         else:
             if not dept["primary_email"]:
-                email_failures.append(f"{dept['entity']} (no email on file)")
+                reason = "no email on file"
+                email_failures.append(dept["entity"])
+                database.log_coi_send_failure(dept_id, dept["entity"], reason)
                 continue
             docs = {
                 "coi": dept_id in doc_coi_ids,
@@ -1893,7 +1911,9 @@ def admin_coi_send():
                 "btr": dept_id in doc_btr_ids,
             }
             if not any(docs.values()):
-                email_failures.append(f"{dept['entity']} (no documents selected)")
+                reason = "no documents selected"
+                email_failures.append(dept["entity"])
+                database.log_coi_send_failure(dept_id, dept["entity"], reason)
                 continue
             try:
                 send_coi_email(
@@ -1904,9 +1924,11 @@ def admin_coi_send():
                 )
                 database.mark_coi_sent([dept_id], dept["primary_email"])
                 email_successes.append(dept["entity"])
+                time.sleep(1)
             except Exception as e:
                 app.logger.error("COI email error for %s: %s", dept["entity"], e)
                 email_failures.append(dept["entity"])
+                database.log_coi_send_failure(dept_id, dept["entity"], str(e))
 
     if portal_ids:
         try:
@@ -1919,9 +1941,31 @@ def admin_coi_send():
     if email_successes:
         flash(f"Email sent to {len(email_successes)} department(s).")
     if email_failures:
-        flash(f"Failed to send to: {', '.join(email_failures)}.")
+        flash(f"Failed to send to: {', '.join(email_failures)}. See the failure log for details.")
 
     return redirect(url_for("admin_coi", show_all=show_all))
+
+
+@app.route("/admin/coi/failures", methods=["GET"])
+@login_required
+def admin_coi_failures():
+    user = database.get_user(session["user_id"])
+    failures = database.get_coi_send_failures(resolved=False)
+    return render_template("admin_coi_failures.html", user=user, failures=failures)
+
+
+@app.route("/admin/coi/failures/<int:failure_id>/resolve", methods=["POST"])
+@login_required
+def resolve_coi_failure(failure_id):
+    database.resolve_coi_send_failure(failure_id)
+    return redirect(url_for("admin_coi_failures"))
+
+
+@app.route("/admin/coi/failures/resolve-all", methods=["POST"])
+@login_required
+def resolve_all_coi_failures():
+    database.resolve_all_coi_send_failures()
+    return redirect(url_for("admin_coi_failures"))
 
 
 @app.route("/admin/company-docs", methods=["GET"])

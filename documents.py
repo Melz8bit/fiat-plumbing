@@ -66,18 +66,18 @@ def download_file(doc_filename):
 
 
 def list_coi_year_folders():
-    """Return year subfolders under company-docs/certificates-of-liability/."""
+    """Return year subfolders under company-docs/certificates-of-liability/ that contain at least one PDF."""
     try:
         response = s3_client.list_objects_v2(
             Bucket=BUCKET_NAME,
             Prefix="company-docs/certificates-of-liability/",
-            Delimiter="/",
         )
-        folders = []
-        for prefix in response.get("CommonPrefixes", []):
-            folder = prefix["Prefix"].removeprefix("company-docs/certificates-of-liability/").rstrip("/")
-            if folder:
-                folders.append(folder)
+        folders = set()
+        for obj in response.get("Contents", []):
+            key = obj["Key"].removeprefix("company-docs/certificates-of-liability/")
+            parts = key.split("/")
+            if len(parts) >= 2 and parts[0] and parts[1].lower().endswith(".pdf"):
+                folders.add(parts[0])
         return sorted(folders, reverse=True)
     except Exception as e:
         logging.error("S3 COI folder list error: %s", e)

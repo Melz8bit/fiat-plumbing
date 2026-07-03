@@ -2777,6 +2777,7 @@ def get_company_documents():
                     WHEN cd.expiration_date IS NOT NULL AND cd.expiration_date < CURRENT_DATE
                     THEN 1 ELSE 0
                 END ASC,
+                cd.expiration_date DESC NULLS LAST,
                 cd.upload_date DESC;
         """
         with engine.connect() as connection:
@@ -2785,6 +2786,70 @@ def get_company_documents():
     except Exception as e:
         logger.error("Database Error: %s", e)
         return []
+
+
+############## COI Send Failure Queries ##############
+def log_coi_send_failure(dept_id, entity, reason):
+    try:
+        sqlQuery = """
+            INSERT INTO coi_send_failures (dept_id, entity, reason)
+            VALUES (:dept_id, :entity, :reason);
+        """
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), {"dept_id": dept_id, "entity": entity, "reason": reason})
+            connection.commit()
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+
+
+def get_coi_send_failures(resolved=False):
+    try:
+        sqlQuery = """
+            SELECT id, dept_id, entity, reason, attempted_at, resolved
+            FROM coi_send_failures
+            WHERE resolved = :resolved
+            ORDER BY attempted_at DESC;
+        """
+        with engine.connect() as connection:
+            results = connection.execute(text(sqlQuery), {"resolved": resolved})
+            return results.mappings().all()
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return []
+
+
+def count_coi_send_failures():
+    try:
+        with engine.connect() as connection:
+            result = connection.execute(text("SELECT COUNT(*) FROM coi_send_failures WHERE resolved = FALSE"))
+            return result.scalar()
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return 0
+
+
+def resolve_coi_send_failure(failure_id):
+    try:
+        sqlQuery = "UPDATE coi_send_failures SET resolved = TRUE WHERE id = :id;"
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), {"id": failure_id})
+            connection.commit()
+        return True
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return False
+
+
+def resolve_all_coi_send_failures():
+    try:
+        sqlQuery = "UPDATE coi_send_failures SET resolved = TRUE WHERE resolved = FALSE;"
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery))
+            connection.commit()
+        return True
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return False
 
 
 def insert_company_document(doc_type, s3_key, folder, filename, user_id, expiration_date=None):
