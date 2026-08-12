@@ -99,12 +99,14 @@
                             <p class="text-muted small mb-0">No COI year folders found in S3.</p>
                             {% endif %}
                         </div>
-                        <div class="col-12 col-md-4">
-                            <label class="form-label fw-semibold">State License</label>
-                            {% if state_license_docs %}
-                            <select class="form-select" name="state_license_key">
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">State License (Plumbing)</label>
+                            {% if state_license_plumbing_docs %}
+                            <select class="form-select" name="state_license_plumbing_key">
                                 <option value="">(none)</option>
-                                {% for doc in state_license_docs %}
+                                {% for doc in state_license_plumbing_docs %}
                                 <option value="{{ doc.s3_key }}"
                                     {% if loop.first and not doc.is_expired %}selected{% endif %}>
                                     {% if doc.is_expired %}[EXPIRED] {% endif %}{{ doc.filename }} ({{ doc.folder }})
@@ -112,15 +114,15 @@
                                 {% endfor %}
                             </select>
                             {% else %}
-                            <p class="text-muted small mb-0">No State License documents uploaded. <a href="{{ url_for('admin_company_docs') }}">Upload one.</a></p>
+                            <p class="text-muted small mb-0">None uploaded. <a href="{{ url_for('admin_company_docs') }}">Upload one.</a></p>
                             {% endif %}
                         </div>
-                        <div class="col-12 col-md-4">
-                            <label class="form-label fw-semibold">Local Business Tax Receipt (BTR)</label>
-                            {% if btr_docs %}
-                            <select class="form-select" name="btr_key">
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">State License (Contractor)</label>
+                            {% if state_license_contractor_docs %}
+                            <select class="form-select" name="state_license_contractor_key">
                                 <option value="">(none)</option>
-                                {% for doc in btr_docs %}
+                                {% for doc in state_license_contractor_docs %}
                                 <option value="{{ doc.s3_key }}"
                                     {% if loop.first and not doc.is_expired %}selected{% endif %}>
                                     {% if doc.is_expired %}[EXPIRED] {% endif %}{{ doc.filename }} ({{ doc.folder }})
@@ -128,7 +130,39 @@
                                 {% endfor %}
                             </select>
                             {% else %}
-                            <p class="text-muted small mb-0">No BTR documents uploaded. <a href="{{ url_for('admin_company_docs') }}">Upload one.</a></p>
+                            <p class="text-muted small mb-0">None uploaded. <a href="{{ url_for('admin_company_docs') }}">Upload one.</a></p>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">BTR (Plumbing)</label>
+                            {% if btr_plumbing_docs %}
+                            <select class="form-select" name="btr_plumbing_key">
+                                <option value="">(none)</option>
+                                {% for doc in btr_plumbing_docs %}
+                                <option value="{{ doc.s3_key }}"
+                                    {% if loop.first and not doc.is_expired %}selected{% endif %}>
+                                    {% if doc.is_expired %}[EXPIRED] {% endif %}{{ doc.filename }} ({{ doc.folder }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <p class="text-muted small mb-0">None uploaded. <a href="{{ url_for('admin_company_docs') }}">Upload one.</a></p>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-semibold">BTR (Contractor)</label>
+                            {% if btr_contractor_docs %}
+                            <select class="form-select" name="btr_contractor_key">
+                                <option value="">(none)</option>
+                                {% for doc in btr_contractor_docs %}
+                                <option value="{{ doc.s3_key }}"
+                                    {% if loop.first and not doc.is_expired %}selected{% endif %}>
+                                    {% if doc.is_expired %}[EXPIRED] {% endif %}{{ doc.filename }} ({{ doc.folder }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% else %}
+                            <p class="text-muted small mb-0">None uploaded. <a href="{{ url_for('admin_company_docs') }}">Upload one.</a></p>
                             {% endif %}
                         </div>
                     </div>
@@ -146,21 +180,29 @@
                             <th>Phone</th>
                             <th>Email</th>
                             <th>Method</th>
-                            <th>Portal / Website</th>
+                            <th class="text-center">Portal</th>
                             <th>Date Sent</th>
                             <th>Sent Via</th>
-                            <th>Notes</th>
+                            <th class="text-center">Notes</th>
                             <th class="text-center" style="width: 50px;">
                                 COI<br>
                                 <input type="checkbox" class=" select-all-doc" data-doc="doc_coi" title="Select all COI">
                             </th>
                             <th class="text-center" style="width: 60px;">
-                                State Lic<br>
-                                <input type="checkbox" class=" select-all-doc" data-doc="doc_state_license" title="Select all State License">
+                                SL-Plumb<br>
+                                <input type="checkbox" class=" select-all-doc" data-doc="doc_sl_plumbing" title="Select all State License (Plumbing)">
                             </th>
-                            <th class="text-center" style="width: 50px;">
-                                BTR<br>
-                                <input type="checkbox" class=" select-all-doc" data-doc="doc_btr" title="Select all BTR">
+                            <th class="text-center" style="width: 60px;">
+                                SL-Contr<br>
+                                <input type="checkbox" class=" select-all-doc" data-doc="doc_sl_contractor" title="Select all State License (Contractor)">
+                            </th>
+                            <th class="text-center" style="width: 60px;">
+                                BTR-Plumb<br>
+                                <input type="checkbox" class=" select-all-doc" data-doc="doc_btr_plumbing" title="Select all BTR (Plumbing)">
+                            </th>
+                            <th class="text-center" style="width: 60px;">
+                                BTR-Contr<br>
+                                <input type="checkbox" class=" select-all-doc" data-doc="doc_btr_contractor" title="Select all BTR (Contractor)">
                             </th>
                             <th class="text-center" style="width: 60px;">Edit</th>
                         </tr>
@@ -168,7 +210,7 @@
                     <tbody>
                         {% if departments|length == 0 %}
                         <tr>
-                            <td colspan="13" class="text-center text-muted py-4">
+                            <td colspan="15" class="text-center text-muted py-4">
                                 {% if show_all %}
                                 No departments found.
                                 {% else %}
@@ -198,11 +240,11 @@
                                 {{ dept['submission_method'] or '—' }}
                                 {% endif %}
                             </td>
-                            <td>
+                            <td class="text-center">
                                 {% if dept['web_portal'] %}
                                 <a href="{{ dept['web_portal'] }}" target="_blank" rel="noopener"
                                    title="{{ dept['web_portal'] }}">
-                                    View Portal
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                 </a>
                                 {% else %}
                                 —
@@ -211,16 +253,36 @@
                             <td>
                                 {{ dept['date_sent'].strftime('%m/%d/%Y') if dept['date_sent'] else '—' }}
                             </td>
-                            <td>{{ dept['sent_via'] or '—' }}</td>
-                            <td>{{ dept['notes'] or '—' }}</td>
+                            <td>
+                                {% if dept['sent_via'] == 'Portal' %}
+                                <span class="badge bg-info text-dark">Portal</span>
+                                {% elif dept['sent_via'] %}
+                                <span class="badge bg-primary">Email</span>
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if dept['notes'] %}
+                                <i class="fa-solid fa-note-sticky text-warning" title="Note on file — expand Edit to view"></i>
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
                             <td class="text-center">
                                 <input type="checkbox" class=" doc-checkbox" name="doc_coi" value="{{ dept['id'] }}">
                             </td>
                             <td class="text-center">
-                                <input type="checkbox" class=" doc-checkbox" name="doc_state_license" value="{{ dept['id'] }}">
+                                <input type="checkbox" class=" doc-checkbox" name="doc_sl_plumbing" value="{{ dept['id'] }}">
                             </td>
                             <td class="text-center">
-                                <input type="checkbox" class=" doc-checkbox" name="doc_btr" value="{{ dept['id'] }}">
+                                <input type="checkbox" class=" doc-checkbox" name="doc_sl_contractor" value="{{ dept['id'] }}">
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" class=" doc-checkbox" name="doc_btr_plumbing" value="{{ dept['id'] }}">
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" class=" doc-checkbox" name="doc_btr_contractor" value="{{ dept['id'] }}">
                             </td>
                             <td class="text-center">
                                 <button type="button"
@@ -375,7 +437,7 @@
             const anyDocChecked = document.querySelector('.doc-checkbox:checked');
             if (!anyDocChecked) {
                 e.preventDefault();
-                alert('Please select at least one document type (COI, State License, or BTR) before sending.');
+                alert('Please select at least one document type before sending.');
                 return;
             }
             const btn = document.getElementById('btnSend');

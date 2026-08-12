@@ -118,3 +118,12 @@ def upload_company_doc(file, folder, filename):
     except Exception as e:
         logging.error("S3 company doc upload error: %s", e)
         return None
+
+
+def delete_file(key):
+    try:
+        s3_client.delete_object(Bucket=BUCKET_NAME, Key=key)
+        return True
+    except Exception as e:
+        logging.error("S3 delete error: %s", e)
+        return False

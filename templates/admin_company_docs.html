@@ -43,7 +43,12 @@
 
                         <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Document Type</label>
-                            <input type="text" class="form-control" name="doc_type" placeholder="e.g. COI, State License" required>
+                            <select class="form-select" name="doc_type" required>
+                                <option value="" disabled selected>Select type…</option>
+                                {% for doc_type in doc_types %}
+                                <option value="{{ doc_type }}">{{ doc_type }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
 
                         <div class="col-12 col-md-3">
@@ -94,6 +99,7 @@
                                 <th>Uploaded By</th>
                                 <th>Upload Date</th>
                                 <th>Expiration</th>
+                                <th class="text-center" style="width: 90px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -122,6 +128,27 @@
                                         <span class="text-muted">—</span>
                                     {% endif %}
                                 </td>
+                                <td class="text-center">
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary btn-edit-doc"
+                                            data-id="{{ doc.id }}"
+                                            data-doc-type="{{ doc.doc_type | e }}"
+                                            data-expiration="{{ doc.expiration_date.strftime('%Y-%m-%d') if doc.expiration_date else '' }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editDocModal"
+                                            title="Edit">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger btn-delete-doc"
+                                            data-id="{{ doc.id }}"
+                                            data-filename="{{ doc.filename | e }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteDocModal"
+                                            title="Delete">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -149,6 +176,25 @@
                                 {% if doc.first_name %} &middot; {{ doc.first_name }} {{ doc.last_name }}{% endif %}
                                 {% if doc.expiration_date %} &middot; Expires {{ doc.expiration_date.strftime('%Y-%m-%d') }}{% endif %}
                             </div>
+                            <div class="mt-2">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary btn-edit-doc"
+                                        data-id="{{ doc.id }}"
+                                        data-doc-type="{{ doc.doc_type | e }}"
+                                        data-expiration="{{ doc.expiration_date.strftime('%Y-%m-%d') if doc.expiration_date else '' }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editDocModal">
+                                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger btn-delete-doc"
+                                        data-id="{{ doc.id }}"
+                                        data-filename="{{ doc.filename | e }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteDocModal">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </div>
                         </li>
                         {% endfor %}
                     </ul>
@@ -164,6 +210,61 @@
     </div>
     </main>
 
+    <!-- Edit Document Modal -->
+    <div class="modal fade" id="editDocModal" tabindex="-1" aria-labelledby="editDocModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDocModalLabel">Edit Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="" id="editDocForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Document Type</label>
+                            <select class="form-select" name="doc_type" id="editDocType" required>
+                                {% for doc_type in doc_types %}
+                                <option value="{{ doc_type }}">{{ doc_type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Expiration Date <span class="text-muted fw-normal">(optional)</span></label>
+                            <input type="date" class="form-control" name="expiration_date" id="editDocExpiration">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Document Confirmation Modal -->
+    <div class="modal fade" id="deleteDocModal" tabindex="-1" aria-labelledby="deleteDocModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" id="deleteDocModalLabel">Delete Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Delete <strong id="deleteDocFilename"></strong>? This removes it from S3 and cannot be undone.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="" id="deleteDocForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.getElementById('folderSelect').addEventListener('change', function () {
             const wrapper = document.getElementById('newFolderWrapper');
@@ -171,6 +272,25 @@
             const isNew = this.value === '__new__';
             wrapper.style.display = isNew ? '' : 'none';
             input.required = isNew;
+        });
+
+        // Pre-fill edit modal using Bootstrap's show.bs.modal event
+        document.getElementById('editDocModal').addEventListener('show.bs.modal', function (event) {
+            const btn = event.relatedTarget;
+            document.getElementById('editDocForm').action = `/admin/company-docs/edit/${btn.dataset.id}`;
+            document.getElementById('editDocExpiration').value = btn.dataset.expiration;
+
+            const sel = document.getElementById('editDocType');
+            for (let opt of sel.options) {
+                opt.selected = opt.value === btn.dataset.docType;
+            }
+        });
+
+        // Pre-fill delete modal
+        document.getElementById('deleteDocModal').addEventListener('show.bs.modal', function (event) {
+            const btn = event.relatedTarget;
+            document.getElementById('deleteDocForm').action = `/admin/company-docs/delete/${btn.dataset.id}`;
+            document.getElementById('deleteDocFilename').textContent = btn.dataset.filename;
         });
     </script>
 </body>

@@ -2874,3 +2874,45 @@ def insert_company_document(doc_type, s3_key, folder, filename, user_id, expirat
     except Exception as e:
         logger.error("Database Error: %s", e)
         return False
+
+
+def get_company_document(doc_id):
+    try:
+        sqlQuery = "SELECT * FROM company_documents WHERE id = :doc_id;"
+        with engine.connect() as connection:
+            result = connection.execute(text(sqlQuery), {"doc_id": doc_id})
+            return result.mappings().first()
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return None
+
+
+def update_company_document(doc_id, doc_type, expiration_date=None):
+    try:
+        sqlQuery = """
+            UPDATE company_documents
+            SET doc_type = :doc_type, expiration_date = :expiration_date
+            WHERE id = :doc_id;
+        """
+        with engine.connect() as connection:
+            connection.execute(
+                text(sqlQuery),
+                {"doc_type": doc_type, "expiration_date": expiration_date, "doc_id": doc_id},
+            )
+            connection.commit()
+        return True
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return False
+
+
+def delete_company_document(doc_id):
+    try:
+        sqlQuery = "DELETE FROM company_documents WHERE id = :doc_id;"
+        with engine.connect() as connection:
+            connection.execute(text(sqlQuery), {"doc_id": doc_id})
+            connection.commit()
+        return True
+    except Exception as e:
+        logger.error("Database Error: %s", e)
+        return False

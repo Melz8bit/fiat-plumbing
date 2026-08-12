@@ -64,7 +64,7 @@ with suppress_c_warnings():
 
 import database
 from database import db_connect
-from documents import upload_file, download_file, upload_proposal, list_company_doc_folders, upload_company_doc, list_coi_year_folders
+from documents import upload_file, download_file, upload_proposal, list_company_doc_folders, upload_company_doc, list_coi_year_folders, delete_file
 from forms import (
     ClientForm,
     LoginForm,
@@ -109,6 +109,12 @@ AOL_APP_PASSWORD = os.getenv("AOL_APP_PASSWORD")
 AFIAT_GMAIL_EMAIL = os.getenv("AFIAT_GMAIL_EMAIL")
 AFIAT_GMAIL_APP_PASSWORD = os.getenv("AFIAT_GMAIL_APP_PASSWORD")
 VENTURA_CLIENT_ID = "10"
+COMPANY_DOC_TYPES = [
+    "State License - Plumbing",
+    "State License - Contractor",
+    "BTR - Plumbing",
+    "BTR - Contractor",
+]
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("APP_KEY")
@@ -1726,18 +1732,57 @@ def get_coverage_period():
     return coverage_start, coverage_end
 
 
-def send_coi_email(dept, coverage_start, docs, state_license_key=None, btr_key=None, coi_year=None):
+def send_coi_email(
+    dept,
+    coverage_start,
+    docs,
+    state_license_plumbing_key=None,
+    state_license_contractor_key=None,
+    btr_plumbing_key=None,
+    btr_contractor_key=None,
+    coi_year=None,
+):
     coverage_folder = coi_year or f"{coverage_start.year}-{coverage_start.year + 1}"
     entity_name = dept["entity"]
     recipient = dept["primary_email"]
 
+    def key_year(s3_key):
+        parts = s3_key.split("/")
+        return parts[2] if len(parts) > 2 else ""
+
+    attachments = []
     doc_names = []
+    subject_parts = []
+
     if docs.get("coi"):
+        attachments.append(
+            (
+                f"company-docs/certificates-of-liability/{coverage_folder}/{entity_name}.pdf",
+                f"{entity_name} - COI.pdf",
+            )
+        )
         doc_names.append("Certificate of Liability Insurance")
-    if docs.get("state_license") and state_license_key:
-        doc_names.append("State License")
-    if docs.get("btr") and btr_key:
-        doc_names.append("Local Business Tax Receipt")
+        subject_parts.append(f"COI {coverage_folder}")
+
+    if docs.get("sl_plumbing") and state_license_plumbing_key:
+        attachments.append((state_license_plumbing_key, state_license_plumbing_key.split("/")[-1]))
+        doc_names.append("State License (Plumbing)")
+        subject_parts.append(f"State License Plumbing {key_year(state_license_plumbing_key)}")
+
+    if docs.get("sl_contractor") and state_license_contractor_key:
+        attachments.append((state_license_contractor_key, state_license_contractor_key.split("/")[-1]))
+        doc_names.append("State License (Contractor)")
+        subject_parts.append(f"State License Contractor {key_year(state_license_contractor_key)}")
+
+    if docs.get("btr_plumbing") and btr_plumbing_key:
+        attachments.append((btr_plumbing_key, btr_plumbing_key.split("/")[-1]))
+        doc_names.append("Local Business Tax Receipt (Plumbing)")
+        subject_parts.append(f"BTR Plumbing {key_year(btr_plumbing_key)}")
+
+    if docs.get("btr_contractor") and btr_contractor_key:
+        attachments.append((btr_contractor_key, btr_contractor_key.split("/")[-1]))
+        doc_names.append("Local Business Tax Receipt (Contractor)")
+        subject_parts.append(f"BTR Contractor {key_year(btr_contractor_key)}")
 
     if len(doc_names) == 1:
         doc_list = doc_names[0]
@@ -1746,17 +1791,6 @@ def send_coi_email(dept, coverage_start, docs, state_license_key=None, btr_key=N
     else:
         doc_list = ", ".join(doc_names[:-1]) + f", and {doc_names[-1]}"
 
-    subject_parts = []
-    if docs.get("state_license") and state_license_key:
-        sl_year = state_license_key.split("/")[2]
-        subject_parts.append(f"State License {sl_year}")
-    coi_btr = []
-    if docs.get("coi"):
-        coi_btr.append("COI")
-    if docs.get("btr") and btr_key:
-        coi_btr.append("BTR")
-    if coi_btr:
-        subject_parts.append(f"{' & '.join(coi_btr)} {coverage_folder}")
     subject_doc_list = ", ".join(subject_parts)
 
     html_body = f"""
@@ -1780,19 +1814,6 @@ def send_coi_email(dept, coverage_start, docs, state_license_key=None, btr_key=N
         f"Fiat Plumbing & General Contractor, Inc. - {subject_doc_list} — {entity_name}"
     )
     msg.attach(MIMEText(html_body, "html"))
-
-    attachments = []
-    if docs.get("coi"):
-        attachments.append(
-            (
-                f"company-docs/certificates-of-liability/{coverage_folder}/{entity_name}.pdf",
-                f"{entity_name} - COI.pdf",
-            )
-        )
-    if docs.get("state_license") and state_license_key:
-        attachments.append((state_license_key, state_license_key.split("/")[-1]))
-    if docs.get("btr") and btr_key:
-        attachments.append((btr_key, btr_key.split("/")[-1]))
 
     for s3_key, display_name in attachments:
         try:
@@ -1823,8 +1844,10 @@ def admin_coi():
     )
     edit_form = COIEditForm()
     company_docs = database.get_company_documents()
-    state_license_docs = [d for d in company_docs if "state license" in d["doc_type"].lower()]
-    btr_docs = [d for d in company_docs if "btr" in d["doc_type"].lower() or "business tax" in d["doc_type"].lower()]
+    state_license_plumbing_docs = [d for d in company_docs if d["doc_type"] == "State License - Plumbing"]
+    state_license_contractor_docs = [d for d in company_docs if d["doc_type"] == "State License - Contractor"]
+    btr_plumbing_docs = [d for d in company_docs if d["doc_type"] == "BTR - Plumbing"]
+    btr_contractor_docs = [d for d in company_docs if d["doc_type"] == "BTR - Contractor"]
     coi_year_folders = list_coi_year_folders()
     failure_count = database.count_coi_send_failures()
     return render_template(
@@ -1835,8 +1858,10 @@ def admin_coi():
         coverage_start=coverage_start,
         coverage_end=coverage_end,
         edit_form=edit_form,
-        state_license_docs=state_license_docs,
-        btr_docs=btr_docs,
+        state_license_plumbing_docs=state_license_plumbing_docs,
+        state_license_contractor_docs=state_license_contractor_docs,
+        btr_plumbing_docs=btr_plumbing_docs,
+        btr_contractor_docs=btr_contractor_docs,
         coi_year_folders=coi_year_folders,
         failure_count=failure_count,
     )
@@ -1882,13 +1907,17 @@ def admin_coi_send():
         flash("No departments selected.")
         return redirect(url_for("admin_coi", show_all=show_all))
 
-    state_license_key = request.form.get("state_license_key", "").strip() or None
-    btr_key = request.form.get("btr_key", "").strip() or None
+    state_license_plumbing_key = request.form.get("state_license_plumbing_key", "").strip() or None
+    state_license_contractor_key = request.form.get("state_license_contractor_key", "").strip() or None
+    btr_plumbing_key = request.form.get("btr_plumbing_key", "").strip() or None
+    btr_contractor_key = request.form.get("btr_contractor_key", "").strip() or None
     coi_year = request.form.get("coi_year", "").strip() or None
 
     doc_coi_ids = set(request.form.getlist("doc_coi"))
-    doc_state_license_ids = set(request.form.getlist("doc_state_license"))
-    doc_btr_ids = set(request.form.getlist("doc_btr"))
+    doc_sl_plumbing_ids = set(request.form.getlist("doc_sl_plumbing"))
+    doc_sl_contractor_ids = set(request.form.getlist("doc_sl_contractor"))
+    doc_btr_plumbing_ids = set(request.form.getlist("doc_btr_plumbing"))
+    doc_btr_contractor_ids = set(request.form.getlist("doc_btr_contractor"))
 
     all_depts = database.get_coi_departments(
         pending_only=False, coverage_start=coverage_start
@@ -1913,8 +1942,10 @@ def admin_coi_send():
                 continue
             docs = {
                 "coi": dept_id in doc_coi_ids,
-                "state_license": dept_id in doc_state_license_ids,
-                "btr": dept_id in doc_btr_ids,
+                "sl_plumbing": dept_id in doc_sl_plumbing_ids,
+                "sl_contractor": dept_id in doc_sl_contractor_ids,
+                "btr_plumbing": dept_id in doc_btr_plumbing_ids,
+                "btr_contractor": dept_id in doc_btr_contractor_ids,
             }
             if not any(docs.values()):
                 reason = "no documents selected"
@@ -1924,8 +1955,10 @@ def admin_coi_send():
             try:
                 send_coi_email(
                     dept, coverage_start, docs,
-                    state_license_key=state_license_key,
-                    btr_key=btr_key,
+                    state_license_plumbing_key=state_license_plumbing_key,
+                    state_license_contractor_key=state_license_contractor_key,
+                    btr_plumbing_key=btr_plumbing_key,
+                    btr_contractor_key=btr_contractor_key,
                     coi_year=coi_year,
                 )
                 database.mark_coi_sent([dept_id], dept["primary_email"])
@@ -1985,6 +2018,7 @@ def admin_company_docs():
         user=user,
         docs=docs,
         folders=folders,
+        doc_types=COMPANY_DOC_TYPES,
     )
 
 
@@ -2027,6 +2061,43 @@ def admin_company_docs_upload():
         flash(f"'{filename}' uploaded successfully.")
     else:
         flash("File uploaded to S3 but database record failed.")
+
+    return redirect(url_for("admin_company_docs"))
+
+
+@app.route("/admin/company-docs/edit/<int:doc_id>", methods=["POST"])
+@login_required
+def admin_company_docs_edit(doc_id):
+    doc_type = request.form.get("doc_type", "").strip()
+    expiration_date = request.form.get("expiration_date", "").strip() or None
+
+    if not doc_type:
+        flash("Document type is required.")
+        return redirect(url_for("admin_company_docs"))
+
+    success = database.update_company_document(doc_id, doc_type, expiration_date)
+    if success:
+        flash("Document updated successfully.")
+    else:
+        flash("Error updating document. Please try again.")
+
+    return redirect(url_for("admin_company_docs"))
+
+
+@app.route("/admin/company-docs/delete/<int:doc_id>", methods=["POST"])
+@login_required
+def admin_company_docs_delete(doc_id):
+    doc = database.get_company_document(doc_id)
+    if not doc:
+        flash("Document not found.")
+        return redirect(url_for("admin_company_docs"))
+
+    delete_file(doc["s3_key"])
+    success = database.delete_company_document(doc_id)
+    if success:
+        flash(f"'{doc['filename']}' deleted.")
+    else:
+        flash("Error deleting document. Please try again.")
 
     return redirect(url_for("admin_company_docs"))
 
