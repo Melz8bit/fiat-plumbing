@@ -16,6 +16,17 @@
 
 ## Completed
 
+### Auth
+- [x] CSRF token expiry on login: added `CSRFError` handler that redirects to `/login` with a flash message instead of raw "Bad Request" page
+
+### COI / Company Documents
+- [x] Split State License & BTR docs into Plumbing/Contractor types (`company_documents.doc_type` now fixed dropdown: State License - Plumbing/Contractor, BTR - Plumbing/Contractor)
+- [x] Company Docs page: doc_type free-text input → dropdown; added per-row Edit (type + expiration) and Delete (removes from S3 + DB) actions
+- [x] Admin COI page: 4 document-version dropdowns (was 2) and 5 checkbox columns (was 3) — COI, SL-Plumbing, SL-Contractor, BTR-Plumbing, BTR-Contractor; sending both BTR checkboxes attaches both files in one email
+- [x] `send_coi_email()` rebuilt to attach up to 5 document slots and build subject/body dynamically
+- [x] Admin COI table display cleanup: Portal/Website → icon-only new-tab link; Notes → indicator icon only (full text via existing Edit modal); Sent Via → "Email"/"Portal" badge instead of raw email address
+- [x] documents.py: added `delete_file()` S3 helper; database.py: added `get_company_document`, `update_company_document`, `delete_company_document`
+
 ### Cleanup
 - [x] Remove large commented-out HTML blocks in project.html, project_invoices.html, proposal_create.html, proposal_print.html
 - [x] sign_up.html & reset_password.html: inline flash toast → replace with `flash_message.html` include
