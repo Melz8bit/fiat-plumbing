@@ -33,7 +33,7 @@ from flask_login import (
     login_user,
     logout_user,
 )
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFError, CSRFProtect
 from itsdangerous import URLSafeTimedSerializer
 from num2words import num2words
 from sqlalchemy import null, select
@@ -128,6 +128,12 @@ login_manager.login_view = "login"
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     flash("Your session has expired, please log in again.")
+    return redirect(url_for("login"))
+
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    flash("Your form session expired, please try again.")
     return redirect(url_for("login"))
 
 
